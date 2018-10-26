@@ -23,6 +23,6 @@ clean:
 	@-cd $(SRC)/CJsonObject;make clean;
 	
 shared:
-#	@-cd $(SRC)/spi;make;
-#	@-cd $(SRC)/CJsonObject;make
+	@-cd $(SRC)/spi;make;
+	@-cd $(SRC)/CJsonObject;make
 	
