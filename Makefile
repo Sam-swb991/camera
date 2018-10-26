@@ -14,6 +14,8 @@ TARGET=$(CUR)/bin/camera
 all:$(TARGET)
 
 $(TARGET):$(SRC_P)
+	@-mkdir lib;
+	@-mkdir bin;
 	@-make shared;
 	$(CPP) $^ $(CFLAGS) $@ $(PARAM) -L$(LIB_PATH) $(LIBS) -I$(INCLUDES)
 	
@@ -24,5 +26,6 @@ clean:
 	
 shared:
 	@-cd $(SRC)/spi;make;
-	@-cd $(SRC)/CJsonObject;make
+	@-cd $(SRC)/CJsonObject;make;
+	@-cd $(SRC)/sqlite;make;
 	
