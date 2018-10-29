@@ -5,6 +5,8 @@
 //#define HTPA80x64dL5k0_0k95Hi_Gain3k3 1
 #define HTPA80x64dL10_0k7F7k7Hi_Gain3k3
 #ifdef HTPA80x64dL5k0_0k95Hi_Gain3k3
+#define HEIGHT          64
+#define WIDTH           80
 #define TABLENUMBER		123
 #define PCSCALEVAL		100000000 //327000000000		//PixelConst scale value for table... lower 'L' for (long)
 #define NROFTAELEMENTS 	11
@@ -15,6 +17,8 @@
 #define TABLEOFFSET		1024
 
 #else
+#define HEIGHT          64
+#define WIDTH           80
 #define TABLENUMBER		124
 #define PCSCALEVAL		100000000 //327000000000		//PixelConst scale value for table... lower 'L' for (long)
 #define NROFTAELEMENTS 	11
@@ -3230,8 +3234,6 @@ const unsigned int YADValues[NROFADELEMENTS]={0,	64,	128,	192,	256,	320,	384,	44
 
 void print_V(void *data,int len,int type);
 void change_edian(void *data,int len);
-const int width = 80;
-const int height = 64;
 
 };
 

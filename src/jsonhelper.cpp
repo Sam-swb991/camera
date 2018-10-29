@@ -61,8 +61,8 @@ void jsonhelper::create_temp(WINDOW windos,RECT *rect,int rectnum,POINT point[51
     const std::string body = "body";
     myjson.Add("function","temp");
     myjson.AddEmptySubObject(body);
-    myjson[body].Add("width",common::width);
-    myjson[body].Add("height",common::height);
+    myjson[body].Add("width",WIDTH);
+    myjson[body].Add("height",HEIGHT);
     myjson[body].AddEmptySubObject("window");
     myjson[body]["window"].Add("x1",windos.x1);
     myjson[body]["window"].Add("y1",windos.y1);

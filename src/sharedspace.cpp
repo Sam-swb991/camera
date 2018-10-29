@@ -6,6 +6,8 @@
 #include <cstring>
 #include <string>
 #include <stdlib.h>
+#include <unistd.h>
+#include <common.h>
 using namespace std;
 sharedspace::sharedspace()
 {
@@ -68,19 +70,21 @@ int sharedspace::getRectlen()
 void sharedspace::storeTemp(int **temp)
 {
     stringstream ss;
+    stringstream t;
     char str[256] = { 0 };
     ss<<"'";
-    for(int i = 0;i<64;i++)
+    for(int i = 0;i<HEIGHT;i++)
     {
-        for(int j=0;j<80;j++)
+        for(int j=0;j<WIDTH;j++)
         {
             ss<<temp[i][j];
-            if(i == 63 && j ==79)
+            if(i == HEIGHT-1 && j ==WIDTH-1)
             {
                 ss<<"'";
             }
             else
                 ss<<",";
+            //usleep(1);
         }
     }
     list<string> name,value;
@@ -92,6 +96,9 @@ void sharedspace::storeTemp(int **temp)
     //cout<<"time is:"<<str<<endl;
     value.push_back(str);
     sql->insert_table("temperature",name,value);
+    t<<(time(nullptr)-70);
+    string delsql ="time < "+ t.str();
+    sql->delete_table("temperature",delsql);
 }
 
 vector<string> split(const string& str, const string& delim) {
@@ -116,6 +123,7 @@ vector<string> split(const string& str, const string& delim) {
 int sharedspace::getTemp(int **temp)
 {
     stringstream ss;
+    stringstream t;
     list <string >ret;
     ss<<(time(nullptr)-60);
     string sqlstr = "select tempData from temperature where time < "+ ss.str()+"order by time DESC LIMIT 1 OFFSET 0;";
@@ -131,6 +139,7 @@ int sharedspace::getTemp(int **temp)
                 temp[i][j] = atoi(res[static_cast<unsigned long>(i*80+j)].c_str());
             }
         }
+
         return 0;
     }
     else

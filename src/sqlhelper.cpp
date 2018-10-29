@@ -144,6 +144,19 @@ list<string> sqlHelper::select_table(string sql)
     sqlite3_finalize(stmt);
     return ret;
 }
+void sqlHelper::delete_table(string table,string arg)
+{
+    char *errorMsg;
+    string sql = "delete from "+table+" where "+arg+";";
+    int res = sqlite3_exec(db,sql.c_str(),nullptr,nullptr,&errorMsg);
+    if(res != SQLITE_OK)
+    {
+        fprintf(stderr, "SQL error: %s\n", errorMsg);
+        sqlite3_free(errorMsg);
+    }
+    else
+        cout<<"delete OK!"<<endl;
+}
 void sqlHelper::clear_table(string table)
 {
     char *errorMsg;

@@ -9,20 +9,20 @@
 #include "sharedspace.h"
 #include "socketclient.h"
 #include "sqlhelper.h"
-
 int main()
 {
-    sqlHelper *sqlite = new sqlHelper();
-    list<string > name,value;
-    name.push_back("tempData");
-    value.push_back("\'123,123\'");
-    sqlite->insert_table("temperature",name,value);
-    value.clear();
-    value = sqlite->select_table("select * from temperature where Id = 1;");
-    for(list<string>::iterator i =value.begin();i!=value.end();i++)
-    {
-        cout<<*i<<endl;
-    }
+//    sqlHelper *sqlite = new sqlHelper();
+//    list<string > name,value;
+//    name.push_back("tempData");
+//    value.push_back("\'123,123\'");
+//    sqlite->insert_table("temperature",name,value);
+//    value.clear();
+//    value = sqlite->select_table("select * from temperature where Id = 1;");
+//    for(list<string>::iterator i =value.begin();i!=value.end();i++)
+//    {
+//        cout<<*i<<endl;
+//    }
+
     sharedspace *shared = new sharedspace();
     socketServer *ss = new socketServer(12345,shared);
     ss->startServer();

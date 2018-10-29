@@ -12,6 +12,7 @@ public:
     int open();
     void insert_table(string table,list<string> name,list<string> value);
     list<string> select_table(string sql);
+    void delete_table(string table, string arg);
 private:
     sqlite3 *db;
     list<string> ret;
