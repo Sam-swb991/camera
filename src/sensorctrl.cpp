@@ -4,6 +4,7 @@
 sensorCtrl::sensorCtrl(spiCtrl* spictrl)
 {
     this->spictrl = spictrl;
+
 }
 
 void sensorCtrl::init_sensor()
@@ -29,7 +30,7 @@ void sensorCtrl::init_sensor()
 //}
 void sensorCtrl::read_pixel_select_BLOCK(int BLOCK,uint8_t *data,unsigned short *pixel)
 {
-    for(int i = 0;i<8;i++)
+    for(int i = 0;i<8;++i)
     {
         memcpy(pixel+2560+BLOCK*640+80*i,data+2+160*i,160);
     }
@@ -157,7 +158,7 @@ void sensorCtrl::read_electricaloffset()
 
     memset(data,0,1282);
     spictrl->spi_sensor_read_data(0x0B,data);
-    for(int i = 0;i<8;i++)
+    for(int i = 0;i<8;++i)
     {
         //memcpy(electrical_offset+1200-80*i,data+2+160*i,160); //copy bottom 640 ele_offset
         memcpy(electrical_offset+640+80*i,data+2+160*i,160);
@@ -195,7 +196,7 @@ S_C_DATA* sensorCtrl::get_common_data()
 {
     c_data = new S_C_DATA();
     int PTAT_total=0,VDD_total=0;
-    for(int i = 0;i<8;i++)
+    for(int i = 0;i<8;++i)
     {
         PTAT_total +=this->PTAT[i];
         VDD_total +=this->VDD[i];

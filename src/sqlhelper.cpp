@@ -27,7 +27,10 @@ int sqlHelper::open()
         return 0;
     }
 }
-
+void sqlHelper::release()
+{
+    sqlite3_close(db);
+}
 void sqlHelper::create_table()
 {
     string sql = "create table if not exists temperature(ID integer primary key autoincrement,tempData text not null,time integer);";
@@ -41,6 +44,7 @@ void sqlHelper::create_table()
     else
     {
         cout<<"create OK!"<<endl;
+        delete errorMsg;
     }
 
 }
@@ -83,14 +87,16 @@ void sqlHelper::insert_table(string table,list<string> name,list<string> value)
     if(res != SQLITE_OK)
     {
         fprintf(stderr, "SQL error: %s\n", errorMsg);
-        sqlite3_free(errorMsg);
+
     }
+    sqlite3_free(errorMsg);
+    delete errorMsg;
 }
 
 list<string> sqlHelper::select_table(string sql)
 {
-    sqlite3_stmt *stmt;
-
+    sqlite3_stmt *stmt = nullptr;
+    ret.clear();
     int res = sqlite3_prepare_v2(db,sql.c_str(),static_cast<int>(sql.size()),&stmt,nullptr);
     if(res != SQLITE_OK)
     {
@@ -102,7 +108,8 @@ list<string> sqlHelper::select_table(string sql)
     int count = sqlite3_column_count(stmt);
 
 
-    do{
+   while(true)
+   {
         res = sqlite3_step(stmt);
         if(res == SQLITE_ROW)
         {
@@ -122,11 +129,10 @@ list<string> sqlHelper::select_table(string sql)
                 }
             }
             break;
-
         }
         else if(res == SQLITE_DONE)
         {
-            printf("Select Finished.\n");
+            //printf("Select Finished.\n");
             ret.clear();
             break;
         }
@@ -136,11 +142,11 @@ list<string> sqlHelper::select_table(string sql)
 
             sqlite3_finalize(stmt);
             ret.push_back("error");
+            sqlite3_free(stmt);
             return ret;
         }
     }
-    while(true);
-
+    sqlite3_free(stmt);
     sqlite3_finalize(stmt);
     return ret;
 }
@@ -155,7 +161,11 @@ void sqlHelper::delete_table(string table,string arg)
         sqlite3_free(errorMsg);
     }
     else
+    {
         cout<<"delete OK!"<<endl;
+        sqlite3_free(errorMsg);
+        delete errorMsg;
+    }
 }
 void sqlHelper::clear_table(string table)
 {
@@ -172,6 +182,8 @@ void sqlHelper::clear_table(string table)
     else
     {
         cout<<"delete table OK!"<<endl;
+        sqlite3_free(errorMsg);
+        delete errorMsg;
     }
     res = sqlite3_exec(db,sql1.c_str(),nullptr,nullptr,&errorMsg1);
     if(res != SQLITE_OK)
@@ -182,5 +194,7 @@ void sqlHelper::clear_table(string table)
     else
     {
         cout<<"set sequence OK!"<<endl;
+        sqlite3_free(errorMsg1);
+        delete errorMsg1;
     }
 }

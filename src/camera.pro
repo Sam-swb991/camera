@@ -42,8 +42,7 @@ HEADERS += \
     include/myqueue.h \
     include/sharedspace.h \
     include/sqlite3.h \
-    include/sqlhelper.h \
-    include/memwatch.h
+    include/sqlhelper.h
 
 INCLUDEPATH = ./include
 LIBS += -lsqlite -lpthread

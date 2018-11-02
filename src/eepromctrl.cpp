@@ -5,12 +5,13 @@ using namespace common;
 eepromCtrl::eepromCtrl(spiCtrl *spictrl)
 {
     this->spictrl = spictrl;
+    c_data = new E_C_DATA();
 }
 int eepromCtrl::read_int(uint8_t addr_H, uint8_t addr_L)
 {
     uint8_t recv[4];
     int ret;
-    for(int i =0;i<4;i++)
+    for(int i =0;i<4;++i)
     {
         recv[i] = spictrl->spi_eeprom_read(addr_H,addr_L);
         addr_L++;
@@ -23,7 +24,7 @@ float eepromCtrl::read_float(uint8_t addr_H, uint8_t addr_L)
 {
     uint8_t recv[4];
     float ret;
-    for(int i =0;i<4;i++)
+    for(int i =0;i<4;++i)
     {
         recv[i] = spictrl->spi_eeprom_read(addr_H,addr_L);
         addr_L++;
@@ -35,7 +36,7 @@ unsigned short eepromCtrl::read_short(uint8_t addr_H, uint8_t addr_L)
 {
     uint8_t recv[2];
     unsigned short ret;
-    for(int i =0;i<2;i++)
+    for(int i =0;i<2;++i)
     {
         recv[i] = spictrl->spi_eeprom_read(addr_H,addr_L);
         addr_L++;
@@ -86,20 +87,20 @@ void eepromCtrl::readAll()
     DeadPixAdr = new unsigned short(NrOfDefPix);
     DeadPixMask = new uint8_t(NrOfDefPix);
     addr_L = 0x80;
-    for(int i = 0 ;i<NrOfDefPix;i++)
+    for(int i = 0 ;i<NrOfDefPix;++i)
     {
         DeadPixAdr[i] = read_short(addr_H,addr_L);
         addr_L +=2;
     }
     addr_L = 0xB0;
-    for(int i = 0 ;i<NrOfDefPix;i++)
+    for(int i = 0 ;i<NrOfDefPix;++i)
     {
         DeadPixMask[i] = spictrl->spi_eeprom_read(addr_H,addr_L);
         addr_L ++;
     }
     addr_H = 0x08;
     addr_L = 0x00;
-    for(int i = 0;i<1280;i++)
+    for(int i = 0;i<1280;++i)
     {
         VddCompGrad[i] = read_short(addr_H,addr_L);
         if(addr_L == 0xFE)
@@ -112,7 +113,7 @@ void eepromCtrl::readAll()
     }
     addr_H = 0x12;
     addr_L = 0x00;
-    for(int i = 0;i<1280;i++)
+    for(int i = 0;i<1280;++i)
     {
         VddCompOff[i] = read_short(addr_H,addr_L);
         if(addr_L == 0xFE)
@@ -125,7 +126,7 @@ void eepromCtrl::readAll()
     }
     addr_H = 0x1C;
     addr_L = 0x00;
-    for(int i = 0;i<5120;i++)
+    for(int i = 0;i<5120;++i)
     {
         ThGrad[i] = spictrl->spi_eeprom_read(addr_H,addr_L);
         if(addr_L == 0xFF)
@@ -138,7 +139,7 @@ void eepromCtrl::readAll()
     }
     addr_H = 0x30;
     addr_L = 0x00;
-    for(int i = 0;i<5120;i++)
+    for(int i = 0;i<5120;++i)
     {
         ThOffset[i] = read_short(addr_H,addr_L);
         if(addr_L == 0xFE)
@@ -151,7 +152,7 @@ void eepromCtrl::readAll()
     }
     addr_H = 0x58;
     addr_L = 0x00;
-    for(int i = 0;i<5120;i++)
+    for(int i = 0;i<5120;++i)
     {
         P[i] = read_short(addr_H,addr_L);
         if(addr_L == 0xFE)
@@ -166,7 +167,7 @@ void eepromCtrl::readAll()
 }
 E_C_DATA* eepromCtrl::get_common_data()
 {
-    c_data = new E_C_DATA();
+
     c_data->PTATTH1 = this->PTATTH1;
     c_data->PTATTH2 = this->PTATTH2;
     c_data->PTAT_gradient = this->PTAT_gradient;
@@ -242,7 +243,7 @@ void eepromCtrl::printvalue()
     cout<<endl;
     cout<<"************************************************************"<<endl;
     cout<<"DeadPixAdr:"<<endl;
-    common::print_V(DeadPixAdr,2,1);
+    common::print_V(DeadPixAdr,NrOfDefPix*2,1);
     cout<<endl;
     cout<<"************************************************************"<<endl;
     cout<<"DeadPixMask:"<<endl;

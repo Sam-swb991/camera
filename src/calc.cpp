@@ -45,19 +45,28 @@ void calc::get_all_temp(int **temp)
 {
     sctrl->read_all();
     //sctrl->printvalue();
-    E_M_DATA *em_data;
-    S_M_DATA *sm_data;
+
     S_C_DATA *sc_data = sctrl->get_common_data();
-    printf("ta is %d\n",static_cast<int>(sc_data->PTAT_av*PTAT_gradient+PTAT_offset));
-    for(int i =0;i<5120;i++)
+//    printf("ta is %d\n",static_cast<int>(sc_data->PTAT_av*PTAT_gradient+PTAT_offset));
+    for(int i =0;i<5120;++i)
     {
-        em_data = ectrl->get_muti_data(i);
-        sm_data = sctrl->get_muti_data(i);
+        E_M_DATA *em_data = ectrl->get_muti_data(i);
+        S_M_DATA *sm_data = sctrl->get_muti_data(i);
 
         temp[i/80][i%80] = get_one_temp(em_data,sm_data,sc_data);
-    }
-    sort_temp(temp);
+        delete em_data;
+        delete sm_data;
 
+    }
+//    for(int i =0;i<64;++i)
+//    {
+//        for(int j=0;j<80;++j)
+//        {
+//            printf("%d ",temp[i][j]);
+//        }
+//        printf("\n");
+//    }
+    sort_temp(temp);
 
     //repaire bad value
 //    for(int i=0;i<4;i++)
@@ -80,10 +89,11 @@ void calc::get_all_temp(int **temp)
 //        }
 //    }
 
+    delete sc_data;
 }
 void calc::change_sort(int *src0,int *src1,size_t len)
 {
-    //printf("********************************\n");
+ //   printf("********************************\n");
     int *tmp = new int[len];
     memcpy(tmp,src0,len*4);
 //    for(int i=0;i<80;i++)
@@ -91,13 +101,15 @@ void calc::change_sort(int *src0,int *src1,size_t len)
 //    printf("\n\n");
     memcpy(src0,src1,len*4);
     memcpy(src1,tmp,len*4);
+    delete []tmp;
 
 }
 void calc::sort_temp(int **temp)
 {
 
-    for(int i =0;i<16;i++)
+    for(int i =0;i<16;++i)
     {
+ //       printf("i = %d\n",i);
         change_sort(temp[63-i],temp[32+i],80);
     }
 }
@@ -132,7 +144,7 @@ int calc::get_one_temp(E_M_DATA* em_data,S_M_DATA* sm_data,S_C_DATA * sc_data)
     int V_ij_pixC = static_cast<int>(V_ij_vdd_comp *pow(10,8)/static_cast<double>(PixC_ij));
 
     int x=-1,y;
-    for(int i = 0 ;i<NROFTAELEMENTS;i++)
+    for(int i = 0 ;i<NROFTAELEMENTS;++i)
     {
         if(static_cast<int>(common::XTATemps[i])<=Ta&&static_cast<int>(common::XTATemps[i+1])>Ta)
         {

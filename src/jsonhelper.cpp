@@ -28,8 +28,9 @@ jsonhelper::jsonhelper(CJsonObject json)
                 json["body"]["rect"][static_cast<unsigned int>(i)].Get("lowvalue",rectset[i].lowvalue);
                 json["body"]["rect"][static_cast<unsigned int>(i)].Get("rapidtempchangealarm",rectset[i].rapidtempchangealarm);
                 json["body"]["rect"][static_cast<unsigned int>(i)].Get("rapidtempchangevalue",rectset[i].rapidtempchangevalue);
-                json["body"]["rect"][static_cast<unsigned int>(i)].Get("alarm-level",rectset[i].alarm_level);
+                json["body"]["rect"][static_cast<unsigned int>(i)].Get("alarm_level",rectset[i].alarm_level);
             }
+            cout<<"rectset:"<<rectset->name<<endl;
         }
         else
             return;

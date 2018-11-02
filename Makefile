@@ -1,14 +1,14 @@
 CC=/opt/hisi-linux/x86-arm/arm-hisiv500-linux/bin/arm-hisiv500-linux-uclibcgnueabi-gcc
 CPP=/opt/hisi-linux/x86-arm/arm-hisiv500-linux/bin/arm-hisiv500-linux-uclibcgnueabi-g++
 CFLAGS=-o
-PARAM=-Wall -std=c++11 -DMEMWATCH -DMW_STDIO
+PARAM=-Wall -std=c++11 
 CUR=$(shell pwd)
 SRC=$(CUR)/src
 INCLUDES=$(SRC)/include/
 SRC_C=$(SRC)/*.c
 SRC_P=$(SRC)/*.cpp
 LIB_PATH=$(CUR)/lib/
-LIBS=-lspi -lCJsonObject -lpthread -lsqlite -lmemwatch
+LIBS=-lspi -lCJsonObject -lpthread -lsqlite 
 TARGET=$(CUR)/bin/camera
 .PHONY:$(TARGET)
 all:$(TARGET)
@@ -25,7 +25,7 @@ clean:
 	@-cd $(SRC)/CJsonObject;make clean;
 	
 shared:
-	@-cd $(SRC)/spi;make;
-	@-cd $(SRC)/CJsonObject;make;
-	@-cd $(SRC)/sqlite;make;
+	@$(MAKE) -C $(SRC)/spi;
+	@$(MAKE) -C $(SRC)/CJsonObject;
+	@$(MAKE) -C $(SRC)/sqlite;
 	

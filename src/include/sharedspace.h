@@ -4,6 +4,7 @@
 #include "myqueue.h"
 #include <pthread.h>
 #include "sqlhelper.h"
+class temprule;
 class sharedspace
 {
 public:
@@ -13,12 +14,14 @@ public:
     void SetRect(RECTSET *rectset,int len);
     RECT * GetRect(int **temp);
     int getRectlen();
-    pthread_mutex_t mutex,mutexmq;
+    void resetSql();
+    pthread_mutex_t mutex,mutexsql;
 private:
     RECT *rect =nullptr;
     RECTSET *rectset =nullptr ;
     int rectsetlen;
     sqlHelper *sql;
+    temprule *trule;
 };
 
 #endif // SHAREDSPACE_H

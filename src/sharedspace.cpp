@@ -15,49 +15,77 @@ sharedspace::sharedspace()
     {
         perror("mutex init error!");
     }
-    if(pthread_mutex_init(&mutexmq, nullptr) != 0)
+    if(pthread_mutex_init(&mutexsql, nullptr) != 0)
     {
         perror("mutexmq init error!");
     }
     rectsetlen = 0;
     sql = new sqlHelper();
+    sql->clear_table("temperature");
+
 }
 
 RECT * sharedspace::GetRect(int **temp)
 {
-
-    temprule *trule = new temprule(this->rectset,rectsetlen,temp,this);
-    int *alarmmode  = trule->getalarmmode();
-
-    TEMP_C *tempc = trule->getcommontemp();
-    if(rectsetlen == 0)
+    TEMP_C *tempc = new TEMP_C[rectsetlen];
+    int *alarmmode = new int[rectsetlen];
+    trule = new temprule(this->rectset,rectsetlen,temp,this,tempc,alarmmode);
+    for(int i =0;i<rectsetlen;++i)
     {
-        return nullptr;
+        printf("alarmmode is %d\n",alarmmode[i]);
+        printf("tempc avg = %d,high = %d,low = %d\n",tempc[i].avgTemp,tempc[i].highTemp,tempc[i].lowTemp);
     }
-    rect = new RECT[rectsetlen];
-    for(int i =0;i<rectsetlen;i++)
+    if(rectsetlen != 0)
     {
-        if(alarmmode[i] == 0)
+        rect = new RECT[rectsetlen];
+        for(int i =0;i<rectsetlen;++i)
         {
-            rect[i].mode = 0;
-        }
-        else
-        {
+            if(alarmmode[i] == 0)
+            {
+                rect[i].mode = 0;
+            }
+            else
+            {
 
-            rect[i].mode = 1;
+                rect[i].mode = 1;
+
+            }
+
+            rect[i].alarmMode = alarmmode[i];
+
+            //cout<<rectset[i].name<<endl;
+            rect[i].copy(rectset[i]);
+
+
+            rect[i].tempc = tempc[i];
 
         }
-        rect[i].alarmMode = alarmmode[i];
-        rect[i].copy(rectset[i]);
-        rect[i].tempc = tempc[i];
     }
+
+    delete []alarmmode;
+    delete []tempc;
+    delete trule;
+
     return rect;
 }
 void sharedspace::SetRect(RECTSET *rectset,int len)
 {
-
-    this->rectset = rectset;
     rectsetlen = len;
+    delete this->rectset;
+    this->rectset = new RECTSET[len];
+    for(int i =0;i<rectsetlen;++i)
+    {
+            this->rectset[i].alarm_level = rectset[i].alarm_level;
+            this->rectset[i].highalarm = rectset[i].highalarm;
+            this->rectset[i].highvalue = rectset[i].highvalue;
+            this->rectset[i].lowalarm = rectset[i].lowvalue;
+            this->rectset[i].name = rectset[i].name;
+            this->rectset[i].rapidtempchangealarm = rectset[i].rapidtempchangealarm;
+            this->rectset[i].rapidtempchangevalue = rectset[i].rapidtempchangevalue;
+            this->rectset[i].rect = rectset[i].rect;
+    }
+
+
 
 
 }
@@ -73,9 +101,9 @@ void sharedspace::storeTemp(int **temp)
     stringstream t;
     char str[256] = { 0 };
     ss<<"'";
-    for(int i = 0;i<HEIGHT;i++)
+    for(int i = 0;i<HEIGHT;++i)
     {
-        for(int j=0;j<WIDTH;j++)
+        for(int j=0;j<WIDTH;++j)
         {
             ss<<temp[i][j];
             if(i == HEIGHT-1 && j ==WIDTH-1)
@@ -99,6 +127,7 @@ void sharedspace::storeTemp(int **temp)
     t<<(time(nullptr)-70);
     string delsql ="time < "+ t.str();
     sql->delete_table("temperature",delsql);
+
 }
 
 vector<string> split(const string& str, const string& delim) {
@@ -119,22 +148,28 @@ vector<string> split(const string& str, const string& delim) {
     }
     return res;
 }
-
+void sharedspace::resetSql()
+{
+    sql->release();
+    delete sql;
+    sql = new sqlHelper();
+}
 int sharedspace::getTemp(int **temp)
 {
     stringstream ss;
     stringstream t;
     list <string >ret;
     ss<<(time(nullptr)-60);
-    string sqlstr = "select tempData from temperature where time < "+ ss.str()+"order by time DESC LIMIT 1 OFFSET 0;";
+    string sqlstr = "select tempData from temperature where time < "+ ss.str()+" order by time DESC LIMIT 1 OFFSET 0;";
     ret = sql->select_table(sqlstr);
     if(!ret.empty()&&*ret.begin()!="error")
     {
         string str = *ret.begin();
         vector <string> res = split(str,",");
-        for(int i = 0;i<64;i++)
+        //cout<<"res size is:"<<res.size()<<endl;
+        for(int i = 0;i<64;++i)
         {
-            for(int j = 0;j<80;j++)
+            for(int j = 0;j<80;++j)
             {
                 temp[i][j] = atoi(res[static_cast<unsigned long>(i*80+j)].c_str());
             }

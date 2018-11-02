@@ -6,14 +6,11 @@
 class temprule
 {
 public:
-    temprule(RECTSET *rectset,int len,int **temp,sharedspace *ss);
-    int *getalarmmode();
-    TEMP_C *getcommontemp();
+    temprule(RECTSET *rectset, int len, int **temp, sharedspace *ss, TEMP_C *tempc, int *alarmmode);
+
 private:
-    TEMP_C *tempc;
-    int *alarmmode;
+
     int len;
-    sharedspace *ss;
 
 };
 

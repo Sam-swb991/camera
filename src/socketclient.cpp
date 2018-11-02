@@ -40,25 +40,39 @@ void *socketclient::clientthread(void *)
     RECT *rect;
     int len;
     CJsonObject jsonobject;
-    clock_t start_t,end_t;
+//    clock_t start_t,end_t;
+    int times = 0;
     while(start)
     {
-        start_t =clock();
+//        start_t =clock();
         memset(&window,0,sizeof (WINDOW));
+        usleep(200000);
         getTemp();
-        end_t =clock();
-        cout<<"time 1:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
-        pthread_mutex_lock(&ss->mutexmq);
+//        end_t =clock();
+//        cout<<"time 1:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
+//        for(int i =0;i<64;++i)
+//        {
+//            for(int j=0;j<80;++j)
+//            {
+//                printf("%d ",temp[i][j]);
+//            }
+//            printf("\n");
+//        }
+        pthread_mutex_lock(&ss->mutexsql);
+        usleep(200000);
         ss->storeTemp(temp);
-        pthread_mutex_unlock(&ss->mutexmq);
-        end_t =clock();
-        cout<<"time 2:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
+        pthread_mutex_unlock(&ss->mutexsql);
+//        end_t =clock();
+
+//        cout<<"time 2:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
+        usleep(200000);
         pthread_mutex_lock(&ss->mutex);
         rect = ss->GetRect(temp);
         len = ss->getRectlen();
         pthread_mutex_unlock(&ss->mutex);
-        end_t =clock();
-        cout<<"time 3:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
+//        end_t =clock();
+
+//        cout<<"time 3:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
 //        for(int i =0;i<64;i++)
 //        {
 //            for(int j=0;j<80;j++)
@@ -67,22 +81,30 @@ void *socketclient::clientthread(void *)
 //                point[i*80+j].isShow = 1;
 //            }
 //        }
-        end_t =clock();
-        cout<<"time 4:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
+//        end_t =clock();
+//        cout<<"time 4:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
+        usleep(200000);
         jsonhelper *json =new jsonhelper();
         json->create_temp(window,rect,len,point);
         jsonobject = json->getJson();
-        end_t =clock();
-        cout<<"time 5:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
-        //cout<<jsonobject.ToString()<<endl;
+//        end_t =clock();
+ //       cout<<"time 5:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
+        cout<<jsonobject.ToFormattedString()<<endl;
+        usleep(200000);
         myProtocol *pro = new myProtocol(0x01,0x03,jsonobject);
         cout<<"data lenth:"<<pro->Getlength()<<endl;
-        end_t =clock();
-        cout<<"time 6:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
+//        end_t =clock();
+//        cout<<"time 6:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
         //send(clientfd,pro->GetData(),static_cast<unsigned long>(pro->Getlength()),0);
         delete json;
         delete pro;
-        sleep(1);
+        delete rect;
+        if(times++ == 60)
+        {
+            times = 0;
+            ss->resetSql();
+        }
+
 
     }
     cout<<"client end"<<endl;
