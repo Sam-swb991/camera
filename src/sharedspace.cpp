@@ -121,7 +121,7 @@ void sharedspace::storeTemp(int **temp)
     value.push_back(ss.str());
 
     sprintf(str,"%ld",time(nullptr));
-    //cout<<"time is:"<<str<<endl;
+    cout<<"time is:"<<str<<endl;
     value.push_back(str);
     sql->insert_table("temperature",name,value);
     t<<(time(nullptr)-70);

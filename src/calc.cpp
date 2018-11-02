@@ -47,7 +47,7 @@ void calc::get_all_temp(int **temp)
     //sctrl->printvalue();
 
     S_C_DATA *sc_data = sctrl->get_common_data();
-//    printf("ta is %d\n",static_cast<int>(sc_data->PTAT_av*PTAT_gradient+PTAT_offset));
+    printf("ta is %d\n",static_cast<int>(sc_data->PTAT_av*PTAT_gradient+PTAT_offset));
     for(int i =0;i<5120;++i)
     {
         E_M_DATA *em_data = ectrl->get_muti_data(i);

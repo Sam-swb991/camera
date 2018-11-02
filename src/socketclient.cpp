@@ -41,7 +41,7 @@ void *socketclient::clientthread(void *)
     int len;
     CJsonObject jsonobject;
 //    clock_t start_t,end_t;
-    int times = 0;
+//    int times = 0;
     while(start)
     {
 //        start_t =clock();
@@ -99,11 +99,11 @@ void *socketclient::clientthread(void *)
         delete json;
         delete pro;
         delete rect;
-        if(times++ == 60)
-        {
-            times = 0;
-            ss->resetSql();
-        }
+//        if(times++ == 60)
+//        {
+//            times = 0;
+//            ss->resetSql();
+//        }
 
 
     }

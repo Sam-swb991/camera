@@ -34,7 +34,9 @@ int main()
         if(ch == 'q')
             break;
     }
-
+    delete shared;
+    delete ss;
+    delete sc;
 	return 0;
 }
 

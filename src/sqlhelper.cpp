@@ -5,7 +5,6 @@ sqlHelper::sqlHelper()
 {
     open();
     create_table();
-    clear_table("temperature");
 }
 sqlHelper::~sqlHelper()
 {

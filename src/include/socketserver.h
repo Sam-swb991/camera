@@ -6,7 +6,7 @@
 #include <netinet/in.h>
 #include "sharedspace.h"
 
-#define MAXLINE 1024
+#define MAXLINE 4096
 
 class socketServer
 {

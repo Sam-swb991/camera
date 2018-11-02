@@ -10,14 +10,19 @@ temprule::temprule(RECTSET *rectset, int len, int **temp, sharedspace *ss, TEMP_
     memset(alarmmode,0,sizeof(int)*static_cast<size_t>(len));
     memset(tempc,0,sizeof(TEMP_C)*static_cast<size_t>(len));
     int **ftemp = new int*[64];
-    int ret;
-    int num;
     for(int i=0; i<64; ++i)
     {
         ftemp[i] = new int[80];
 
         memset(ftemp[i],0,80*sizeof(int));
     }
+    int ret = 0;
+    pthread_mutex_lock(&ss->mutexsql);
+    ret = ss->getTemp(ftemp);
+    pthread_mutex_unlock(&ss->mutexsql);
+
+    int num;
+
     for(int k = 0 ;k<len;++k)
     {
         int start_x = static_cast<int>(rectset[k].rect.x1*WIDTH);
@@ -29,6 +34,7 @@ temprule::temprule(RECTSET *rectset, int len, int **temp, sharedspace *ss, TEMP_
         num=0;
         tempc[k].lowTemp = 1000;
         tempc[k].highTemp = -100;
+
         for(int i=start_y;i<=end_y;++i)
         {
             for(int j=start_x;j<=end_x;++j)
@@ -55,9 +61,7 @@ temprule::temprule(RECTSET *rectset, int len, int **temp, sharedspace *ss, TEMP_
                 }
                 if(rectset[k].rapidtempchangealarm == 1)
                 {
-                    pthread_mutex_lock(&ss->mutexsql);
-                    ret = ss->getTemp(ftemp);
-                    pthread_mutex_unlock(&ss->mutexsql);
+
                     if(ret ==0)
                     {
                         if(abs(temp[i][j]-ftemp[i][j])>rectset->rapidtempchangevalue)
