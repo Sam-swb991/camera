@@ -29,6 +29,7 @@ int sqlHelper::open()
 void sqlHelper::release()
 {
     sqlite3_close(db);
+    open();
 }
 void sqlHelper::create_table()
 {
@@ -94,7 +95,8 @@ void sqlHelper::insert_table(string table,list<string> name,list<string> value)
 
 list<string> sqlHelper::select_table(string sql)
 {
-    sqlite3_stmt *stmt = nullptr;
+    cout<<"select"<<endl;
+    sqlite3_stmt *stmt;
     ret.clear();
     int res = sqlite3_prepare_v2(db,sql.c_str(),static_cast<int>(sql.size()),&stmt,nullptr);
     if(res != SQLITE_OK)
@@ -106,7 +108,7 @@ list<string> sqlHelper::select_table(string sql)
     }
     int count = sqlite3_column_count(stmt);
 
-
+    cout<<"count is :"<<count<<endl;
    while(true)
    {
         res = sqlite3_step(stmt);
@@ -115,6 +117,7 @@ list<string> sqlHelper::select_table(string sql)
             for(int i = 0;i<count;i++)
             {
                 int vtype = sqlite3_column_type(stmt,i);
+                cout<<"type is :"<<vtype<<endl;
                 if(vtype == SQLITE_TEXT)
                 {
                     ret.push_back(string((const char *)sqlite3_column_text(stmt,i)));
@@ -131,9 +134,10 @@ list<string> sqlHelper::select_table(string sql)
         }
         else if(res == SQLITE_DONE)
         {
-            //printf("Select Finished.\n");
+            printf("Select Finished.\n");
             ret.clear();
-            break;
+            sqlite3_finalize(stmt);
+            return ret;
         }
         else
         {
@@ -141,12 +145,13 @@ list<string> sqlHelper::select_table(string sql)
 
             sqlite3_finalize(stmt);
             ret.push_back("error");
-            sqlite3_free(stmt);
             return ret;
         }
     }
-    sqlite3_free(stmt);
+    cout<<"ret :"<<ret.size()<<endl;
     sqlite3_finalize(stmt);
+    //sqlite3_free(stmt);
+
     return ret;
 }
 void sqlHelper::delete_table(string table,string arg)

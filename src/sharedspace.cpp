@@ -146,19 +146,21 @@ vector<string> split(const string& str, const string& delim) {
         res.push_back(s); //存入结果数组
         p = strtok(nullptr, d);
     }
+    delete []strs;
+    delete []d;
+    delete p;
     return res;
 }
 void sharedspace::resetSql()
 {
     sql->release();
-    delete sql;
-    sql = new sqlHelper();
 }
 int sharedspace::getTemp(int **temp)
 {
+    cout<<"gettemp"<<endl;
     stringstream ss;
     stringstream t;
-    list <string >ret;
+    list <string> ret;
     ss<<(time(nullptr)-60);
     string sqlstr = "select tempData from temperature where time < "+ ss.str()+" order by time DESC LIMIT 1 OFFSET 0;";
     ret = sql->select_table(sqlstr);

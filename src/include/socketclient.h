@@ -9,7 +9,7 @@ class socketclient
 {
 public:
     socketclient(sharedspace *ss);
-    int connect(char *addr,int port);
+    int connect(const char *addr,int port);
     void startclient();
 private:
     static void *clientthread(void *);

@@ -55,7 +55,7 @@ int socketHelper::ServerGetClient(int fd)
 
 }
 
-int socketHelper::SocketClientBuilder(char *addr,int port)
+int socketHelper::SocketClientBuilder(const char *addr,int port)
 {
     if(server)
     {

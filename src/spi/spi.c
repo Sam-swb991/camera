@@ -199,22 +199,22 @@ int spi_init()
 }
 void transfer_Sensor_Write(int fd,uint8_t const *tx,size_t tx_len)
 {
-    //printHEX("send is:",tx,tx_len);
+ //   printHEX("send is:",tx,tx_len);
 	spi_transfer(fd,1,1,tx,NULL,tx_len,0);
 }
 
 void transfer_Sensor_Read(int fd,uint8_t const *tx,uint8_t const *rx,
 size_t rx_len)
 {
-	printHEX("send is:",tx,1);
+//	printHEX("send is:",tx,1);
 	spi_transfer(fd,2,1,tx,rx,1,rx_len);
-	printHEX("recv is:",rx,rx_len);
+//	printHEX("recv is:",rx,rx_len);
 }
 void transfer_Eeprom(int fd,uint8_t const *tx,uint8_t const *rx)
 {
-    //printHEX("send is:",tx,3);
+ //   printHEX("send is:",tx,3);
 	spi_transfer(fd,2,2,tx,rx,3,1);
-    //printHEX("recv is:",rx,1);
+  //  printHEX("recv is:",rx,1);
 }
 uint8_t transfer_Eeprom_Read(int fd,uint8_t addr_H,uint8_t addr_L)
 {

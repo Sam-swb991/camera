@@ -10,10 +10,9 @@ calc::calc()
     sctrl = new sensorCtrl(spi);
     sctrl->init_sensor();
 
-
     ectrl = new eepromCtrl(spi);
     ectrl->readAll();
-    //ectrl->printvalue();
+    ectrl->printvalue();
     E_C_DATA *ec_data = ectrl->get_common_data();
     pixC_delta = (ec_data->pixCmax - ec_data->pixCmin)/65535;
     pixC_muti = ec_data->epsilon*ec_data->GlobalGrain/1000000;
@@ -115,7 +114,7 @@ void calc::sort_temp(int **temp)
 }
 int calc::get_one_temp(E_M_DATA* em_data,S_M_DATA* sm_data,S_C_DATA * sc_data)
 {
-   // printf("start!\n");
+ //   printf("start!\n");
     int PTAT_av = sc_data->PTAT_av;
 
     int VDD_av = sc_data->VDD_av;

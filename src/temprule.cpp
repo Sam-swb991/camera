@@ -6,7 +6,7 @@
 #include <stdio.h>
 temprule::temprule(RECTSET *rectset, int len, int **temp, sharedspace *ss, TEMP_C * tempc, int *alarmmode)
 {
-
+    cout<<"temprule"<<endl;
     memset(alarmmode,0,sizeof(int)*static_cast<size_t>(len));
     memset(tempc,0,sizeof(TEMP_C)*static_cast<size_t>(len));
     int **ftemp = new int*[64];
@@ -35,9 +35,9 @@ temprule::temprule(RECTSET *rectset, int len, int **temp, sharedspace *ss, TEMP_
         tempc[k].lowTemp = 1000;
         tempc[k].highTemp = -100;
 
-        for(int i=start_y;i<=end_y;++i)
+        for(int i=start_y;i<end_y;++i)
         {
-            for(int j=start_x;j<=end_x;++j)
+            for(int j=start_x;j<end_x;++j)
             {
                 if(tempc[k].highTemp<temp[i][j])
                     tempc[k].highTemp = temp[i][j];

@@ -24,7 +24,7 @@ socketclient::socketclient(sharedspace *ss)
     c= new calc();
 
 }
-int socketclient::connect(char *addr, int port)
+int socketclient::connect(const char *addr, int port)
 {
     clientfd = client->SocketClientBuilder(addr,port);
     if(clientfd<0)
@@ -40,13 +40,13 @@ void *socketclient::clientthread(void *)
     RECT *rect;
     int len;
     CJsonObject jsonobject;
-//    clock_t start_t,end_t;
-//    int times = 0;
+    clock_t start_t,end_t;
+ //   int times = 0;
     while(start)
     {
-//        start_t =clock();
+        start_t =clock();
         memset(&window,0,sizeof (WINDOW));
-        usleep(200000);
+        usleep(50000);
         getTemp();
 //        end_t =clock();
 //        cout<<"time 1:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
@@ -59,13 +59,13 @@ void *socketclient::clientthread(void *)
 //            printf("\n");
 //        }
         pthread_mutex_lock(&ss->mutexsql);
-        usleep(200000);
+        usleep(50000);
         ss->storeTemp(temp);
         pthread_mutex_unlock(&ss->mutexsql);
-//        end_t =clock();
+        end_t =clock();
 
-//        cout<<"time 2:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
-        usleep(200000);
+        cout<<"time 2:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
+        usleep(50000);
         pthread_mutex_lock(&ss->mutex);
         rect = ss->GetRect(temp);
         len = ss->getRectlen();
@@ -83,14 +83,14 @@ void *socketclient::clientthread(void *)
 //        }
 //        end_t =clock();
 //        cout<<"time 4:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
-        usleep(200000);
+        usleep(50000);
         jsonhelper *json =new jsonhelper();
         json->create_temp(window,rect,len,point);
         jsonobject = json->getJson();
 //        end_t =clock();
  //       cout<<"time 5:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
         cout<<jsonobject.ToFormattedString()<<endl;
-        usleep(200000);
+        usleep(50000);
         myProtocol *pro = new myProtocol(0x01,0x03,jsonobject);
         cout<<"data lenth:"<<pro->Getlength()<<endl;
 //        end_t =clock();
@@ -99,10 +99,13 @@ void *socketclient::clientthread(void *)
         delete json;
         delete pro;
         delete rect;
-//        if(times++ == 60)
+//        if(++times == 10)
 //        {
+//            cout<<"***times is :"<<times<<endl;
 //            times = 0;
+//            pthread_mutex_lock(&ss->mutexsql);
 //            ss->resetSql();
+//            pthread_mutex_unlock(&ss->mutexsql);
 //        }
 
 
@@ -127,13 +130,13 @@ void socketclient::getTemp()
 
     c->get_all_temp(temp);
 
-//    for(int i = 0;i<64;i++)
-//    {
-//        for(int j = 0;j<80;j++)
-//        {
-//            cout<<temp[i][j]<<" ";
-//        }
-//        cout<<endl;
-//    }
-//    cout<<"print end"<<endl;
+    for(int i = 0;i<64;i++)
+    {
+        for(int j = 0;j<80;j++)
+        {
+            cout<<temp[i][j]<<" ";
+        }
+        cout<<endl;
+    }
+    cout<<"print end"<<endl;
 }
