@@ -13,6 +13,7 @@ public:
     unsigned char *GetData();
     unsigned long Getlength();
     unsigned char GetPlatform();
+    bool getCheck();
 private:
     unsigned char CheckSum(void *uBuff, unsigned long uBuffLen);
     const unsigned char HEAD = 0xEF;
@@ -22,6 +23,7 @@ private:
     unsigned char *data;
     char *json_data;
     CJsonObject *json;
+    bool check;
 };
 
 #endif // MYPROTOCOL_H

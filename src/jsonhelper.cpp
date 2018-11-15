@@ -14,23 +14,26 @@ jsonhelper::jsonhelper(CJsonObject json)
         if(function == "rectset")
         {
             rectlen = json["body"]["rect"].GetArraySize();
-            rectset = new RECTSET[rectlen];
-            for(int i=0;i<rectlen;i++)
+            if(rectlen != 0)
             {
-                json["body"]["rect"][static_cast<unsigned int>(i)].Get("name",rectset[i].name);
-                json["body"]["rect"][static_cast<unsigned int>(i)].Get("x1",rectset[i].rect.x1);
-                json["body"]["rect"][static_cast<unsigned int>(i)].Get("y1",rectset[i].rect.y1);
-                json["body"]["rect"][static_cast<unsigned int>(i)].Get("x2",rectset[i].rect.x2);
-                json["body"]["rect"][static_cast<unsigned int>(i)].Get("y2",rectset[i].rect.y2);
-                json["body"]["rect"][static_cast<unsigned int>(i)].Get("highalarm",rectset[i].highalarm);
-                json["body"]["rect"][static_cast<unsigned int>(i)].Get("highvalue",rectset[i].highvalue);
-                json["body"]["rect"][static_cast<unsigned int>(i)].Get("lowalarm",rectset[i].lowalarm);
-                json["body"]["rect"][static_cast<unsigned int>(i)].Get("lowvalue",rectset[i].lowvalue);
-                json["body"]["rect"][static_cast<unsigned int>(i)].Get("rapidtempchangealarm",rectset[i].rapidtempchangealarm);
-                json["body"]["rect"][static_cast<unsigned int>(i)].Get("rapidtempchangevalue",rectset[i].rapidtempchangevalue);
-                json["body"]["rect"][static_cast<unsigned int>(i)].Get("alarm_level",rectset[i].alarm_level);
+                rectset = new RECTSET[rectlen];
+                for(int i=0;i<rectlen;i++)
+                {
+                    json["body"]["rect"][static_cast<unsigned int>(i)].Get("name",rectset[i].name);
+                    json["body"]["rect"][static_cast<unsigned int>(i)].Get("x1",rectset[i].rect.x1);
+                    json["body"]["rect"][static_cast<unsigned int>(i)].Get("y1",rectset[i].rect.y1);
+                    json["body"]["rect"][static_cast<unsigned int>(i)].Get("x2",rectset[i].rect.x2);
+                    json["body"]["rect"][static_cast<unsigned int>(i)].Get("y2",rectset[i].rect.y2);
+                    json["body"]["rect"][static_cast<unsigned int>(i)].Get("highalarm",rectset[i].highalarm);
+                    json["body"]["rect"][static_cast<unsigned int>(i)].Get("highvalue",rectset[i].highvalue);
+                    json["body"]["rect"][static_cast<unsigned int>(i)].Get("lowalarm",rectset[i].lowalarm);
+                    json["body"]["rect"][static_cast<unsigned int>(i)].Get("lowvalue",rectset[i].lowvalue);
+                    json["body"]["rect"][static_cast<unsigned int>(i)].Get("rapidtempchangealarm",rectset[i].rapidtempchangealarm);
+                    json["body"]["rect"][static_cast<unsigned int>(i)].Get("rapidtempchangevalue",rectset[i].rapidtempchangevalue);
+                    json["body"]["rect"][static_cast<unsigned int>(i)].Get("alarm_level",rectset[i].alarm_level);
+                }
+                cout<<"rectset:"<<rectset->name<<endl;
             }
-            cout<<"rectset:"<<rectset->name<<endl;
         }
         else
             return;
@@ -88,14 +91,14 @@ void jsonhelper::create_temp(WINDOW windos,RECT *rect,int rectnum,POINT point[51
         myjson[body]["rect"].Add(tmprect);
 
     }
-//    myjson[body].AddEmptySubArray("point");
-//    CJsonObject tmppoint;
-//    for(int i=0;i<5120;i++)
-//    {
-//        tmppoint.Clear();
-//        tmppoint.Add("isshow",point[i].isShow);
-//        tmppoint.Add("value",point[i].value);
-//        myjson[body]["point"].Add(tmppoint);
-//    }
+    //    myjson[body].AddEmptySubArray("point");
+    //    CJsonObject tmppoint;
+    //    for(int i=0;i<5120;i++)
+    //    {
+    //        tmppoint.Clear();
+    //        tmppoint.Add("isshow",point[i].isShow);
+    //        tmppoint.Add("value",point[i].value);
+    //        myjson[body]["point"].Add(tmppoint);
+    //    }
 
 }

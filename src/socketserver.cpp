@@ -29,7 +29,13 @@ socketServer::socketServer(int port,sharedspace *ss)
     this->ss = ss;
 
 }
+socketServer::~socketServer()
+{
+    close(serverfd);
+    close(epfd);
+    closeThread = false;
 
+}
 int socketServer::setnonblocking(int fd)
 {
     int opts;
@@ -58,6 +64,7 @@ void * socketServer::serverthread(void *)
     unsigned long len;
     int rectlen;
     unsigned char sync,platform;
+    bool check = true;
     for(;;)
     {
         if(closeThread)
@@ -88,7 +95,7 @@ void * socketServer::serverthread(void *)
                     continue;
                 if ( (n = recv(rsock, line, sizeof(line), 0)) < 0)
                 {
-                // Connection Reset:你连接的那一端已经断开了，而你却还试着在对方已断开的socketfd上读写数据！
+                    // Connection Reset:你连接的那一端已经断开了，而你却还试着在对方已断开的socketfd上读写数据！
                     if (errno == ECONNRESET)
                     {
                         close(rsock);
@@ -108,50 +115,63 @@ void * socketServer::serverthread(void *)
                     //**************************
                     //line to use
                     myProtocol *pro = new myProtocol(line);
-                    sync = pro->GetSync();
-                    platform = pro->GetPlatform();
-                    std::cout<<"sync :";
-                    common::print_V(&sync,1,1);
-                    std::cout<<" platform :";
-                    common::print_V(&platform,1,1);
-                    std::cout<<std::endl;
-                    CJsonObject *json = pro->GetJson();
-                    std::cout<<json->ToFormattedString()<<std::endl;
-                    jsonhelper *jsonh = new jsonhelper(json);
-                    RECTSET *rect = jsonh->getRectset(&rectlen);
-                    pthread_mutex_lock(&ss->mutex);
-                    ss->SetRect(rect,rectlen);
-                    pthread_mutex_unlock(&ss->mutex);
-                    std::cout<<"recv is :";
-                    common::print_V(line,n,1);
-                    std::cout<<std::endl;
-                    //****************************
+                    check = pro->getCheck();
+                    if(check)
+                    {
+                        sync = pro->GetSync();
+                        platform = pro->GetPlatform();
+                        std::cout<<"sync :";
+                        common::print_V(&sync,1,1);
+                        std::cout<<" platform :";
+                        common::print_V(&platform,1,1);
+                        std::cout<<std::endl;
+                        CJsonObject *json = pro->GetJson();
+                        std::cout<<json->ToFormattedString()<<std::endl;
+                        jsonhelper *jsonh = new jsonhelper(json);
+                        RECTSET *rect = jsonh->getRectset(&rectlen);
+                        pthread_mutex_lock(&ss->mutex);
+                        ss->SetRect(rect,rectlen);
+                        pthread_mutex_unlock(&ss->mutex);
+                        std::cout<<"recv is :";
+                        common::print_V(line,n,1);
+                        std::cout<<std::endl;
+                        //****************************
+
+                        delete json;
+                        delete jsonh;
+                        delete rect;
+                    }
+
                     ev.data.fd=rsock;
                     ev.events=EPOLLOUT|EPOLLET;
                     epoll_ctl(epfd,EPOLL_CTL_MOD,rsock,&ev);
                     delete pro;
-                    delete json;
-                    delete jsonh;
-                    delete rect;
                 }
             }
             else if(events[i].events&EPOLLOUT)
             {
+                cout<<"send start"<<endl;
                 unsigned char *sendmsg;
-                CJsonObject *json = new CJsonObject("");
-                json->Add("code","100");
+                CJsonObject json;
+                if(check)
+                    json.Add("code","100");
+                else
+                    json.Add("code","110");
                 //std::cout<<json.ToFormattedString()<<std::endl<<json.ToString().size()<<std::endl;;
                 myProtocol *pro = new myProtocol(0x02,0x01,json);
                 sendmsg = pro->GetData();
                 len = pro->Getlength();
-                //common::print_V(sendmsg,len,1);
-                //std::cout<<std::endl;
+                common::print_V(sendmsg,(int)len,1);
+                std::cout<<std::endl;
                 rsock = events[i].data.fd;
-                send(rsock, sendmsg, len, 0);
+                ssize_t tmp = send(rsock, sendmsg, len, 0);
+                if(tmp <0)
+                {
+                    cout<<"server send error!"<<endl;
+                }
                 ev.data.fd=rsock;
                 ev.events = EPOLLIN|EPOLLET;
                 epoll_ctl(epfd,EPOLL_CTL_MOD,rsock,&ev);
-                delete json;
                 delete pro;
                 delete sendmsg;
             }

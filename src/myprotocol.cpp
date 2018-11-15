@@ -37,8 +37,13 @@ unsigned char myProtocol::GetSync()
 CJsonObject* myProtocol::GetJson()
 {
     std::string str(json_data);
+    cout<<str<<endl;
     json = new CJsonObject(str);
     return json;
+}
+bool myProtocol::getCheck()
+{
+    return check;
 }
 myProtocol::myProtocol(char *recv)
 {
@@ -53,7 +58,10 @@ myProtocol::myProtocol(char *recv)
     if(recv_check != checksum)
     {
         std::cout<<"checksum is wrong"<<std::endl;
+        check = false;
     }
+    else
+        check = true;
 }
 unsigned char myProtocol::CheckSum(void *uBuff, unsigned long uBuffLen)
 {

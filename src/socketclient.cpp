@@ -7,17 +7,17 @@
 
 int socketclient::clientfd = -1;
 bool socketclient::start = true;
-int ** socketclient::temp = nullptr;
+float ** socketclient::temp = nullptr;
 sharedspace * socketclient::ss = nullptr;
 calc *socketclient::c = nullptr;
 socketclient::socketclient(sharedspace *ss)
 {
     client = new socketHelper();
     this->ss = ss;
-    temp = new int*[64];
+    temp = new float*[64];
     for(int i=0; i<64; ++i)
     {
-        temp[i] = new int[80];
+        temp[i] = new float[80];
 
         memset(temp[i],0,80*sizeof(int));
     }
@@ -31,6 +31,8 @@ int socketclient::connect(const char *addr, int port)
     {
         start = false;
     }
+    else
+        start = true;
     return clientfd;
 }
 void *socketclient::clientthread(void *)
@@ -58,18 +60,21 @@ void *socketclient::clientthread(void *)
 //            }
 //            printf("\n");
 //        }
+
+        usleep(50000);
+        pthread_mutex_lock(&ss->mutex);
+        rect = ss->GetRect(temp,c->getTa());
+        len = ss->getRectlen();
+        pthread_mutex_unlock(&ss->mutex);
+
+        end_t =clock();
+        cout<<"time 2:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
+
         pthread_mutex_lock(&ss->mutexsql);
         usleep(50000);
         ss->storeTemp(temp);
         pthread_mutex_unlock(&ss->mutexsql);
-        end_t =clock();
 
-        cout<<"time 2:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
-        usleep(50000);
-        pthread_mutex_lock(&ss->mutex);
-        rect = ss->GetRect(temp);
-        len = ss->getRectlen();
-        pthread_mutex_unlock(&ss->mutex);
 //        end_t =clock();
 
 //        cout<<"time 3:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
@@ -95,7 +100,7 @@ void *socketclient::clientthread(void *)
         cout<<"data lenth:"<<pro->Getlength()<<endl;
 //        end_t =clock();
 //        cout<<"time 6:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
-        //send(clientfd,pro->GetData(),static_cast<unsigned long>(pro->Getlength()),0);
+//        send(clientfd,pro->GetData(),static_cast<unsigned long>(pro->Getlength()),0);
         delete json;
         delete pro;
         delete rect;
@@ -130,13 +135,13 @@ void socketclient::getTemp()
 
     c->get_all_temp(temp);
 
-    for(int i = 0;i<64;i++)
-    {
-        for(int j = 0;j<80;j++)
-        {
-            cout<<temp[i][j]<<" ";
-        }
-        cout<<endl;
-    }
-    cout<<"print end"<<endl;
+//    for(int i = 0;i<64;i++)
+//    {
+//        for(int j = 0;j<80;j++)
+//        {
+//            cout<<temp[i][j]<<" ";
+//        }
+//        cout<<endl;
+//    }
+//    cout<<"print end"<<endl;
 }

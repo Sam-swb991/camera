@@ -4,7 +4,7 @@
 #include <cstring>
 #include <pthread.h>
 #include <stdio.h>
-temprule::temprule(RECTSET *rectset, int len, int **temp, sharedspace *ss, TEMP_C * tempc, int *alarmmode)
+temprule::temprule(RECTSET *rectset, int len, float **temp, sharedspace *ss, TEMP_C * tempc, int *alarmmode, int Ta)
 {
     cout<<"temprule"<<endl;
     memset(alarmmode,0,sizeof(int)*static_cast<size_t>(len));
@@ -25,6 +25,7 @@ temprule::temprule(RECTSET *rectset, int len, int **temp, sharedspace *ss, TEMP_
 
     for(int k = 0 ;k<len;++k)
     {
+        cout<<"rect x"<<rectset[k].rect.x2<<"rect y"<<rectset[k].rect.y2<<endl;
         int start_x = static_cast<int>(rectset[k].rect.x1*WIDTH);
         int start_y = static_cast<int>(rectset[k].rect.y1*HEIGHT);
         int end_x = static_cast<int>(ceil(static_cast<double>(rectset[k].rect.x2*WIDTH)));
@@ -39,6 +40,7 @@ temprule::temprule(RECTSET *rectset, int len, int **temp, sharedspace *ss, TEMP_
         {
             for(int j=start_x;j<end_x;++j)
             {
+                temp_compensation(temp[i][j],Ta,0.95);
                 if(tempc[k].highTemp<temp[i][j])
                     tempc[k].highTemp = temp[i][j];
                 if(tempc[k].lowTemp>temp[i][j])
@@ -81,13 +83,14 @@ temprule::temprule(RECTSET *rectset, int len, int **temp, sharedspace *ss, TEMP_
     }
     delete []ftemp;
 }
-
-//int* temprule::getalarmmode()
-//{
-//    return alarmmode;
-//}
-
-//TEMP_C *temprule::getcommontemp()
-//{
-//    return tempc;
-//}
+void temprule::temp_compensation(float &temp,int Ta,double a)
+{
+    double T0 = Ta/10-273.15;
+    double to = pow(temp,4.09)-(1-a)*pow(T0,4.09);
+    if(to>0)
+    {
+        double ta = to*(1/a);
+        double tb = pow(ta,1/4.09);
+        temp = static_cast<float>(tb);
+    }
+}

@@ -25,18 +25,20 @@ sharedspace::sharedspace()
 
 }
 
-RECT * sharedspace::GetRect(int **temp)
+RECT * sharedspace::GetRect(float **temp,int Ta)
 {
-    TEMP_C *tempc = new TEMP_C[rectsetlen];
-    int *alarmmode = new int[rectsetlen];
-    trule = new temprule(this->rectset,rectsetlen,temp,this,tempc,alarmmode);
-    for(int i =0;i<rectsetlen;++i)
-    {
-        printf("alarmmode is %d\n",alarmmode[i]);
-        printf("tempc avg = %d,high = %d,low = %d\n",tempc[i].avgTemp,tempc[i].highTemp,tempc[i].lowTemp);
-    }
+    cout<<"start get rect!"<<endl;
     if(rectsetlen != 0)
     {
+        TEMP_C *tempc = new TEMP_C[rectsetlen];
+        int *alarmmode = new int[rectsetlen];
+        trule = new temprule(this->rectset,rectsetlen,temp,this,tempc,alarmmode,Ta);
+        for(int i =0;i<rectsetlen;++i)
+        {
+            printf("alarmmode is %d\n",alarmmode[i]);
+            printf("tempc avg = %f,high = %f,low = %f\n",tempc[i].avgTemp,tempc[i].highTemp,tempc[i].lowTemp);
+        }
+
         rect = new RECT[rectsetlen];
         for(int i =0;i<rectsetlen;++i)
         {
@@ -60,21 +62,28 @@ RECT * sharedspace::GetRect(int **temp)
             rect[i].tempc = tempc[i];
 
         }
+        delete []alarmmode;
+        delete []tempc;
+
+        delete trule;
+
+
     }
-
-    delete []alarmmode;
-    delete []tempc;
-    delete trule;
-
+    else
+        rect = nullptr;
     return rect;
+
 }
 void sharedspace::SetRect(RECTSET *rectset,int len)
 {
     rectsetlen = len;
-    delete this->rectset;
-    this->rectset = new RECTSET[len];
-    for(int i =0;i<rectsetlen;++i)
+    if(rectsetlen != 0)
     {
+
+        delete this->rectset;
+        this->rectset = new RECTSET[len];
+        for(int i =0;i<rectsetlen;++i)
+        {
             this->rectset[i].alarm_level = rectset[i].alarm_level;
             this->rectset[i].highalarm = rectset[i].highalarm;
             this->rectset[i].highvalue = rectset[i].highvalue;
@@ -83,9 +92,9 @@ void sharedspace::SetRect(RECTSET *rectset,int len)
             this->rectset[i].rapidtempchangealarm = rectset[i].rapidtempchangealarm;
             this->rectset[i].rapidtempchangevalue = rectset[i].rapidtempchangevalue;
             this->rectset[i].rect = rectset[i].rect;
+        }
+
     }
-
-
 
 
 }
@@ -95,7 +104,7 @@ int sharedspace::getRectlen()
     return rectsetlen;
 }
 
-void sharedspace::storeTemp(int **temp)
+void sharedspace::storeTemp(float **temp)
 {
     stringstream ss;
     stringstream t;
@@ -105,7 +114,8 @@ void sharedspace::storeTemp(int **temp)
     {
         for(int j=0;j<WIDTH;++j)
         {
-            ss<<temp[i][j];
+            ss<<static_cast<int>(temp[i][j]);
+            cout<<static_cast<int>(temp[i][j])<<" ";
             if(i == HEIGHT-1 && j ==WIDTH-1)
             {
                 ss<<"'";
@@ -114,6 +124,7 @@ void sharedspace::storeTemp(int **temp)
                 ss<<",";
             //usleep(1);
         }
+        cout<<endl;
     }
     list<string> name,value;
     name.push_back("tempData");

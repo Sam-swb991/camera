@@ -26,33 +26,33 @@ calc::calc()
     PTATTH1 = ec_data->PTATTH1;
     PTAT_gradient = ec_data->PTAT_gradient;
     PTAT_offset = ec_data->PTAT_offset;
-    DeadPixAdr[0] = 63*80+60;
-    DeadPixAdr[1] = (63-8)*80+60;
-    DeadPixAdr[2] = (63-16)*80+60;
-    DeadPixAdr[3] = (63-24)*80+60;
-//    DeadPixAdr[4] = 63*80+40;
-//    DeadPixAdr[5] = (63-8)*80+40;
-//    DeadPixAdr[6] = (63-16)*80+40;
-//    DeadPixAdr[7] = (63-24)*80+40;
+
 
 }
 calc::~calc()
 {
     spi->close();
 }
-void calc::get_all_temp(int **temp)
+void calc::get_all_temp(float **temp)
 {
+    cout<<"start calc"<<endl;
     sctrl->read_all();
     //sctrl->printvalue();
 
     S_C_DATA *sc_data = sctrl->get_common_data();
-    printf("ta is %d\n",static_cast<int>(sc_data->PTAT_av*PTAT_gradient+PTAT_offset));
+    PTAT_av = sc_data->PTAT_av;
+
+    VDD_av = sc_data->VDD_av;
+
+    Ta =static_cast<int>(PTAT_av*PTAT_gradient+PTAT_offset);
+    printf("ta is %d\n",Ta);
+
     for(int i =0;i<5120;++i)
     {
         E_M_DATA *em_data = ectrl->get_muti_data(i);
         S_M_DATA *sm_data = sctrl->get_muti_data(i);
 
-        temp[i/80][i%80] = get_one_temp(em_data,sm_data,sc_data);
+        temp[i/80][i%80] = get_one_temp(em_data,sm_data);
         delete em_data;
         delete sm_data;
 
@@ -87,10 +87,9 @@ void calc::get_all_temp(int **temp)
 //            //cout<<"bad value repaire is :"<<temp[x][y]<<endl;
 //        }
 //    }
-
     delete sc_data;
 }
-void calc::change_sort(int *src0,int *src1,size_t len)
+void calc::change_sort(void *src0,void *src1,size_t len)
 {
  //   printf("********************************\n");
     int *tmp = new int[len];
@@ -103,7 +102,7 @@ void calc::change_sort(int *src0,int *src1,size_t len)
     delete []tmp;
 
 }
-void calc::sort_temp(int **temp)
+void calc::sort_temp(float **temp)
 {
 
     for(int i =0;i<16;++i)
@@ -112,14 +111,10 @@ void calc::sort_temp(int **temp)
         change_sort(temp[63-i],temp[32+i],80);
     }
 }
-int calc::get_one_temp(E_M_DATA* em_data,S_M_DATA* sm_data,S_C_DATA * sc_data)
+float calc::get_one_temp(E_M_DATA* em_data,S_M_DATA* sm_data)
 {
  //   printf("start!\n");
-    int PTAT_av = sc_data->PTAT_av;
 
-    int VDD_av = sc_data->VDD_av;
-
-    int Ta =static_cast<int>(PTAT_av*PTAT_gradient+PTAT_offset);
 
     int temp = static_cast<int>(em_data->thGrad);
 
@@ -190,7 +185,12 @@ int calc::get_one_temp(E_M_DATA* em_data,S_M_DATA* sm_data,S_C_DATA * sc_data)
     cout<<"1:"<<temp_y_x<<" 2:"<<temp_y_x1<<" 3:"<<temp_y1_x<<" 4:"<<temp_y1_x1<<endl;
     cout<<"vx :"<<Vx<<" vy :"<<Vy<<endl;
 #endif
-    return static_cast<int>(ret);
+    return ret;
 
 
+}
+
+int calc::getTa()
+{
+    return Ta;
 }

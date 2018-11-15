@@ -18,7 +18,7 @@ private:
     socketHelper *client;
     jsonhelper *json;
     static sharedspace *ss;
-    static int **temp;
+    static float **temp;
     static void getTemp();
     static calc *c;
 };

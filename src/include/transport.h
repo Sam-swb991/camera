@@ -8,9 +8,9 @@ typedef struct rect{
     float y2;
 }WINDOW;
 typedef struct commontemp{
-    int highTemp;
-    int lowTemp;
-    int avgTemp;
+    float highTemp;
+    float lowTemp;
+    float avgTemp;
 }TEMP_C;
 typedef struct inner_rect{
     std::string name;

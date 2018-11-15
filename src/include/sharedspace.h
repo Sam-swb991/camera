@@ -9,10 +9,10 @@ class sharedspace
 {
 public:
     sharedspace();
-    void storeTemp(int **temp);
+    void storeTemp(float **temp);
     int getTemp(int **);
     void SetRect(RECTSET *rectset,int len);
-    RECT * GetRect(int **temp);
+    RECT * GetRect(float **temp, int Ta);
     int getRectlen();
     void resetSql();
     pthread_mutex_t mutex,mutexsql;

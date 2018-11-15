@@ -12,10 +12,11 @@ class socketServer
 {
 public:
     socketServer(int port, sharedspace *ss);
+    ~socketServer();
     void startServer();
 
 private:
-    int setnonblocking(int fd);
+    static int setnonblocking(int fd);
     static void * serverthread(void *);
     static int serverfd ,epfd;
 
