@@ -209,10 +209,14 @@ list<string> sqlHelper::select_table(string sql)
     return ret;
 }
 
-RECTSET * sqlHelper::getRect(int *nRow)
+RECTSET * sqlHelper::getRect(int *nRow,bool isset)
 {
 	char * errmsg;
-	string strSql = "select * from rect where isset = 1";  
+	string strSql;
+	if(isset)
+		strSql = "select * from rect;";			
+	else
+		strSql = "select * from rect where isset = 1;";  
 	char** pResult;     
 	int nCol;
 	itn res = sqlite3_get_table(db,strSql.c_str(),&pResult,nRow,&nC,&errmsg);  
@@ -286,7 +290,11 @@ RECTSET * sqlHelper::getRect(int *nRow)
 			else if(strcmp(pResult[j],"alarm_level")==0)
 		   	{
 				rectset[i].alarm_level = atoi(pResult[nIndex]);
-		   	}			
+		   	}
+			else if(strcmp(pResult[j],"isset")==0)
+		   	{
+				rectset[i].isset = atoi(pResult[nIndex]);
+		   	}
            	++nIndex;  
        	}  
    	}  

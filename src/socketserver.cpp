@@ -65,6 +65,7 @@ void * socketServer::serverthread(void *)
     int rectlen;
     unsigned char sync,platform;
     bool check = true;
+	int mode;
     for(;;)
     {
         if(closeThread)
@@ -129,6 +130,7 @@ void * socketServer::serverthread(void *)
                         std::cout<<json->ToFormattedString()<<std::endl;
                         jsonhelper *jsonh = new jsonhelper(json);
                         RECTSET *rect = jsonh->getRectset(&rectlen);
+						mode = rect[0].mode;
                         pthread_mutex_lock(&ss->mutex);
                         ss->SetRect(rect,rectlen);
                         pthread_mutex_unlock(&ss->mutex);
@@ -152,9 +154,21 @@ void * socketServer::serverthread(void *)
             {
                 cout<<"send start"<<endl;
                 unsigned char *sendmsg;
+				RECTSET *rectset;
+				int rectsetlen;
                 CJsonObject json;
                 if(check)
-                    json.Add("code","100");
+                {
+                	if(mode == GET)
+                	{
+						rectset = ss->sql->getRect(&rectsetlen,true);
+						jsonhelper *jsonh = new jsonhelper();
+						jsonh->create_rect(rectset,rectsetlen);
+						json = jsonh->getJson();
+					}
+					else
+                    	json.Add("code","100");
+                }
                 else
                     json.Add("code","110");
                 //std::cout<<json.ToFormattedString()<<std::endl<<json.ToString().size()<<std::endl;;

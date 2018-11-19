@@ -24,7 +24,7 @@ typedef struct inner_rect{
     int rapidtempchangealarm;
     int rapidtempchangevalue;
     int alarm_level;
-
+	int isset;
 }RECTSET;
 typedef struct trans_rect{
     std::string name;
@@ -46,6 +46,6 @@ typedef struct point{
     int value;
 }POINT;
 
-enum mode{ADD,DEL,MODIFY,SET};
+enum mode{ADD,DEL,MODIFY,SET,GET};
 
 #endif // TRANSPORT_H

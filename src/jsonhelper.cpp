@@ -75,6 +75,10 @@ jsonhelper::jsonhelper(CJsonObject json)
 	                json["body"]["rect"][static_cast<unsigned int>(i)].Get("alarm_level",rectset[i].alarm_level);
 	            }
 			}
+			else if(function == "getrect")
+			{
+				rectset[0].mode = GET;
+			}
 	        else
 	            return;
         }
@@ -144,4 +148,34 @@ void jsonhelper::create_temp(WINDOW windos,RECT *rect,int rectnum,POINT point[51
     //        myjson[body]["point"].Add(tmppoint);
     //    }
 
+}
+
+void jsonhelper::create_rect(RECTSET * rectset, int len)
+{
+	myjson.Add("function","rect");
+	myjson.AddEmptySubObject("body");
+	myjson["body"].AddEmptySubArray("rect");
+	CJsonObject tmprect;
+    for(int i =0;i<len;i++)
+    {
+        tmprect.Clear();
+		tmprect.Add("id",rectset[i].id);
+        tmprect.Add("name",rectset[i].name);
+        tmprect.Add("mode",rectset[i].mode);
+        tmprect.Add("highalarm",rectset[i].highalarm);
+        tmprect.Add("highvalue",rectset[i].highvalue);
+        tmprect.Add("lowalarm",rectset[i].lowalarm);
+        tmprect.Add("lowvalue",rectset[i].lowvalue);
+		tmprect.Add("rapidtempchangealarm",rectset[i].rapidtempchangealarm);
+        tmprect.Add("rapidtempchangevalue",rectset[i].rapidtempchangevalue);
+        tmprect.Add("alarm_level",rectset[i].alarm_level);
+        tmprect.Add("x1",rectset[i].rect.x1);
+        tmprect.Add("y1",rectset[i].rect.y1);
+        tmprect.Add("x2",rectset[i].rect.x2);
+        tmprect.Add("y2",rectset[i].rect.y2);
+		tmprect.Add("isset",rectset[i].isset);
+        myjson["body"]["rect"].Add(tmprect);
+
+    }
+	
 }
