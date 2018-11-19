@@ -3234,6 +3234,8 @@ const unsigned int YADValues[NROFADELEMENTS]={0,	64,	128,	192,	256,	320,	384,	44
 
 void print_V(void *data,int len,int type);
 void change_edian(void *data,int len);
+string to_string(int);
+string to_string(float);
 
 };
 

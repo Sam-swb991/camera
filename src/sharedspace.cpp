@@ -22,12 +22,36 @@ sharedspace::sharedspace()
     rectsetlen = 0;
     sql = new sqlHelper();
     sql->clear_table("temperature");
+	tableName.push_back("ID");
+	tableName.push_back("name");
+	tableName.push_back("x1");
+	tableName.push_back("y1");
+	tableName.push_back("x2");
+	tableName.push_back("y2");
+	tableName.push_back("highalarm");
+	tableName.push_back("highvalue");
+	tableName.push_back("lowalarm");
+	tableName.push_back("lowvalue");
+	tableName.push_back("rapidtempchangealarm");
+	tableName.push_back("rapidtempchangevalue");
+	tableName.push_back("alarm_level");
+	set = true;
+	
 
 }
 
 RECT * sharedspace::GetRect(float **temp,int Ta)
 {
     cout<<"start get rect!"<<endl;
+	if(set)
+	{
+		delete this->rectset;
+		this->rectset = sql->getRect(&rectsetlen);
+		set = false;
+		
+	}
+	cout<<"rect :"<<rectset[0].id<<" "<<rectset[0].name<<" "<<rectset[0].rect.x1<<" "<<rectset[0].rect.y1<<" "<<
+	rectset[0].rect.x2<<" "<<rectset[0].rect.y2<" "<<rectset[0].highalarm<<" "<<rectset[0].highvalue<<endl;
     if(rectsetlen != 0)
     {
         TEMP_C *tempc = new TEMP_C[rectsetlen];
@@ -81,20 +105,61 @@ void sharedspace::SetRect(RECTSET *rectset,int len)
     {
 
         delete this->rectset;
-        this->rectset = new RECTSET[len];
-        for(int i =0;i<rectsetlen;++i)
-        {
-            this->rectset[i].alarm_level = rectset[i].alarm_level;
-            this->rectset[i].highalarm = rectset[i].highalarm;
-            this->rectset[i].highvalue = rectset[i].highvalue;
-            this->rectset[i].lowalarm = rectset[i].lowvalue;
-            this->rectset[i].name = rectset[i].name;
-            this->rectset[i].rapidtempchangealarm = rectset[i].rapidtempchangealarm;
-            this->rectset[i].rapidtempchangevalue = rectset[i].rapidtempchangevalue;
-            this->rectset[i].rect = rectset[i].rect;
-        }
-
+		int mode = rectset[0].mode;
+		switch (mode)
+		{
+			case ADD:
+			case MODIFY:{
+				list<string> value;
+				for(int i=0;i<len;++i)
+				{
+					
+					value.push_back(common::to_string(rectset[i].id));
+					value.push_back(rectset[i].name);
+					value.push_back(common::to_string(rectset[i].rect.x1));
+					value.push_back(common::to_string(rectset[i].rect.y1));
+					value.push_back(common::to_string(rectset[i].rect.x2));
+					value.push_back(common::to_string(rectset[i].rect.y2));
+					value.push_back(common::to_string(rectset[i].highalarm));
+					value.push_back(common::to_string(rectset[i].highvalue));
+					value.push_back(common::to_string(rectset[i].lowalarm));
+					value.push_back(common::to_string(rectset[i].lowvalue));
+					value.push_back(common::to_string(rectset[i].rapidtempchangealarm));
+					value.push_back(common::to_string(rectset[i].rapidtempchangevalue));
+					value.push_back(common::to_string(rectset[i].alarm_level));
+					
+				}
+				if(mode == ADD)
+				{
+					sql->insert_table("rect",tableName,value)
+				}
+				else if(mode == MODIFY)
+				{
+					sql->update_table("rect",tableName,value);
+				}
+			}break;
+			case DEL:{
+				string sqlstr = "delete from rect where ID = ";
+				sqlstr+= common::to_string(rectset[i].id);
+				sqlstr+=";";
+				sql->exec(sqlstr);
+			}break;
+			case SET:{
+				string sqlstr = "update rect set isset = 1 where ID = ";
+				sqlstr+= common::to_string(rectset[i].id);
+				sqlstr+=";";
+				sql->exec(sqlstr);
+				set = true;
+			}break;
+			
+			default:break;	
+		}
+		
     }
+        
+        
+
+    
 
 
 }
@@ -144,8 +209,8 @@ void sharedspace::storeTemp(float **temp)
 vector<string> split(const string& str, const string& delim) {
     vector<string> res;
     if("" == str) return res;
-    //先将要切割的字符串从string类型转换为char*类型
-    char * strs = new char[str.length() + 1] ; //不要忘了
+    
+    char * strs = new char[str.length() + 1] ; 
     strcpy(strs, str.c_str());
 
     char * d = new char[delim.length() + 1];
@@ -153,8 +218,8 @@ vector<string> split(const string& str, const string& delim) {
 
     char *p = strtok(strs, d);
     while(p) {
-        string s = p; //分割得到的字符串转换为string类型
-        res.push_back(s); //存入结果数组
+        string s = p; 
+        res.push_back(s); 
         p = strtok(nullptr, d);
     }
     delete []strs;

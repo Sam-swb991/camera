@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <cmath>
 #include "temprule.h"
+#include <sstream>
 void common::print_V(void *data,int len,int type)
 {
     switch (type) {
@@ -53,3 +54,16 @@ void common::change_edian(void *data,int len)
     }
 }
 
+string common::to_string(int num)
+{
+	stringstream ss;
+	ss<<num;
+	return ss.str();
+}
+
+string common::to_string(float num)
+{
+	stringstream ss;
+	ss<<num;
+	return ss.str();
+}

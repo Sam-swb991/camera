@@ -22,6 +22,8 @@ private:
     int rectsetlen;
     sqlHelper *sql;
     temprule *trule;
+	list<string> tableName;
+	bool set;
 };
 
 #endif // SHAREDSPACE_H

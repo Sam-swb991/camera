@@ -3,6 +3,7 @@
 #include "sqlite3.h"
 #include <iostream>
 #include <list>
+#include "transport"
 using namespace std;
 class sqlHelper
 {
@@ -15,6 +16,9 @@ public:
     void delete_table(string table, string arg);
     void release();
     void clear_table(string table);
+	void update_table(string table,list<string> name,list<string> value);
+	void exec(string sql);
+	RECTSET *getRect(int *len);
 private:
     sqlite3 *db;
     list<string> ret;

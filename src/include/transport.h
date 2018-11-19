@@ -13,6 +13,8 @@ typedef struct commontemp{
     float avgTemp;
 }TEMP_C;
 typedef struct inner_rect{
+	int id;
+	int mode;
     std::string name;
     struct rect rect;
     int highalarm;
@@ -44,5 +46,6 @@ typedef struct point{
     int value;
 }POINT;
 
+enum mode{ADD,DEL,MODIFY,SET};
 
 #endif // TRANSPORT_H

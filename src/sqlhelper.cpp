@@ -1,6 +1,7 @@
 #include "sqlhelper.h"
 #include <stdio.h>
 #include <sstream>
+#include <cstring>
 sqlHelper::sqlHelper()
 {
     open();
@@ -34,7 +35,11 @@ void sqlHelper::release()
 void sqlHelper::create_table()
 {
     string sql = "create table if not exists temperature(ID integer primary key autoincrement,tempData text not null,time integer);";
-    char *errorMsg;
+	string sql1 = "CREATE TABLE rect(ID integer primary key ,name varchar(30) not null,x1 float not null,x2 float not null,"\
+		"y1 float not null,y2 float not null ,highalarm integer not null,highvalue integer not null,lowalarm integer not null,"\
+		"lowvalue integer not null,rapidtempchangealarm integer not null,rapidtempchangevalue integer not null,"\
+		"alarm_level integer not null,isset integer default 0);";
+    char *errorMsg,*errorMsg1;
     int res = sqlite3_exec(db,sql.c_str(),nullptr,nullptr,&errorMsg);
     if(res != SQLITE_OK)
     {
@@ -43,8 +48,21 @@ void sqlHelper::create_table()
     }
     else
     {
-        cout<<"create OK!"<<endl;
+        cout<<"create temperature OK!"<<endl;
+		sqlite3_free(errorMsg1);
         delete errorMsg;
+    }
+	res = sqlite3_exec(db,sql1.c_str(),nullptr,nullptr,&errorMsg1);
+    if(res != SQLITE_OK)
+    {
+        fprintf(stderr, "SQL error: %s\n", errorMsg1);
+        sqlite3_free(errorMsg1);
+    }
+    else
+    {
+        cout<<"create rect OK!"<<endl;
+		sqlite3_free(errorMsg1);
+        delete errorMsg1;
     }
 
 }
@@ -93,6 +111,42 @@ void sqlHelper::insert_table(string table,list<string> name,list<string> value)
     delete errorMsg;
 }
 
+void sqlHelper::update_table(string table, list < string > name, list < string > value)
+{
+	char *errorMsg ;
+    int len =(int)name.size();
+    int k=2;
+    string sql = "update "+table+" set ";
+	list<string>::iterator i =name.begin();
+	list<string>::iterator j =value.begin();
+	i++;
+	j++;
+	for(;;K++)
+    {
+		sql+=*i;
+		sql+="="
+		sql+=*j;
+		if(K<len)
+		{
+			sql+=",";
+			i++;
+			j++;
+		}
+		else
+			break;
+	}
+	sql+=" where ID = ";
+	sql+=*value.begin();
+	sql+=";";
+	int res = sqlite3_exec(db,sql.c_str(),nullptr,nullptr,&errorMsg);
+    if(res != SQLITE_OK)
+    {
+        fprintf(stderr, "SQL error: %s\n", errorMsg);
+
+    }
+    sqlite3_free(errorMsg);
+    delete errorMsg;
+}
 list<string> sqlHelper::select_table(string sql)
 {
     cout<<"select"<<endl;
@@ -154,6 +208,93 @@ list<string> sqlHelper::select_table(string sql)
 
     return ret;
 }
+
+RECTSET * sqlHelper::getRect(int *nRow)
+{
+	char * errmsg;
+	string strSql = "select * from rect where isset = 1";  
+	char** pResult;     
+	int nCol;
+	itn res = sqlite3_get_table(db,strSql.c_str(),&pResult,nRow,&nC,&errmsg);  
+	if (res != SQLITE_OK)  
+	{  
+	  printf("sqlite3_get_table error\n");
+      fprintf(stderr,"get table error %s\n",sqlite3_errmsg(db));  
+	  sqlite3_free(errmsg);  
+	  return nullptr;  
+	}
+
+ 
+	RECTSET * rectset = new RECTSET[*nRow];
+
+   	int nIndex = nCol;  
+   	for(int i=0;i<*nRow;i++)  
+   	{  
+       	for(int j=0;j<nCol;j++)  
+       	{  
+           	strOut+=pResult[j];  
+        
+           	strOut+=pResult[nIndex];  
+           	if(strcmp(pResult[j],"ID")==0)
+           	{
+				rectset[i].id = atoi(pResult[nIndex]);
+		   	}
+		   	else if(strcmp(pResult[j],"name")==0)
+		   	{
+				rectset[i].name = pResult[nIndex];
+		   	}
+		   	else if(strcmp(pResult[j],"x1")==0)
+		   	{
+				rectset[i].rect.x1 = (float)atof(pResult[nIndex]);
+		   	}
+		   	else if(strcmp(pResult[j],"y1")==0)
+		   	{
+				rectset[i].rect.y1 = (float)atof(pResult[nIndex]);
+		   	}
+		   	else if(strcmp(pResult[j],"x2")==0)
+		   	{
+				rectset[i].rect.x2 = (float)atof(pResult[nIndex]);
+		   	}
+		   	else if(strcmp(pResult[j],"y2")==0)
+		   	{
+				rectset[i].rect.y2 = (float)atof(pResult[nIndex]);
+		   	}
+		   	else if(strcmp(pResult[j],"highalarm")==0)
+		   	{
+				rectset[i].highalarm = atoi(pResult[nIndex]);
+		   	}
+			else if(strcmp(pResult[j],"highvalue")==0)
+		   	{
+				rectset[i].highvalue = atoi(pResult[nIndex]);
+		   	}
+			else if(strcmp(pResult[j],"lowalarm")==0)
+		   	{
+				rectset[i].lowalarm = atoi(pResult[nIndex]);
+		   	}
+			else if(strcmp(pResult[j],"lowvalue")==0)
+		   	{
+				rectset[i].lowvalue = atoi(pResult[nIndex]);
+		   	}
+			else if(strcmp(pResult[j],"rapidtempchangealarm")==0)
+		   	{
+				rectset[i].rapidtempchangealarm = atoi(pResult[nIndex]);
+		   	}
+			else if(strcmp(pResult[j],"rapidtempchangevalue")==0)
+		   	{
+				rectset[i].rapidtempchangevalue = atoi(pResult[nIndex]);
+		   	}
+			else if(strcmp(pResult[j],"alarm_level")==0)
+		   	{
+				rectset[i].alarm_level = atoi(pResult[nIndex]);
+		   	}			
+           	++nIndex;  
+       	}  
+   	}  
+	sqlite3_free_table(pResult);
+	sqlite3_free(errmsg);
+   	return rectset;  
+
+}
 void sqlHelper::delete_table(string table,string arg)
 {
     char *errorMsg;
@@ -201,4 +342,21 @@ void sqlHelper::clear_table(string table)
         sqlite3_free(errorMsg1);
         delete errorMsg1;
     }
+}
+void sqlHelper::exec(string sql)
+{
+	char *errorMsg;
+	int res = sqlite3_exec(db,sql.c_str(),nullptr,nullptr,&errorMsg);
+    if(res != SQLITE_OK)
+    {
+        fprintf(stderr, "SQL error: %s\n", errorMsg);
+        sqlite3_free(errorMsg);
+    }
+    else
+    {
+        cout<<"exec OK!"<<endl;
+        sqlite3_free(errorMsg);
+        delete errorMsg;
+    }
+	
 }

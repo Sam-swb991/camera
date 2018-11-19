@@ -95,7 +95,7 @@ void * socketServer::serverthread(void *)
                     continue;
                 if ( (n = recv(rsock, line, sizeof(line), 0)) < 0)
                 {
-                    // Connection Reset:你连接的那一端已经断开了，而你却还试着在对方已断开的socketfd上读写数据！
+                    
                     if (errno == ECONNRESET)
                     {
                         close(rsock);
@@ -104,7 +104,7 @@ void * socketServer::serverthread(void *)
                     else
                         std::cout<<"readline error"<<std::endl;
                 }
-                else if (n == 0) //读入的数据为空
+                else if (n == 0) 
                 {
                     std::cout<<"close socket!"<<std::endl;
                     close(rsock);
