@@ -14,7 +14,6 @@ typedef struct commontemp{
 }TEMP_C;
 typedef struct inner_rect{
 	int id;
-	int mode;
     std::string name;
     struct rect rect;
     int highalarm;

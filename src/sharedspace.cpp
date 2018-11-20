@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <common.h>
+#include <pthread.h>
 using namespace std;
 sharedspace::sharedspace()
 {
@@ -22,36 +23,46 @@ sharedspace::sharedspace()
     rectsetlen = 0;
     sql = new sqlHelper();
     sql->clear_table("temperature");
-	tableName.push_back("ID");
-	tableName.push_back("name");
-	tableName.push_back("x1");
-	tableName.push_back("y1");
-	tableName.push_back("x2");
-	tableName.push_back("y2");
-	tableName.push_back("highalarm");
-	tableName.push_back("highvalue");
-	tableName.push_back("lowalarm");
-	tableName.push_back("lowvalue");
-	tableName.push_back("rapidtempchangealarm");
-	tableName.push_back("rapidtempchangevalue");
-	tableName.push_back("alarm_level");
-	set = true;
-	
+    tableName.push_back("ID");
+    tableName.push_back("name");
+    tableName.push_back("x1");
+    tableName.push_back("y1");
+    tableName.push_back("x2");
+    tableName.push_back("y2");
+    tableName.push_back("highalarm");
+    tableName.push_back("highvalue");
+    tableName.push_back("lowalarm");
+    tableName.push_back("lowvalue");
+    tableName.push_back("rapidtempchangealarm");
+    tableName.push_back("rapidtempchangevalue");
+    tableName.push_back("alarm_level");
+    set = true;
+    mode = -1;
 
 }
 
 RECT * sharedspace::GetRect(float **temp,int Ta)
 {
     cout<<"start get rect!"<<endl;
-	if(set)
-	{
-		delete this->rectset;
-		this->rectset = sql->getRect(&rectsetlen);
-		set = false;
-		
-	}
-	cout<<"rect :"<<rectset[0].id<<" "<<rectset[0].name<<" "<<rectset[0].rect.x1<<" "<<rectset[0].rect.y1<<" "<<
-	rectset[0].rect.x2<<" "<<rectset[0].rect.y2<" "<<rectset[0].highalarm<<" "<<rectset[0].highvalue<<endl;
+    if(set)
+    {
+        delete this->rectset;
+        pthread_mutex_lock(&this->mutexsql);
+        this->rectset = sql->getRect(&rectsetlen,false);
+        pthread_mutex_unlock(&this->mutexsql);
+        set = false;
+    }
+    cout<<"rect :"<<rectset[0].id<<" ";
+    cout<<rectset[0].name<<" ";
+    cout<<rectset[0].rect.x1;
+    cout<<" ";
+    cout<<rectset[0].rect.y1;
+    cout<<" ";
+    cout<<rectset[0].rect.x2;
+    cout<<" ";
+    cout<<rectset[0].rect.y2;
+    cout<<" ";
+    cout<<rectset[0].highalarm<<" "<<rectset[0].highvalue<<endl;
     if(rectsetlen != 0)
     {
         TEMP_C *tempc = new TEMP_C[rectsetlen];
@@ -98,69 +109,74 @@ RECT * sharedspace::GetRect(float **temp,int Ta)
     return rect;
 
 }
-void sharedspace::SetRect(RECTSET *rectset,int len)
+void sharedspace::SetRect(RECTSET *rectset,int len,int mode)
 {
-    rectsetlen = len;
+    if(mode !=GET)
+        rectsetlen = len;
+    this->mode = mode;
     if(rectsetlen != 0)
     {
 
-        delete this->rectset;
-		int mode = rectset[0].mode;
-		switch (mode)
-		{
-			case ADD:
-			case MODIFY:{
-				list<string> value;
-				for(int i=0;i<len;++i)
-				{
-					
-					value.push_back(common::to_string(rectset[i].id));
-					value.push_back(rectset[i].name);
-					value.push_back(common::to_string(rectset[i].rect.x1));
-					value.push_back(common::to_string(rectset[i].rect.y1));
-					value.push_back(common::to_string(rectset[i].rect.x2));
-					value.push_back(common::to_string(rectset[i].rect.y2));
-					value.push_back(common::to_string(rectset[i].highalarm));
-					value.push_back(common::to_string(rectset[i].highvalue));
-					value.push_back(common::to_string(rectset[i].lowalarm));
-					value.push_back(common::to_string(rectset[i].lowvalue));
-					value.push_back(common::to_string(rectset[i].rapidtempchangealarm));
-					value.push_back(common::to_string(rectset[i].rapidtempchangevalue));
-					value.push_back(common::to_string(rectset[i].alarm_level));
-					
-				}
-				if(mode == ADD)
-				{
-					sql->insert_table("rect",tableName,value)
-				}
-				else if(mode == MODIFY)
-				{
-					sql->update_table("rect",tableName,value);
-				}
-			}break;
-			case DEL:{
-				string sqlstr = "delete from rect where ID = ";
-				sqlstr+= common::to_string(rectset[i].id);
-				sqlstr+=";";
-				sql->exec(sqlstr);
-			}break;
-			case SET:{
-				string sqlstr = "update rect set isset = 1 where ID = ";
-				sqlstr+= common::to_string(rectset[i].id);
-				sqlstr+=";";
-				sql->exec(sqlstr);
-				set = true;
-			}break;
-			
-			default:break;	
-		}
-		
+        switch (mode)
+        {
+        case ADD:
+        case MODIFY:{
+            list<string> value;
+            for(int i=0;i<len;++i)
+            {
+
+                value.push_back(common::to_string(rectset[i].id));
+                value.push_back(rectset[i].name);
+                value.push_back(common::to_string(rectset[i].rect.x1));
+                value.push_back(common::to_string(rectset[i].rect.y1));
+                value.push_back(common::to_string(rectset[i].rect.x2));
+                value.push_back(common::to_string(rectset[i].rect.y2));
+                value.push_back(common::to_string(rectset[i].highalarm));
+                value.push_back(common::to_string(rectset[i].highvalue));
+                value.push_back(common::to_string(rectset[i].lowalarm));
+                value.push_back(common::to_string(rectset[i].lowvalue));
+                value.push_back(common::to_string(rectset[i].rapidtempchangealarm));
+                value.push_back(common::to_string(rectset[i].rapidtempchangevalue));
+                value.push_back(common::to_string(rectset[i].alarm_level));
+
+            }
+            if(mode == ADD)
+            {
+                sql->insert_table("rect",tableName,value);
+            }
+            else if(mode == MODIFY)
+            {
+                sql->update_table("rect",tableName,value);
+            }
+            set = true;
+        }break;
+        case DEL:{
+            for(int i =0 ;i<len;++i)
+            {
+                string sqlstr = "delete from rect where ID = ";
+                sqlstr+= common::to_string(rectset[i].id);
+                sqlstr+=";";
+                cout<<sqlstr<<endl;
+                sql->exec(sqlstr);
+            }
+            set = true;
+        }break;
+        case SET:{
+            for(int i=0;i<len;++i)
+            {
+                string sqlstr = "update rect set isset = 1 where ID = ";
+                sqlstr+= common::to_string(rectset[i].id);
+                sqlstr+=";";
+                sql->exec(sqlstr);
+            }
+            set = true;
+        }break;
+        case GET:break;
+
+        default:break;
+        }
+
     }
-        
-        
-
-    
-
 
 }
 
@@ -180,7 +196,7 @@ void sharedspace::storeTemp(float **temp)
         for(int j=0;j<WIDTH;++j)
         {
             ss<<static_cast<int>(temp[i][j]);
-            cout<<static_cast<int>(temp[i][j])<<" ";
+            //cout<<static_cast<int>(temp[i][j])<<" ";
             if(i == HEIGHT-1 && j ==WIDTH-1)
             {
                 ss<<"'";
@@ -189,7 +205,7 @@ void sharedspace::storeTemp(float **temp)
                 ss<<",";
             //usleep(1);
         }
-        cout<<endl;
+        // cout<<endl;
     }
     list<string> name,value;
     name.push_back("tempData");
@@ -210,7 +226,7 @@ vector<string> split(const string& str, const string& delim) {
     vector<string> res;
     if("" == str) return res;
     
-    char * strs = new char[str.length() + 1] ; 
+    char * strs = new char[str.length() + 1] ;
     strcpy(strs, str.c_str());
 
     char * d = new char[delim.length() + 1];
@@ -218,8 +234,8 @@ vector<string> split(const string& str, const string& delim) {
 
     char *p = strtok(strs, d);
     while(p) {
-        string s = p; 
-        res.push_back(s); 
+        string s = p;
+        res.push_back(s);
         p = strtok(nullptr, d);
     }
     delete []strs;
@@ -236,14 +252,15 @@ int sharedspace::getTemp(int **temp)
     cout<<"gettemp"<<endl;
     stringstream ss;
     stringstream t;
-    list <string> ret;
+    string ret;
     ss<<(time(nullptr)-60);
     string sqlstr = "select tempData from temperature where time < "+ ss.str()+" order by time DESC LIMIT 1 OFFSET 0;";
     ret = sql->select_table(sqlstr);
-    if(!ret.empty()&&*ret.begin()!="error")
+    if(!ret.empty()&&ret!="error")
     {
-        string str = *ret.begin();
-        vector <string> res = split(str,",");
+
+        cout<<ret<<endl;
+        vector <string> res = split(ret,",");
         //cout<<"res size is:"<<res.size()<<endl;
         for(int i = 0;i<64;++i)
         {

@@ -13,11 +13,14 @@ public:
     CJsonObject getJson();
     int getCode();
     RECTSET *getRectset(int *len);
+    int getMode();
 private:
     CJsonObject myjson;
     RECTSET *rectset;
     int code;
     int rectlen;
+    int mode;
+
 };
 
 #endif // JSONHELPER_H

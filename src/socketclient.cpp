@@ -50,8 +50,8 @@ void *socketclient::clientthread(void *)
         memset(&window,0,sizeof (WINDOW));
         usleep(50000);
         getTemp();
-//        end_t =clock();
-//        cout<<"time 1:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
+        end_t =clock();
+        cout<<"time 1:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
 //        for(int i =0;i<64;++i)
 //        {
 //            for(int j=0;j<80;++j)

@@ -20,7 +20,7 @@ jsonhelper::jsonhelper(CJsonObject json)
 
 	                for(int i=0;i<rectlen;i++)
 	                {
-	                	rectset[i].mode = ADD;
+                        mode = ADD;
 	                	json["body"]["rect"][static_cast<unsigned int>(i)].Get("id",rectset[i].id);
 	                    json["body"]["rect"][static_cast<unsigned int>(i)].Get("name",rectset[i].name);
 	                    json["body"]["rect"][static_cast<unsigned int>(i)].Get("x1",rectset[i].rect.x1);
@@ -42,7 +42,7 @@ jsonhelper::jsonhelper(CJsonObject json)
 			{
 				for(int i=0;i<rectlen;i++)
 	            {
-					rectset[i].mode = DEL;
+                    mode = DEL;
 					json["body"]["rect"][static_cast<unsigned int>(i)].Get("id",rectset[i].id);
 				}
 				
@@ -51,7 +51,7 @@ jsonhelper::jsonhelper(CJsonObject json)
 			{
 				for(int i=0;i<rectlen;i++)
 	            {
-					rectset[i].mode = SET;
+                    mode = SET;
 					json["body"]["rect"][static_cast<unsigned int>(i)].Get("id",rectset[i].id);
 				}
 			}
@@ -59,7 +59,7 @@ jsonhelper::jsonhelper(CJsonObject json)
 			{
 				for(int i=0;i<rectlen;i++)
 	            {
-	                rectset[i].mode = MODIFY;
+                    mode = MODIFY;
 	               	json["body"]["rect"][static_cast<unsigned int>(i)].Get("id",rectset[i].id);
 	                json["body"]["rect"][static_cast<unsigned int>(i)].Get("name",rectset[i].name);
 	                json["body"]["rect"][static_cast<unsigned int>(i)].Get("x1",rectset[i].rect.x1);
@@ -77,10 +77,19 @@ jsonhelper::jsonhelper(CJsonObject json)
 			}
 			else if(function == "getrect")
 			{
-				rectset[0].mode = GET;
+                mode = GET;
+                cout<<"mode inner is :"<<mode<<endl;
 			}
 	        else
 	            return;
+        }
+        else
+        {
+            if(function == "getrect")
+            {
+                mode = GET;
+                cout<<"mode inner is :"<<mode<<endl;
+            }
         }
    	}
 
@@ -95,6 +104,10 @@ jsonhelper::jsonhelper(CJsonObject json)
 int jsonhelper::getCode()
 {
     return code;
+}
+int jsonhelper::getMode()
+{
+    return mode;
 }
 
 RECTSET *jsonhelper::getRectset(int *len)
@@ -161,7 +174,6 @@ void jsonhelper::create_rect(RECTSET * rectset, int len)
         tmprect.Clear();
 		tmprect.Add("id",rectset[i].id);
         tmprect.Add("name",rectset[i].name);
-        tmprect.Add("mode",rectset[i].mode);
         tmprect.Add("highalarm",rectset[i].highalarm);
         tmprect.Add("highvalue",rectset[i].highvalue);
         tmprect.Add("lowalarm",rectset[i].lowalarm);

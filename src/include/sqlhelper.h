@@ -3,7 +3,7 @@
 #include "sqlite3.h"
 #include <iostream>
 #include <list>
-#include "transport"
+#include "transport.h"
 using namespace std;
 class sqlHelper
 {
@@ -12,7 +12,7 @@ public:
     ~sqlHelper();
     int open();
     void insert_table(string table,list<string> name,list<string> value);
-    list<string> select_table(string sql);
+    string select_table(string sql);
     void delete_table(string table, string arg);
     void release();
     void clear_table(string table);

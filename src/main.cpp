@@ -68,7 +68,7 @@ int main()
     }
     delete shared;
     delete ss;
-    delete sc;
+    //delete sc;
     return 0;
 }
 
