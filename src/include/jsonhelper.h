@@ -8,7 +8,7 @@ class jsonhelper
 public:
     jsonhelper();
     jsonhelper(CJsonObject json);
-    void create_temp(WINDOW windos, RECT *rect, int rectnum, POINT point[5120]);
+    void create_temp(WINDOW windos, RECT *rect, int rectnum, float **temp);
 	void create_rect(RECTSET *rectset,int len);
     CJsonObject getJson();
     int getCode();

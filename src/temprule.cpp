@@ -40,7 +40,7 @@ temprule::temprule(RECTSET *rectset, int len, float **temp, sharedspace *ss, TEM
         {
             for(int j=start_x;j<end_x;++j)
             {
-                temp_compensation(temp[i][j],Ta,0.95);
+                //temp_compensation(temp[i][j],Ta,0.95);
                 if(tempc[k].highTemp<temp[i][j])
                     tempc[k].highTemp = temp[i][j];
                 if(tempc[k].lowTemp>temp[i][j])

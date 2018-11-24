@@ -19,9 +19,9 @@ SOURCES += \
     jsonhelper.cpp \
     socketclient.cpp \
     temprule.cpp \
-    myqueue.cpp \
     sharedspace.cpp \
-    sqlhelper.cpp
+    sqlhelper.cpp \
+    jsoncpp.cpp
 
 HEADERS += \
     ./include/spi.h \
@@ -39,10 +39,21 @@ HEADERS += \
     include/transport.h \
     include/socketclient.h \
     include/temprule.h \
-    include/myqueue.h \
     include/sharedspace.h \
     include/sqlite3.h \
-    include/sqlhelper.h
+    include/sqlhelper.h \
+    include/json/allocator.h \
+    include/json/assertions.h \
+    include/json/autolink.h \
+    include/json/config.h \
+    include/json/features.h \
+    include/json/forwards.h \
+    include/json/json.h \
+    include/json/reader.h \
+    include/json/value.h \
+    include/json/version.h \
+    include/json/writer.h \
+    include/jsoncpp.h
 
 INCLUDEPATH = ./include
 LIBS += -lsqlite -lpthread

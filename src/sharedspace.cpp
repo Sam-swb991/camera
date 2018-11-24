@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <common.h>
 #include <pthread.h>
+#include <vector>
 using namespace std;
 sharedspace::sharedspace()
 {
@@ -52,17 +53,17 @@ RECT * sharedspace::GetRect(float **temp,int Ta)
         pthread_mutex_unlock(&this->mutexsql);
         set = false;
     }
-    cout<<"rect :"<<rectset[0].id<<" ";
-    cout<<rectset[0].name<<" ";
-    cout<<rectset[0].rect.x1;
-    cout<<" ";
-    cout<<rectset[0].rect.y1;
-    cout<<" ";
-    cout<<rectset[0].rect.x2;
-    cout<<" ";
-    cout<<rectset[0].rect.y2;
-    cout<<" ";
-    cout<<rectset[0].highalarm<<" "<<rectset[0].highvalue<<endl;
+//    cout<<"rect :"<<rectset[0].id<<" ";
+//    cout<<rectset[0].name<<" ";
+//    cout<<rectset[0].rect.x1;
+//    cout<<" ";
+//    cout<<rectset[0].rect.y1;
+//    cout<<" ";
+//    cout<<rectset[0].rect.x2;
+//    cout<<" ";
+//    cout<<rectset[0].rect.y2;
+//    cout<<" ";
+//    cout<<rectset[0].highalarm<<" "<<rectset[0].highvalue<<endl;
     if(rectsetlen != 0)
     {
         TEMP_C *tempc = new TEMP_C[rectsetlen];
@@ -203,7 +204,6 @@ void sharedspace::storeTemp(float **temp)
             }
             else
                 ss<<",";
-            //usleep(1);
         }
         // cout<<endl;
     }
@@ -259,7 +259,7 @@ int sharedspace::getTemp(int **temp)
     if(!ret.empty()&&ret!="error")
     {
 
-        cout<<ret<<endl;
+        //cout<<ret<<endl;
         vector <string> res = split(ret,",");
         //cout<<"res size is:"<<res.size()<<endl;
         for(int i = 0;i<64;++i)

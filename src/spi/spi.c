@@ -146,12 +146,12 @@ uint8_t const *rx,size_t tx_len,size_t rx_len)
 		xfer[0].len = tx_len;
 		xfer[1].rx_buf = (unsigned long)rx;
 		xfer[1].len = rx_len;
-		setGPIOL(G_fd,&cmd_data); //pull high
+        setGPIOL(G_fd,&cmd_data); //pull low
 		  
 		ret = ioctl(fd, SPI_IOC_MESSAGE(2), &xfer);
 		if(ret < 0 )
 			printf("spi transfer 2 failed!");
-		setGPIOH(G_fd,&cmd_data); // pull low
+        setGPIOH(G_fd,&cmd_data); // pull high
 	}
 	
 }

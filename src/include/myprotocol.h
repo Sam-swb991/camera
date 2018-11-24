@@ -2,12 +2,15 @@
 #define MYPROTOCOL_H
 
 #include "CJsonObject.hpp"
+#include "jsoncpp.h"
 using namespace neb;
 class myProtocol
 {
 public:
     myProtocol(unsigned char sync,unsigned char platform,CJsonObject json);
+    myProtocol(unsigned char sync,unsigned char platform,std::string json);
     myProtocol(char *);
+    ~myProtocol();
     unsigned char GetSync();
     CJsonObject* GetJson();
     unsigned char *GetData();

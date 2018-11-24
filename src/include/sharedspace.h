@@ -1,7 +1,6 @@
 #ifndef SHAREDSPACE_H
 #define SHAREDSPACE_H
 #include "transport.h"
-#include "myqueue.h"
 #include <pthread.h>
 #include "sqlhelper.h"
 class temprule;

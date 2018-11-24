@@ -120,7 +120,7 @@ CJsonObject jsonhelper::getJson()
 {
     return myjson;
 }
-void jsonhelper::create_temp(WINDOW windos,RECT *rect,int rectnum,POINT point[5120])
+void jsonhelper::create_temp(WINDOW windos,RECT *rect,int rectnum,float **temp)
 {
     const std::string body = "body";
     myjson.Add("function","temp");
@@ -151,15 +151,12 @@ void jsonhelper::create_temp(WINDOW windos,RECT *rect,int rectnum,POINT point[51
         myjson[body]["rect"].Add(tmprect);
 
     }
-    //    myjson[body].AddEmptySubArray("point");
+    myjson[body].AddEmptySubArray("point");
     //    CJsonObject tmppoint;
-    //    for(int i=0;i<5120;i++)
-    //    {
-    //        tmppoint.Clear();
-    //        tmppoint.Add("isshow",point[i].isShow);
-    //        tmppoint.Add("value",point[i].value);
-    //        myjson[body]["point"].Add(tmppoint);
-    //    }
+    for(int i=0;i<5120;i++)
+    {
+        myjson[body]["point"].Add(static_cast<int>(temp[i/80][i%80]));
+    }
 
 }
 

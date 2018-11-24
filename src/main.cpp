@@ -9,22 +9,17 @@
 #include "sharedspace.h"
 #include "socketclient.h"
 #include "sqlhelper.h"
+#include "json/json.h"
+using namespace Json;
 int main()
 {
-    //    sqlHelper *sqlite = new sqlHelper();
-    //    list<string > name,value;
-    //    name.push_back("tempData");
-    //    value.push_back("\'123,123\'");
-    //    sqlite->insert_table("temperature",name,value);
-    //    value.clear();
-    //    value = sqlite->select_table("select * from temperature where Id = 1;");
-    //    for(list<string>::iterator i =value.begin();i!=value.end();i++)
-    //    {
-    //        cout<<*i<<endl;
-    //    }
 
 
-
+//    Json::Value test;
+//    test["id"] = 1;
+//    test["body"]["rect"][0] = 1;
+//    test["body"]["rect"][1] = 2;
+//    cout<<test.toStyledString();
     //    int ** temp = new int*[64];
     //    for(int i=0; i<64; ++i)
     //    {
@@ -38,18 +33,18 @@ int main()
     socketServer *ss = new socketServer(12345,shared);
     ss->startServer();
     socketclient *sc = new socketclient(shared);
-    //    while(true)
-    //    {
-    //        string addr = "127.0.0.1";
-    //        int ret = sc->connect(addr.c_str(),10300);
-    //        if(ret >0)
-    //            break;
-    //        else
-    //        {
-    //            cout<<"Waiting for server start!!"<<endl;
-    //            sleep(3);
-    //        }
-    //    }
+ New:while(true)
+    {
+        string addr = "127.0.0.1";
+        int ret = sc->connect(addr.c_str(),10300);
+        if(ret >0)
+            break;
+        else
+        {
+            cout<<"Waiting for server start!!"<<endl;
+            sleep(3);
+        }
+    }
     sc->startclient();
     while(true)
     {
@@ -62,13 +57,19 @@ int main()
         //            }
         //            cout<<endl;
         //        }
-        int ch = getchar();
-        if(ch == 'q')
+        if(sc->isStart())
+        {
+            sleep(1);
+        }
+        else
+            goto New;
+        int ch =getchar();
+        if(ch =='q')
             break;
     }
     delete shared;
     delete ss;
-    //delete sc;
+    delete sc;
     return 0;
 }
 

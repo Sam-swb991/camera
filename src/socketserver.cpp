@@ -109,6 +109,7 @@ void * socketServer::serverthread(void *)
                 else if (n == 0) 
                 {
                     std::cout<<"close socket!"<<std::endl;
+                    close(rsock);
                     events[i].data.fd = -1;
                 }
                 else
@@ -138,13 +139,9 @@ void * socketServer::serverthread(void *)
                         std::cout<<"recv is :";
                         common::print_V(line,n,1);
                         std::cout<<std::endl;
-                        //****************************
-
-                        std::cout<<"222"<<std::endl;
-                        delete jsonh;
-                        std::cout<<"3333"<<std::endl;
+                        //****************************                       
+                        delete jsonh;                     
                         delete json;
-                        std::cout<<"1"<<std::endl;
                     }
 
                     ev.data.fd=rsock;
@@ -193,9 +190,9 @@ void * socketServer::serverthread(void *)
                 ev.data.fd=rsock;
                 ev.events = EPOLLIN|EPOLLET;
                 epoll_ctl(epfd,EPOLL_CTL_MOD,rsock,&ev);
+                delete sendmsg;
                 delete pro;
                 delete rectset;
-                delete sendmsg;
 
             }
         }

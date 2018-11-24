@@ -11,6 +11,7 @@ public:
     socketclient(sharedspace *ss);
     int connect(const char *addr,int port);
     void startclient();
+    bool isStart();
 private:
     static void *clientthread(void *);
     static int clientfd;

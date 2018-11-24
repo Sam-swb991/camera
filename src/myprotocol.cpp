@@ -18,6 +18,30 @@ myProtocol::myProtocol(unsigned char sync,unsigned char platform,CJsonObject jso
     memcpy(data+8+json_len,&checksum,1);
     memcpy(data+9+json_len,&END,1);
 }
+myProtocol::myProtocol(unsigned char sync,unsigned char platform,std::string json)
+{
+    unsigned char unuse = 0x00;
+    json_len = json.size();
+    std::cout<<"json len is:"<<json_len<<std::endl;
+    data = new unsigned char[json_len+10];
+    memcpy(data,&HEAD,1);
+    memcpy(data+1,&sync,1);
+    memcpy(data+2,&platform,1);
+    memcpy(data+3,&unuse,1);
+    memcpy(data+4,&json_len,4);
+    memcpy(data+8,json.c_str(),static_cast<unsigned long>(json_len));
+    unsigned char checksum = CheckSum(data,8+json_len);
+    memcpy(data+8+json_len,&checksum,1);
+    memcpy(data+9+json_len,&END,1);
+
+}
+myProtocol::~myProtocol()
+{
+    delete []data;
+    //delete json_data;
+    //delete json;
+
+}
 unsigned char * myProtocol::GetData()
 {
     return data;

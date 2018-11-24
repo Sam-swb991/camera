@@ -1,7 +1,8 @@
 #ifndef COMMON_H
 #define COMMON_H
 #include "transport.h"
-#include "myqueue.h"
+#include <cstring>
+using namespace std;
 //#define HTPA80x64dL5k0_0k95Hi_Gain3k3 1
 #define HTPA80x64dL10_0k7F7k7Hi_Gain3k3
 #ifdef HTPA80x64dL5k0_0k95Hi_Gain3k3
