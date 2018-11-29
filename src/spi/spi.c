@@ -13,8 +13,19 @@ extern "C" {
 #include "spi.h"
 #define SPI_PATH "/dev/spidev2.0"
 #define GPIO_PATH "/dev/htxjgpio"
+/**
+ * @brief 控制gpio的结构体，静态变量
+ */
 static GPIO_CMD_DATA cmd_data;
-int G_fd;
+/**
+ * @brief gpio文件描述符，静态变量
+ */
+static int G_fd;
+/**
+ * @brief gpio的初始化
+ * @param cmd_data，设置gpio需要传入的结构体
+ * @return 初始化成功返回文件描述符fd,不成功返回-1
+ */
 int gpio_init(GPIO_CMD_DATA *cmd_data)
 {
 	int ret;
@@ -48,6 +59,11 @@ int gpio_init(GPIO_CMD_DATA *cmd_data)
 	}
 	return fd;
 }
+/**
+ * @brief 把gpio拉高
+ * @param fd，文件描述符
+ * @param cmd_data，设置gpio需要传入的结构体
+ */
 void setGPIOH(int fd,GPIO_CMD_DATA *cmd_data)
 {
 	cmd_data->val = 1;
@@ -55,6 +71,11 @@ void setGPIOH(int fd,GPIO_CMD_DATA *cmd_data)
 	if(-1 == ret)
 		printf("set high failed!");
 }
+/**
+ * @brief 把gpio拉低
+ * @param fd，文件描述符
+ * @param cmd_data，设置gpio需要传入的结构体
+ */
 void setGPIOL(int fd,GPIO_CMD_DATA *cmd_data)
 {
 	cmd_data->val = 0;
@@ -62,7 +83,9 @@ void setGPIOL(int fd,GPIO_CMD_DATA *cmd_data)
 	if(-1 == ret)
 		printf("set low failed!");
 }
-
+/**
+ * @brief 强制把gpio拉低，为了读取红外传感器的数据
+ */
 void cs_change_Sensor()
 {
     if(cmd_data.val == 0)
@@ -75,6 +98,9 @@ void cs_change_Sensor()
         printf("set cs to sensor failed!");
 	
 }
+/**
+ * @brief 强制把gpio拉高，为了读取红外传感器内置EEPROM的数据
+ */
 void cs_change_Eeprom()
 {
     if(cmd_data.val == 1)
@@ -86,11 +112,21 @@ void cs_change_Eeprom()
     if(-1 == ret)
         printf("set cs to eeprom failed!");
 }
+/**
+ * @brief 打印错误信息并终止程序
+ * @param s,错误字符串
+ */
 static void pabort(const char *s)
 {
 	perror(s);
 	abort();
 }
+/**
+ * @brief 以16进制格式打印字符串
+ * @param head,打印的字符串的头
+ * @param hex，打印的16进制字符串主体
+ * @param len，打印的16进制字符串长度
+ */
 void printHEX(char * head,uint8_t const *hex,size_t len)
 {
 #ifdef LOG
@@ -103,7 +139,16 @@ void printHEX(char * head,uint8_t const *hex,size_t len)
 	printf("\n");
 #endif
 }
-
+/**
+ * @brief spi通信
+ * @param fd，文件描述符
+ * @param num，为1只需发送，不需要接收，为2则都需要
+ * @param type，为1是sensor模式，为2是eeprom模式
+ * @param tx，发送的数据
+ * @param rx，接收的数据
+ * @param tx_len，发送的数据长度
+ * @param rx_len，接收的数据长度
+ */
 void spi_transfer(int fd,int num,int type,uint8_t const *tx,
 uint8_t const *rx,size_t tx_len,size_t rx_len)
 {
@@ -155,7 +200,10 @@ uint8_t const *rx,size_t tx_len,size_t rx_len)
 	}
 	
 }
-
+/**
+ * @brief spi初始化
+ * @return 初始化成功返回文件描述符fd,失败返回-1
+ */
 int spi_init()
 {
 	int ret;
@@ -197,12 +245,24 @@ int spi_init()
 	return fd;
 
 }
+/**
+ * @brief spi sensor模式下写数据
+ * @param fd，文件描述符
+ * @param tx，需要写的数据
+ * @param tx_len，需要写的数据长度
+ */
 void transfer_Sensor_Write(int fd,uint8_t const *tx,size_t tx_len)
 {
  //   printHEX("send is:",tx,tx_len);
 	spi_transfer(fd,1,1,tx,NULL,tx_len,0);
 }
-
+/**
+ * @brief spi sensor模式下读数据
+ * @param fd，文件描述符
+ * @param tx，发送的数据
+ * @param rx，接收的数据
+ * @param rx_len，接收的数据长度
+ */
 void transfer_Sensor_Read(int fd,uint8_t const *tx,uint8_t const *rx,
 size_t rx_len)
 {
@@ -210,12 +270,25 @@ size_t rx_len)
 	spi_transfer(fd,2,1,tx,rx,1,rx_len);
 //	printHEX("recv is:",rx,rx_len);
 }
+/**
+ * @brief EEPROM模式下spi通信
+ * @param fd,文件描述符
+ * @param tx，发送的数据
+ * @param rx，接收的数据
+ */
 void transfer_Eeprom(int fd,uint8_t const *tx,uint8_t const *rx)
 {
  //   printHEX("send is:",tx,3);
 	spi_transfer(fd,2,2,tx,rx,3,1);
   //  printHEX("recv is:",rx,1);
 }
+/**
+ * @brief EEPROM模式下读数据
+ * @param fd，文件描述符
+ * @param addr_H，传输的地址高字节
+ * @param addr_L，传输的地址低字节
+ * @return 返回此地址的16进制字符
+ */
 uint8_t transfer_Eeprom_Read(int fd,uint8_t addr_H,uint8_t addr_L)
 {
     uint8_t send[3];
@@ -226,6 +299,10 @@ uint8_t transfer_Eeprom_Read(int fd,uint8_t addr_H,uint8_t addr_L)
     transfer_Eeprom(fd,send,&recv);
     return recv;
 }
+/**
+ * @brief 关闭spi，关闭gpio
+ * @param fd,文件描述符
+ */
 void close_spi(int fd)
 {
 	close(G_fd);

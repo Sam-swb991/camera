@@ -3,15 +3,25 @@
 #include <sstream>
 #include <cstring>
 #include <stdlib.h>
+/**
+ * @brief 构造函数，数据库初始化
+ */
 sqlHelper::sqlHelper()
 {
     open();
     create_table();
 }
+/**
+ * @brief 析构函数，关闭数据库
+ */
 sqlHelper::~sqlHelper()
 {
     sqlite3_close(db);
 }
+/**
+ * @brief 打开或者创建一个数据库
+ * @return 成功返回0,失败返回-1
+ */
 int sqlHelper::open()
 {
 
@@ -28,11 +38,17 @@ int sqlHelper::open()
         return 0;
     }
 }
-void sqlHelper::release()
+/**
+ * @brief 重置数据库
+ */
+void sqlHelper::reset()
 {
     sqlite3_close(db);
     open();
 }
+/**
+ * @brief 创建数据库表
+ */
 void sqlHelper::create_table()
 {
     string sql = "create table if not exists temperature(ID integer primary key autoincrement,tempData text not null,time integer);";
@@ -68,6 +84,12 @@ void sqlHelper::create_table()
     }
 
 }
+/**
+ * @brief 向表里插入数据,temperature表专用
+ * @param table，表名
+ * @param name，表字段名的list
+ * @param value，跟字段名对应的值
+ */
 void sqlHelper::insert_table(string table,list<string> name,list<string> value)
 {
     char *errorMsg ;
@@ -77,7 +99,10 @@ void sqlHelper::insert_table(string table,list<string> name,list<string> value)
     for(list<string>::iterator i =name.begin();;j++)
     {
         sql+=*i;
-
+        /**
+          * @brief 每个字段名后要加逗号，最后一个不用加
+          * @example insert into temperature (ID,name,x1,x2) values(1,'123',0.11,0.88);
+          */
         if(j<len)
         {
             sql+=",";
@@ -112,7 +137,12 @@ void sqlHelper::insert_table(string table,list<string> name,list<string> value)
     sqlite3_free(errorMsg);
     delete errorMsg;
 }
-
+/**
+ * @brief 更新表数据，rect表专用
+ * @param table，表名
+ * @param name，表字段名的list
+ * @param value，跟字段名对应的值
+ */
 void sqlHelper::update_table(string table, list < string > name, list < string > value)
 {
     char *errorMsg ;
@@ -121,6 +151,9 @@ void sqlHelper::update_table(string table, list < string > name, list < string >
     string sql = "update "+table+" set ";
     list<string>::iterator i =name.begin();
     list<string>::iterator j =value.begin();
+/**
+  * @brief list首个元素为ID，不需要更新，ID为判断条件，跳过
+  */
     i++;
     j++;
     for(;;k++)
@@ -128,6 +161,10 @@ void sqlHelper::update_table(string table, list < string > name, list < string >
         sql+=*i;
         sql+="=";
         sql+=*j;
+        /**
+          * @brief 每个字段设置后要加逗号，最后一个不用加
+          * @example update rect set name = '123',x1=0.12 where ID = 2;
+          */
         if(k<len)
         {
             sql+=",";
@@ -149,6 +186,11 @@ void sqlHelper::update_table(string table, list < string > name, list < string >
     sqlite3_free(errorMsg);
     delete errorMsg;
 }
+/**
+ * @brief 查询表，获取温度数据专用
+ * @param sql，sql语句
+ * @return 返回查询出的温度数据字符串
+ */
 string sqlHelper::select_table(string sql)
 {
     cout<<"select"<<endl;
@@ -209,7 +251,12 @@ string sqlHelper::select_table(string sql)
 
     return ret;
 }
-
+/**
+ * @brief 查询数据库，获取rect表信息
+ * @param nRow，rect表查询出的个数
+ * @param isset，是否需要查询出所有区域信息，true为所有，false为只需要isset为1的区域数据
+ * @return 返回RECTSET结构体
+ */
 RECTSET * sqlHelper::getRect(int *nRow,bool isset)
 {
     char * errmsg;
@@ -233,6 +280,11 @@ RECTSET * sqlHelper::getRect(int *nRow,bool isset)
     RECTSET * rectset = new RECTSET[*nRow];
 
     int nIndex = nCol;
+    /**
+      * @brief
+      * 第n列的名称，存放于pResult[n]
+      * 第n行第m列的数据，存放于pResult [(n+1) * nCol + m]
+      */
     for(int i=0;i<*nRow;i++)
     {
         for(int j=0;j<nCol;j++)
@@ -302,6 +354,11 @@ RECTSET * sqlHelper::getRect(int *nRow,bool isset)
     return rectset;
 
 }
+/**
+ * @brief 删除表数据
+ * @param table,表名
+ * @param arg，条件语句
+ */
 void sqlHelper::delete_table(string table,string arg)
 {
     char *errorMsg;
@@ -319,6 +376,10 @@ void sqlHelper::delete_table(string table,string arg)
         delete errorMsg;
     }
 }
+/**
+ * @brief 清空表数据
+ * @param table，表名
+ */
 void sqlHelper::clear_table(string table)
 {
     char *errorMsg;
@@ -350,6 +411,10 @@ void sqlHelper::clear_table(string table)
         delete errorMsg1;
     }
 }
+/**
+ * @brief 执行sql语句
+ * @param sql，需要执行的sql语句
+ */
 void sqlHelper::exec(string sql)
 {
     char *errorMsg;

@@ -13,7 +13,7 @@ class socketServer
 public:
     socketServer(int port, sharedspace *ss);
     ~socketServer();
-    void startServer();
+    pthread_t startServer();
 
 private:
     static int setnonblocking(int fd);

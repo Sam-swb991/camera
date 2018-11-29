@@ -2,11 +2,21 @@
 #include <cstring>
 #include "common.h"
 using namespace common;
+/**
+ * @brief eeprom初始化
+ * @param spictrl，传入spiCtrl对象
+ */
 eepromCtrl::eepromCtrl(spiCtrl *spictrl)
 {
     this->spictrl = spictrl;
     c_data = new E_C_DATA();
 }
+/**
+ * @brief 读取某个地址的开始的连续4个字节形成的int类型数据
+ * @param addr_H，地址的高字节
+ * @param addr_L，地址的低字节
+ * @return 返回读出的int类型数据
+ */
 int eepromCtrl::read_int(uint8_t addr_H, uint8_t addr_L)
 {
     uint8_t recv[4];
@@ -19,7 +29,12 @@ int eepromCtrl::read_int(uint8_t addr_H, uint8_t addr_L)
     memcpy(&ret,recv,4);
     return ret;
 }
-
+/**
+ * @brief 读取某个地址的开始的连续4个字节形成的float类型数据
+ * @param addr_H，地址的高字节
+ * @param addr_L，地址的低字节
+ * @return 返回读出的float类型数据
+ */
 float eepromCtrl::read_float(uint8_t addr_H, uint8_t addr_L)
 {
     uint8_t recv[4];
@@ -32,6 +47,12 @@ float eepromCtrl::read_float(uint8_t addr_H, uint8_t addr_L)
     memcpy(&ret,recv,4);
     return ret;
 }
+/**
+ * @brief 读取某个地址的开始的连续2个字节形成的unsigned short类型数据
+ * @param addr_H，地址的高字节
+ * @param addr_L，地址的低字节
+ * @return 返回读出的unsigned short类型数据
+ */
 unsigned short eepromCtrl::read_short(uint8_t addr_H, uint8_t addr_L)
 {
     uint8_t recv[2];
@@ -44,6 +65,9 @@ unsigned short eepromCtrl::read_short(uint8_t addr_H, uint8_t addr_L)
     memcpy(&ret,recv,2);
     return ret;
 }
+/**
+ * @brief 读取eeprom所有存储的数据
+ */
 void eepromCtrl::readAll()
 {
     uint8_t addr_H = 0x00;
@@ -165,6 +189,10 @@ void eepromCtrl::readAll()
     }
 
 }
+/**
+ * @brief 把获取的eeprom数据转储为E_C_DATA结构体数据
+ * @return 返回E_C_DATA结构体
+ */
 E_C_DATA* eepromCtrl::get_common_data()
 {
 
@@ -187,7 +215,10 @@ E_C_DATA* eepromCtrl::get_common_data()
     return c_data;
 
 }
-
+/**
+ * @brief 把获取的eeprom数据转储为E_M_DATA结构体数据
+ * @return 返回E_M_DATA结构体
+ */
 E_M_DATA* eepromCtrl::get_muti_data(int num)
 {
     m_data = new E_M_DATA();
@@ -204,7 +235,7 @@ E_M_DATA* eepromCtrl::get_muti_data(int num)
     }
     else
     {
-        int row_num = row; //95-row
+        int row_num = row;
         int data_num = row_num*80+column;
         m_data->thGrad = static_cast<signed char>(this->ThGrad[num]);
         m_data->thOffSet = static_cast<signed short>(this->ThOffset[num]);
@@ -215,6 +246,9 @@ E_M_DATA* eepromCtrl::get_muti_data(int num)
     }
     return m_data;
 }
+/**
+ * @brief 打印获取的EEPROM数据
+ */
 void eepromCtrl::printvalue()
 {
     cout<<"**********************eeprom value****************************"<<endl;

@@ -11,6 +11,9 @@
 #include <pthread.h>
 #include <vector>
 using namespace std;
+/**
+ * @brief 构造函数，初始化各种数据
+ */
 sharedspace::sharedspace()
 {
     if(pthread_mutex_init(&mutex, nullptr) != 0)
@@ -41,7 +44,12 @@ sharedspace::sharedspace()
     mode = -1;
 
 }
-
+/**
+ * @brief 获取RECT结构体对象
+ * @param temp，温度二维数组
+ * @param Ta，Ta值
+ * @return 返回RECT对象
+ */
 RECT * sharedspace::GetRect(float **temp,int Ta)
 {
     cout<<"start get rect!"<<endl;
@@ -110,6 +118,12 @@ RECT * sharedspace::GetRect(float **temp,int Ta)
     return rect;
 
 }
+/**
+ * @brief 设置区域数据
+ * @param rectset，区域的结构体对象
+ * @param len，区域个数
+ * @param mode，模式
+ */
 void sharedspace::SetRect(RECTSET *rectset,int len,int mode)
 {
     if(mode !=GET)
@@ -180,12 +194,18 @@ void sharedspace::SetRect(RECTSET *rectset,int len,int mode)
     }
 
 }
-
+/**
+ * @brief 获取区域个数
+ * @return 返回区域个数
+ */
 int sharedspace::getRectlen()
 {
     return rectsetlen;
 }
-
+/**
+ * @brief 把温度数据存储到数据库
+ * @param temp,温度二维数组
+ */
 void sharedspace::storeTemp(float **temp)
 {
     stringstream ss;
@@ -216,12 +236,17 @@ void sharedspace::storeTemp(float **temp)
     cout<<"time is:"<<str<<endl;
     value.push_back(str);
     sql->insert_table("temperature",name,value);
-    t<<(time(nullptr)-70);
+    t<<(time(nullptr)-65);
     string delsql ="time < "+ t.str();
     sql->delete_table("temperature",delsql);
 
 }
-
+/**
+ * @brief 把数据库读出的温度字符串分割成单个温度字符串
+ * @param str，数据库读出温度字符串
+ * @param delim，分隔符
+ * @return 返回单个温度字符串组成的容器
+ */
 vector<string> split(const string& str, const string& delim) {
     vector<string> res;
     if("" == str) return res;
@@ -243,10 +268,18 @@ vector<string> split(const string& str, const string& delim) {
     delete p;
     return res;
 }
+/**
+ * @brief 重置数据库
+ */
 void sharedspace::resetSql()
 {
-    sql->release();
+    sql->reset();
 }
+/**
+ * @brief 从数据库读取1分钟前的温度数据
+ * @param temp，温度二维数组
+ * @return 读取成功返回0,不成功返回-1
+ */
 int sharedspace::getTemp(int **temp)
 {
     cout<<"gettemp"<<endl;

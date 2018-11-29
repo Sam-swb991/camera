@@ -6,11 +6,13 @@ class jsoncpp
 {
 public:
     jsoncpp();
-    std::string getJson_data();
+   // jsoncpp(std::string json);
+    std::string getJsonString();
     void create_temp(WINDOW windos, RECT *rect, int rectnum, float **temp);
 private:
     Json::Value myjson;
-    Json::StreamWriterBuilder  builder;
+    Json::CharReaderBuilder readbuilder;
+    Json::StreamWriterBuilder  writebuilder;
 };
 
 #endif // JSONCPP_H

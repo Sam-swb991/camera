@@ -5,12 +5,20 @@
 #include <stddef.h>
 #include <cstring>
 #include <stdio.h>
+/**
+ * @brief 构造函数，初始化
+ */
 socketHelper::socketHelper()
 {
     client = false;
     server = false;
 }
-
+/**
+ * @brief 创建socket服务端
+ * @param clientNum，监听的客户端最大数
+ * @param port，服务端端口
+ * @return 创建成功返回服务端套接字serverfd，失败返回-1
+ */
 int socketHelper::SocketServerBuilder(int clientNum,int port)
 {
     if(client)
@@ -18,6 +26,8 @@ int socketHelper::SocketServerBuilder(int clientNum,int port)
         printf("socket is client!\n");
     }
     int serverfd;
+    int flag = 1;
+    int len = sizeof (int);
     memset(&my_addr,0,sizeof(my_addr));
     my_addr.sin_family=AF_INET;
     my_addr.sin_addr.s_addr=INADDR_ANY;
@@ -27,16 +37,26 @@ int socketHelper::SocketServerBuilder(int clientNum,int port)
         perror("socket");
         return -1;
     }
+    if( setsockopt(serverfd, SOL_SOCKET, SO_REUSEADDR, &flag, (unsigned int)len) == -1)
+    {
+        perror("setsocketopt");
+        return -1;
+    }
     if (bind(serverfd,(struct sockaddr *)&my_addr,sizeof(struct sockaddr))<0)
     {
         perror("bind");
         return -1;
     }
+
     listen(serverfd,clientNum);
     server = true;
     return serverfd;
 }
-
+/**
+ * @brief 获取连接到服务端的客户端的套接字
+ * @param fd，服务端的套接字
+ * @return 返回客户端的套接字
+ */
 int socketHelper::ServerGetClient(int fd)
 {
     if(client)
@@ -54,7 +74,12 @@ int socketHelper::ServerGetClient(int fd)
 
 
 }
-
+/**
+ * @brief 创建socket客户端
+ * @param addr，连接的服务端地址
+ * @param port，连接的服务端端口
+ * @return 成功返回客户端套接字，不成功返回-1
+ */
 int socketHelper::SocketClientBuilder(const char *addr,int port)
 {
     if(server)
@@ -80,7 +105,12 @@ int socketHelper::SocketClientBuilder(const char *addr,int port)
     client = true;
     return clientfd;
 }
-
+/**
+ * @brief socket发送数据
+ * @param fd，套接字
+ * @param msg，发送的字符串
+ * @param msgNum，发送的字符串长度
+ */
 void socketHelper::SocketSend(int fd,unsigned char *msg,int msgNum)
 {
     if(msg ==nullptr&& msg[0] == '\0')

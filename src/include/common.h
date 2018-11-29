@@ -32,6 +32,7 @@ using namespace std;
 #endif
 namespace  common
 {
+
 #ifdef HTPA80x64dL5k0_0k95Hi_Gain3k3
 const unsigned int TempTable [NROFADELEMENTS][NROFTAELEMENTS]={
     {	0x0000,	0x0000,	0x0000,	0x0000,	0x0000,	0x0000,	909,	1826,	2206,	2482,	2709	},

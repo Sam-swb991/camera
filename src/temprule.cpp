@@ -4,6 +4,16 @@
 #include <cstring>
 #include <pthread.h>
 #include <stdio.h>
+/**
+ * @brief 构造函数，温度策略
+ * @param rectset，RECTSET对象，区域信息
+ * @param len，区域个数
+ * @param temp，温度二维数组
+ * @param ss，sharedspace对象
+ * @param tempc，需要传出的TEMP_C结构体
+ * @param alarmmode，需要传出的alarmmode数组
+ * @param Ta，Ta值传入
+ */
 temprule::temprule(RECTSET *rectset, int len, float **temp, sharedspace *ss, TEMP_C * tempc, int *alarmmode, int Ta)
 {
     cout<<"temprule"<<endl;
@@ -83,6 +93,12 @@ temprule::temprule(RECTSET *rectset, int len, float **temp, sharedspace *ss, TEM
     }
     delete []ftemp;
 }
+/**
+ * @brief 温度补偿
+ * @param temp，温度值
+ * @param Ta，Ta值
+ * @param a，反射系数，范围为0-1之间
+ */
 void temprule::temp_compensation(float &temp,int Ta,double a)
 {
     double T0 = Ta/10-273.15;

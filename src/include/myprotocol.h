@@ -12,7 +12,7 @@ public:
     myProtocol(char *);
     ~myProtocol();
     unsigned char GetSync();
-    CJsonObject* GetJson();
+    CJsonObject GetJson();
     unsigned char *GetData();
     unsigned long Getlength();
     unsigned char GetPlatform();
@@ -25,8 +25,9 @@ private:
     size_t json_len;
     unsigned char *data;
     char *json_data;
-    CJsonObject *json;
+    CJsonObject json;
     bool check;
+    bool isrecv=false;
 };
 
 #endif // MYPROTOCOL_H

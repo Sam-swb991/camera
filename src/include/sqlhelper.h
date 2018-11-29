@@ -14,7 +14,7 @@ public:
     void insert_table(string table,list<string> name,list<string> value);
     string select_table(string sql);
     void delete_table(string table, string arg);
-    void release();
+    void reset();
     void clear_table(string table);
 	void update_table(string table,list<string> name,list<string> value);
 	void exec(string sql);

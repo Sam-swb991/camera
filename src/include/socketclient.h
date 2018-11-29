@@ -10,7 +10,7 @@ class socketclient
 public:
     socketclient(sharedspace *ss);
     int connect(const char *addr,int port);
-    void startclient();
+    pthread_t startclient();
     bool isStart();
 private:
     static void *clientthread(void *);

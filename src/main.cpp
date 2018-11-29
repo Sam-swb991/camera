@@ -10,25 +10,11 @@
 #include "socketclient.h"
 #include "sqlhelper.h"
 #include "json/json.h"
+#include <time.h>
+#include <pthread.h>
 using namespace Json;
 int main()
 {
-
-
-//    Json::Value test;
-//    test["id"] = 1;
-//    test["body"]["rect"][0] = 1;
-//    test["body"]["rect"][1] = 2;
-//    cout<<test.toStyledString();
-    //    int ** temp = new int*[64];
-    //    for(int i=0; i<64; ++i)
-    //    {
-    //        temp[i] = new int[80];
-
-    //        memset(temp[i],0,80*sizeof(int));
-    //    }
-    //   calc *c = new calc();
-
     sharedspace *shared = new sharedspace();
     socketServer *ss = new socketServer(12345,shared);
     ss->startServer();
@@ -45,31 +31,11 @@ int main()
             sleep(3);
         }
     }
-    sc->startclient();
-    while(true)
-    {
-        //        c->get_all_temp(temp);
-        //        for(int i = 0;i<64;i++)
-        //        {
-        //            for(int j = 0;j<80;j++)
-        //            {
-        //                cout<<temp[i][j]<<" ";
-        //            }
-        //            cout<<endl;
-        //        }
-        if(sc->isStart())
-        {
-            sleep(1);
-        }
-        else
-            goto New;
-        int ch =getchar();
-        if(ch =='q')
-            break;
-    }
-    delete shared;
-    delete ss;
-    delete sc;
-    return 0;
+    pthread_t id = sc->startclient();
+
+    pthread_join(id,nullptr);
+    goto New;
+
+
 }
 

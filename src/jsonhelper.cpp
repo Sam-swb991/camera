@@ -1,10 +1,16 @@
 #include "jsonhelper.h"
 #include "common.h"
+/**
+ * @brief 构造函数
+ */
 jsonhelper::jsonhelper()
 {
 
 }
-
+/**
+ * @brief 构造函数，解析json对象，储存mode，或者code
+ * @param json,传入CJsonObject对象
+ */
 jsonhelper::jsonhelper(CJsonObject json)
 {
     std::string function;
@@ -101,65 +107,85 @@ jsonhelper::jsonhelper(CJsonObject json)
     }
 
 }
+/**
+ * @brief 获取code
+ * @return 返回code
+ */
 int jsonhelper::getCode()
 {
     return code;
 }
+/**
+ * @brief 获取mode
+ * @return 返回mode
+ */
 int jsonhelper::getMode()
 {
     return mode;
 }
-
+/**
+ * @brief 获取区域数据，以及区域个数
+ * @param len,区域长度
+ * @return 返回区域数据
+ */
 RECTSET *jsonhelper::getRectset(int *len)
 {
     *len = rectlen;
     return rectset;
 }
-
+/**
+ * @brief 获取json数据
+ * @return 返回CJsonObject 对象
+ */
 CJsonObject jsonhelper::getJson()
 {
     return myjson;
 }
-void jsonhelper::create_temp(WINDOW windos,RECT *rect,int rectnum,float **temp)
-{
-    const std::string body = "body";
-    myjson.Add("function","temp");
-    myjson.AddEmptySubObject(body);
-    myjson[body].Add("width",WIDTH);
-    myjson[body].Add("height",HEIGHT);
-    myjson[body].AddEmptySubObject("window");
-    myjson[body]["window"].Add("x1",windos.x1);
-    myjson[body]["window"].Add("y1",windos.y1);
-    myjson[body]["window"].Add("x2",windos.x2);
-    myjson[body]["window"].Add("y2",windos.y2);
-    myjson[body].AddEmptySubArray("rect");
-    CJsonObject tmprect;
-    for(int i =0;i<rectnum;i++)
-    {
-        tmprect.Clear();
-        tmprect.Add("name",rect[i].name);
-        tmprect.Add("mode",rect[i].mode);
-        tmprect.Add("hightemp",rect[i].tempc.highTemp);
-        tmprect.Add("lowtemp",rect[i].tempc.lowTemp);
-        tmprect.Add("avgtemp",rect[i].tempc.avgTemp);
-        tmprect.Add("alarm-level",rect[i].alarmLevel);
-        tmprect.Add("alarmmode",rect[i].alarmMode);
-        tmprect.Add("x1",rect[i].transrect.x1);
-        tmprect.Add("y1",rect[i].transrect.y1);
-        tmprect.Add("x2",rect[i].transrect.x2);
-        tmprect.Add("y2",rect[i].transrect.y2);
-        myjson[body]["rect"].Add(tmprect);
 
-    }
-    myjson[body].AddEmptySubArray("point");
-    //    CJsonObject tmppoint;
-    for(int i=0;i<5120;i++)
-    {
-        myjson[body]["point"].Add(static_cast<int>(temp[i/80][i%80]));
-    }
+//void jsonhelper::create_temp(WINDOW windos,RECT *rect,int rectnum,float **temp)
+//{
+//    const std::string body = "body";
+//    myjson.Add("function","temp");
+//    myjson.AddEmptySubObject(body);
+//    myjson[body].Add("width",WIDTH);
+//    myjson[body].Add("height",HEIGHT);
+//    myjson[body].AddEmptySubObject("window");
+//    myjson[body]["window"].Add("x1",windos.x1);
+//    myjson[body]["window"].Add("y1",windos.y1);
+//    myjson[body]["window"].Add("x2",windos.x2);
+//    myjson[body]["window"].Add("y2",windos.y2);
+//    myjson[body].AddEmptySubArray("rect");
+//    CJsonObject tmprect;
+//    for(int i =0;i<rectnum;i++)
+//    {
+//        tmprect.Clear();
+//        tmprect.Add("name",rect[i].name);
+//        tmprect.Add("mode",rect[i].mode);
+//        tmprect.Add("hightemp",rect[i].tempc.highTemp);
+//        tmprect.Add("lowtemp",rect[i].tempc.lowTemp);
+//        tmprect.Add("avgtemp",rect[i].tempc.avgTemp);
+//        tmprect.Add("alarm-level",rect[i].alarmLevel);
+//        tmprect.Add("alarmmode",rect[i].alarmMode);
+//        tmprect.Add("x1",rect[i].transrect.x1);
+//        tmprect.Add("y1",rect[i].transrect.y1);
+//        tmprect.Add("x2",rect[i].transrect.x2);
+//        tmprect.Add("y2",rect[i].transrect.y2);
+//        myjson[body]["rect"].Add(tmprect);
 
-}
+//    }
+//    myjson[body].AddEmptySubArray("point");
+//    //    CJsonObject tmppoint;
+//    for(int i=0;i<5120;i++)
+//    {
+//        myjson[body]["point"].Add(static_cast<int>(temp[i/80][i%80]));
+//    }
 
+//}
+/**
+ * @brief 把RECTSET结构体数据拼接成json
+ * @param rectset，RECTSET结构体数据（区域数据）
+ * @param len，区域长度
+ */
 void jsonhelper::create_rect(RECTSET * rectset, int len)
 {
 	myjson.Add("function","rect");

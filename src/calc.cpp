@@ -4,6 +4,10 @@
 #include <stdio.h>
 #include <iostream>
 #include <cstring>
+/**
+ * @brief calc的构造函数，spi的初始化
+ *        以及将spi EEPROM模式下读取的数据储存下来
+ */
 calc::calc()
 {
     spi = new spiCtrl();
@@ -29,10 +33,17 @@ calc::calc()
 
 
 }
+/**
+ * @brief 析构函数，关闭spi
+ */
 calc::~calc()
 {
     spi->close();
 }
+/**
+ * @brief 获取所有像素点的温度
+ * @param 温度的二维数组
+ */
 void calc::get_all_temp(float **temp)
 {
     cout<<"start calc"<<endl;
@@ -89,6 +100,12 @@ void calc::get_all_temp(float **temp)
 //    }
     delete sc_data;
 }
+/**
+ * @brief 交换温度数据的行数
+ * @param 一行温度数据
+ * @param 一行温度数据
+ * @param 一行温度数据长度
+ */
 void calc::change_sort(void *src0,void *src1,size_t len)
 {
  //   printf("********************************\n");
@@ -102,6 +119,10 @@ void calc::change_sort(void *src0,void *src1,size_t len)
     delete []tmp;
 
 }
+/**
+ * @brief 把温度数据按正常的顺序排序
+ * @param 温度数据的二维数组
+ */
 void calc::sort_temp(float **temp)
 {
 
@@ -111,6 +132,12 @@ void calc::sort_temp(float **temp)
         change_sort(temp[63-i],temp[32+i],80);
     }
 }
+/**
+ * @brief 计算得到某个像素点的温度数据
+ * @param em_data，EEPROM矩阵数据的集合
+ * @param sm_data，Sensor获取的矩阵数据集合
+ * @return 返回某点的温度数据
+ */
 float calc::get_one_temp(E_M_DATA* em_data,S_M_DATA* sm_data)
 {
  //   printf("start!\n");
@@ -189,7 +216,10 @@ float calc::get_one_temp(E_M_DATA* em_data,S_M_DATA* sm_data)
 
 
 }
-
+/**
+ * @brief 获取ta值
+ * @return 返回ta值
+ */
 int calc::getTa()
 {
     return Ta;

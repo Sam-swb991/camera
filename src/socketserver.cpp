@@ -10,9 +10,17 @@
 #include "myprotocol.h"
 #include "jsonhelper.h"
 #include "transport.h"
+/**
+ * @brief 初始化静态数据
+ */
 sharedspace *socketServer::ss = nullptr;
 int socketServer::serverfd = -1,socketServer::epfd=-1;
 bool socketServer::closeThread = false;
+/**
+ * @brief 构造函数，创建socket服务端，epoll模型初始化
+ * @param port，服务端端口
+ * @param ss，sharedspace对象
+ */
 socketServer::socketServer(int port,sharedspace *ss)
 {
     server = new socketHelper();
@@ -29,6 +37,10 @@ socketServer::socketServer(int port,sharedspace *ss)
     this->ss = ss;
 
 }
+/**
+ * @brief 析构函数，关闭套接字，
+ *        关闭epoll文件描述符，关闭线程
+ */
 socketServer::~socketServer()
 {
     close(serverfd);
@@ -36,6 +48,11 @@ socketServer::~socketServer()
     closeThread = false;
 
 }
+/**
+ * @brief 设置非阻塞模式
+ * @param fd，文件描述符
+ * @return 成功返回0,不成功返回-1
+ */
 int socketServer::setnonblocking(int fd)
 {
     int opts;
@@ -53,7 +70,10 @@ int socketServer::setnonblocking(int fd)
     }
     return 0;
 }
-
+/**
+ * @brief socket服务端线程
+ * @return 返回固定为null
+ */
 void * socketServer::serverthread(void *)
 {
     int nfds,n;
@@ -127,8 +147,8 @@ void * socketServer::serverthread(void *)
                         std::cout<<" platform :";
                         common::print_V(&platform,1,1);
                         std::cout<<std::endl;
-                        CJsonObject *json = pro->GetJson();
-                        std::cout<<json->ToFormattedString()<<std::endl;
+                        CJsonObject json = pro->GetJson();
+                        std::cout<<json.ToFormattedString()<<std::endl;
                         jsonhelper *jsonh = new jsonhelper(json);
                         RECTSET *rect = jsonh->getRectset(&rectlen);
                         mode = jsonh->getMode();
@@ -141,14 +161,14 @@ void * socketServer::serverthread(void *)
                         std::cout<<std::endl;
                         //****************************                       
                         delete jsonh;                     
-                        delete json;
+
                     }
 
                     ev.data.fd=rsock;
                     ev.events=EPOLLOUT|EPOLLET;
                     epoll_ctl(epfd,EPOLL_CTL_MOD,rsock,&ev);
                     delete pro;
-                    cout<<"2"<<endl;
+               //     cout<<"2"<<endl;
                 }
             }
             else if(events[i].events&EPOLLOUT)
@@ -182,6 +202,7 @@ void * socketServer::serverthread(void *)
                 common::print_V(sendmsg,(int)len,1);
                 std::cout<<std::endl;
                 rsock = events[i].data.fd;
+                setnonblocking(rsock);
                 ssize_t tmp = send(rsock, sendmsg, len, 0);
                 if(tmp <0)
                 {
@@ -192,14 +213,18 @@ void * socketServer::serverthread(void *)
                 epoll_ctl(epfd,EPOLL_CTL_MOD,rsock,&ev);
                 delete sendmsg;
                 delete pro;
-                delete rectset;
+                //delete rectset;
 
             }
         }
     }
     return nullptr;
 }
-void socketServer::startServer()
+/**
+ * @brief 创建服务端线程
+ * @return 返回线程id
+ */
+pthread_t socketServer::startServer()
 {
     pthread_t id;
     int ret = pthread_create(&id,nullptr,serverthread,nullptr);
@@ -208,4 +233,5 @@ void socketServer::startServer()
         std::cout << "Create server pthread error!" << std::endl;
 
     }
+    return id;
 }

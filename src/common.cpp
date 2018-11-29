@@ -3,6 +3,12 @@
 #include <cmath>
 #include "temprule.h"
 #include <sstream>
+/**
+ * @brief 按格式打印字符串
+ * @param data,需要打印的字符串
+ * @param len，需要到打印的长度
+ * @param type，为1则把每个字符打印为16进制，为2则转化为unsigned short类型数据再打印
+ */
 void common::print_V(void *data,int len,int type)
 {
     switch (type) {
@@ -41,7 +47,11 @@ void common::print_V(void *data,int len,int type)
         default:break;
     }
 }
-
+/**
+ * @brief 转换大小端
+ * @param data,字符串
+ * @param len，字符串长度
+ */
 void common::change_edian(void *data,int len)
 {
     unsigned char *tmp = static_cast<unsigned char *>(data);
@@ -53,14 +63,22 @@ void common::change_edian(void *data,int len)
         tmp[i+1] = t;
     }
 }
-
+/**
+ * @brief int转string
+ * @param num,int数据
+ * @return 返回转换后的字符串
+ */
 string common::to_string(int num)
 {
 	stringstream ss;
 	ss<<num;
 	return ss.str();
 }
-
+/**
+ * @brief float转string
+ * @param num,float数据
+ * @return 返回转换后的字符串
+ */
 string common::to_string(float num)
 {
 	stringstream ss;

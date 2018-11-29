@@ -5,11 +5,18 @@
 #include "common.h"
 #include <ctime>
 #include "jsoncpp.h"
+/**
+ * @brief 静态数据初始化
+ */
 int socketclient::clientfd = -1;
 bool socketclient::start = true;
 float ** socketclient::temp = nullptr;
 sharedspace * socketclient::ss = nullptr;
 calc *socketclient::c = nullptr;
+/**
+ * @brief 构造函数，初始化温度二维数组，传入sharedspace对象
+ * @param ss，传入sharedspace对象
+ */
 socketclient::socketclient(sharedspace *ss)
 {
     client = new socketHelper();
@@ -24,24 +31,36 @@ socketclient::socketclient(sharedspace *ss)
     c= new calc();
 
 }
+/**
+ * @brief 链接socket服务端
+ * @param addr，服务器地址
+ * @param port，服务器端口
+ * @return 成功返回套接字clientfd，不成功返回-1
+ */
 int socketclient::connect(const char *addr, int port)
 {
     clientfd = client->SocketClientBuilder(addr,port);
     if(clientfd<0)
     {
         start = false;
+        return -1;
     }
     else
         start = true;
     return clientfd;
 }
+/**
+ * @brief socket客户端线程
+ * @return 返回固定为null
+ */
 void *socketclient::clientthread(void *)
 {
     WINDOW window;
-    window.x1 = 0.08f;
-    window.y1 = -0.16f;
-    window.x2 = 0.88f;
-    window.y2 = 0.98f;
+    // 6 mm camera
+    window.x1 = 0.093f;
+    window.y1 = -0.04f;
+    window.x2 = 0.9f;
+    window.y2 = 1.093f;
     //    POINT point[5120];
     RECT *rect;
     int len;
@@ -96,9 +115,9 @@ void *socketclient::clientthread(void *)
         json->create_temp(window,rect,len,temp);
         end_t =clock();
         cout<<"time 5:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
-        //    cout<<jsonobject.ToFormattedString()<<endl;
+//        cout<<json->getJsonString()<<endl;
 
-        myProtocol *pro = new myProtocol(0x01,0x03,json->getJson_data());
+        myProtocol *pro = new myProtocol(0x01,0x03,json->getJsonString());
         unsigned long prolen = pro->Getlength();
         cout<<"data lenth:"<<prolen<<endl;
         long len = send(clientfd,pro->GetData(),prolen,0);
@@ -136,8 +155,11 @@ void *socketclient::clientthread(void *)
     cout<<"client end"<<endl;
     return nullptr;
 }
-
-void socketclient::startclient()
+/**
+ * @brief 创建socket客户端线程
+ * @return 返回线程id
+ */
+pthread_t socketclient::startclient()
 {
     pthread_t id;
     int ret = pthread_create(&id,nullptr,clientthread,nullptr);
@@ -146,11 +168,19 @@ void socketclient::startclient()
         std::cout << "Create client pthread error!" << std::endl;
 
     }
+    return id;
 }
+/**
+ * @brief 获取客户端线程是否还在运行
+ * @return 返回true为在运行，false则不在
+ */
 bool socketclient::isStart()
 {
     return start;
 }
+/**
+ * @brief 获取温度数据
+ */
 void socketclient::getTemp()
 {
 

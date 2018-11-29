@@ -40,11 +40,9 @@ typedef struct trans_rect{
     }
 }RECT;
 
-typedef struct point{
-    int isShow;
-    int value;
-}POINT;
-
+/**
+ * @brief 模式enum
+ */
 enum mode{ADD,DEL,MODIFY,SET,GET};
 
 #endif // TRANSPORT_H
