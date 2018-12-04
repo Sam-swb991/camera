@@ -10,6 +10,7 @@
 #include "myprotocol.h"
 #include "jsonhelper.h"
 #include "transport.h"
+#include <signal.h>
 /**
  * @brief 初始化静态数据
  */
@@ -136,10 +137,14 @@ void * socketServer::serverthread(void *)
                 {
                     //**************************
                     //line to use
+                    cout<<"recv data is:"<<endl;
+                    common::print_V(line,n,1);
+                    cout<<endl;
                     myProtocol *pro = new myProtocol(line);
                     check = pro->getCheck();
                     if(check)
                     {
+                        cout<<"check"<<endl;
                         sync = pro->GetSync();
                         platform = pro->GetPlatform();
                         std::cout<<"sync :";
@@ -147,27 +152,23 @@ void * socketServer::serverthread(void *)
                         std::cout<<" platform :";
                         common::print_V(&platform,1,1);
                         std::cout<<std::endl;
-                        CJsonObject json = pro->GetJson();
-                        std::cout<<json.ToFormattedString()<<std::endl;
-                        jsonhelper *jsonh = new jsonhelper(json);
-                        RECTSET *rect = jsonh->getRectset(&rectlen);
-                        mode = jsonh->getMode();
+                        jsoncpp *json = pro->GetJson();
+                        std::cout<<json->toStyledString()<<std::endl;
+                        RECTSET *rect = json->getRectset(&rectlen);
+                        mode = json->getMode();
                         cout<<"mode is "<<mode<<endl;
                         pthread_mutex_lock(&ss->mutex);
                         ss->SetRect(rect,rectlen,mode);
                         pthread_mutex_unlock(&ss->mutex);
-                        std::cout<<"recv is :";
-                        common::print_V(line,n,1);
-                        std::cout<<std::endl;
                         //****************************                       
-                        delete jsonh;                     
+                       // delete json;
 
                     }
 
                     ev.data.fd=rsock;
                     ev.events=EPOLLOUT|EPOLLET;
                     epoll_ctl(epfd,EPOLL_CTL_MOD,rsock,&ev);
-                    delete pro;
+                   // delete pro;
                //     cout<<"2"<<endl;
                 }
             }
@@ -175,7 +176,6 @@ void * socketServer::serverthread(void *)
             {
                 cout<<"send start"<<endl;
                 unsigned char *sendmsg;
-                RECTSET *rectset = nullptr;
 				int rectsetlen;
                 CJsonObject json;
                 if(check)
@@ -183,12 +183,13 @@ void * socketServer::serverthread(void *)
                 	if(mode == GET)
                 	{
                         pthread_mutex_lock(&ss->mutexsql);
-						rectset = ss->sql->getRect(&rectsetlen,true);
+                        RECTSET * rectset = ss->sql->getRect(&rectsetlen,true);
                         pthread_mutex_unlock(&ss->mutexsql);
 						jsonhelper *jsonh = new jsonhelper();
 						jsonh->create_rect(rectset,rectsetlen);
 						json = jsonh->getJson();
                         delete jsonh;
+                        delete rectset;
 					}
 					else
                     	json.Add("code","100");
@@ -199,6 +200,7 @@ void * socketServer::serverthread(void *)
                 myProtocol *pro = new myProtocol(0x02,0x01,json);
                 sendmsg = pro->GetData();
                 len = pro->Getlength();
+                cout<<"send data is:"<<endl;
                 common::print_V(sendmsg,(int)len,1);
                 std::cout<<std::endl;
                 rsock = events[i].data.fd;
@@ -212,8 +214,8 @@ void * socketServer::serverthread(void *)
                 ev.events = EPOLLIN|EPOLLET;
                 epoll_ctl(epfd,EPOLL_CTL_MOD,rsock,&ev);
                 delete sendmsg;
-                delete pro;
-                //delete rectset;
+               // delete pro;
+
 
             }
         }

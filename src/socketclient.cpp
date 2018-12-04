@@ -5,6 +5,7 @@
 #include "common.h"
 #include <ctime>
 #include "jsoncpp.h"
+#include <signal.h>
 /**
  * @brief 静态数据初始化
  */
@@ -29,6 +30,7 @@ socketclient::socketclient(sharedspace *ss)
         memset(temp[i],0,80*sizeof(int));
     }
     c= new calc();
+
 
 }
 /**
@@ -85,8 +87,9 @@ void *socketclient::clientthread(void *)
         //        }
 
         pthread_mutex_lock(&ss->mutex);
-        rect = ss->GetRect(temp,c->getTa());
+        rect = ss->GetRect(temp,window,c->getTa());
         len = ss->getRectlen();
+        list <int> alarmnum = ss->getAlarmnum();
         pthread_mutex_unlock(&ss->mutex);
 
         end_t =clock();
@@ -112,7 +115,7 @@ void *socketclient::clientthread(void *)
 //        json->create_temp(window,rect,len,temp);
 //        jsonobject = json->getJson();
         jsoncpp *json = new jsoncpp();
-        json->create_temp(window,rect,len,temp);
+        json->create_temp(window,rect,len,alarmnum,temp);
         end_t =clock();
         cout<<"time 5:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
 //        cout<<json->getJsonString()<<endl;

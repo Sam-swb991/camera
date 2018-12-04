@@ -37,17 +37,25 @@ int socketHelper::SocketServerBuilder(int clientNum,int port)
         perror("socket");
         return -1;
     }
+    /**
+      * @brief 设置地址端口复用
+      */
     if( setsockopt(serverfd, SOL_SOCKET, SO_REUSEADDR, &flag, (unsigned int)len) == -1)
     {
         perror("setsocketopt");
         return -1;
     }
+    /**
+      * @brief 绑定地址和端口
+      */
     if (bind(serverfd,(struct sockaddr *)&my_addr,sizeof(struct sockaddr))<0)
     {
         perror("bind");
         return -1;
     }
-
+    /**
+     * @brief 设置监听最大客户端
+     */
     listen(serverfd,clientNum);
     server = true;
     return serverfd;

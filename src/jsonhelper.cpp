@@ -17,7 +17,7 @@ jsonhelper::jsonhelper(CJsonObject json)
     bool ret = json.Get("function",function);
     if(ret)
     {
-    	rectlen = json["body"]["rect"].GetArraySize();
+        rectlen = json["body"]["rect"].GetArraySize();
         if(rectlen != 0)
         {
         	rectset = new RECTSET[rectlen];
@@ -61,6 +61,14 @@ jsonhelper::jsonhelper(CJsonObject json)
 					json["body"]["rect"][static_cast<unsigned int>(i)].Get("id",rectset[i].id);
 				}
 			}
+            else if(function == "rectunset")
+            {
+                for(int i=0;i<rectlen;i++)
+                {
+                    mode = UNSET;
+                    json["body"]["rect"][static_cast<unsigned int>(i)].Get("id",rectset[i].id);
+                }
+            }
 			else if(function == "rectmodify")
 			{
 				for(int i=0;i<rectlen;i++)

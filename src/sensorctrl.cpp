@@ -14,15 +14,20 @@ sensorCtrl::sensorCtrl(spiCtrl* spictrl)
  */
 void sensorCtrl::init_sensor()
 {
-
-    spictrl->spi_sensor_write(0x01,0x01);//wake up PTAT BOLCK 0
+    /**
+      * @brief 唤醒spi，设置PTAT,BLOCK标识位为0
+      */
+    spictrl->spi_sensor_write(0x01,0x01);
     spictrl->spi_sensor_write(0x03,0x1c);
     spictrl->spi_sensor_write(0x04,0x05);
     spictrl->spi_sensor_write(0x05,0x05);
     spictrl->spi_sensor_write(0x06,0x15);
     spictrl->spi_sensor_write(0x07,0x0c);
     spictrl->spi_sensor_write(0x08,0x0c);
-    spictrl->spi_sensor_write(0x01,0x09);//start sensor
+    /**
+      * @brief 启动sensor，开始读取温度
+      */
+    spictrl->spi_sensor_write(0x01,0x09);
     usleep(30000);//delay 30ms
     spictrl->spi_sensor_read_byte(0x02);
 }

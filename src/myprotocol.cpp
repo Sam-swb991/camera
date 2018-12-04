@@ -95,12 +95,12 @@ unsigned char myProtocol::GetSync()
  * @brief 获取json对象
  * @return 返回json对象
  */
-CJsonObject myProtocol::GetJson()
+jsoncpp *myProtocol::GetJson()
 {
     std::string str(json_data);
-    cout<<str<<endl;
-    json = new CJsonObject(str);
-    return json;
+    cout<<"get json:"<<str<<endl;
+    jsonc = new jsoncpp(str);
+    return jsonc;
 }
 /**
  * @brief 获取协议是不是通过校验
@@ -117,14 +117,19 @@ bool myProtocol::getCheck()
  */
 myProtocol::myProtocol(char *recv)
 {
+    cout<<"start pro"<<endl;
     isrecv =true;
     memcpy(&sync,recv+1,1);
     memcpy(&platform,recv+2,1);
     memcpy(&json_len,recv+4,4);
+    cout<<"len is"<<json_len<<endl;
+    cout<<"0"<<endl;
     json_data = new char[json_len];
+    cout<<"1"<<endl;
     memcpy(json_data,recv+8,static_cast<unsigned long>(json_len));
     unsigned char recv_check;
     memcpy(&recv_check,recv+8+json_len,1);
+    cout<<"2"<<endl;
     unsigned char checksum = CheckSum(reinterpret_cast<unsigned char *>(recv),8+json_len);
     if(recv_check != checksum)
     {
@@ -133,6 +138,7 @@ myProtocol::myProtocol(char *recv)
     }
     else
         check = true;
+    cout<<"end pro"<<endl;
 }
 /**
  * @brief 校验和算法

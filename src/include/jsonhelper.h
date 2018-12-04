@@ -2,6 +2,7 @@
 #define JSONHELPER_H
 #include "CJsonObject.hpp"
 #include "transport.h"
+#include "jsoncpp.h"
 using namespace neb;
 class jsonhelper
 {

@@ -10,7 +10,6 @@ spiCtrl::spiCtrl()
     {
         cout<<"can not open spi device!"<<endl;
     }
-
 }
 /**
  * @brief 关闭spi

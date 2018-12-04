@@ -14,7 +14,7 @@
  * @param alarmmode，需要传出的alarmmode数组
  * @param Ta，Ta值传入
  */
-temprule::temprule(RECTSET *rectset, int len, float **temp, sharedspace *ss, TEMP_C * tempc, int *alarmmode, int Ta)
+temprule::temprule(RECTSET *rectset, int len, WINDOW windows, float **temp, sharedspace *ss, TEMP_C * tempc, int *alarmmode, int Ta)
 {
     cout<<"temprule"<<endl;
     memset(alarmmode,0,sizeof(int)*static_cast<size_t>(len));
@@ -26,21 +26,33 @@ temprule::temprule(RECTSET *rectset, int len, float **temp, sharedspace *ss, TEM
 
         memset(ftemp[i],0,80*sizeof(int));
     }
+
     int ret = 0;
     pthread_mutex_lock(&ss->mutexsql);
     ret = ss->getTemp(ftemp);
     pthread_mutex_unlock(&ss->mutexsql);
-
     int num;
-
+    float win_x = windows.x2 -windows.x1;
+    float win_y = windows.y2 - windows.y1;
+    float win_mid_x = win_x/2+windows.x1;
     for(int k = 0 ;k<len;++k)
     {
         cout<<"rect x"<<rectset[k].rect.x2<<"rect y"<<rectset[k].rect.y2<<endl;
-        int start_x = static_cast<int>(rectset[k].rect.x1*WIDTH);
-        int start_y = static_cast<int>(rectset[k].rect.y1*HEIGHT);
-        int end_x = static_cast<int>(ceil(static_cast<double>(rectset[k].rect.x2*WIDTH)));
-        int end_y = static_cast<int>(ceil(static_cast<double>(rectset[k].rect.y2*HEIGHT)));
-
+        float rect_x = rectset[k].rect.x2 - rectset[k].rect.x1;
+        float rect_mid_x = rect_x/2+rectset[k].rect.x1;
+        float real_mid_x = 2*win_mid_x-rect_mid_x;
+        int start_x = static_cast<int>((real_mid_x-rect_x/2-windows.x1)*WIDTH/win_x);
+        int start_y = static_cast<int>((rectset[k].rect.y1-windows.y1)*HEIGHT/win_y);
+        int end_x = static_cast<int>(ceil(static_cast<double>((rect_mid_x+rect_x/2-windows.x1)*WIDTH/win_x)));
+        int end_y = static_cast<int>(ceil(static_cast<double>((rectset[k].rect.y2-windows.y1)*HEIGHT/win_y)));
+        if(start_x<0)
+            start_x = 0;
+        if(start_y<0)
+            start_y = 0;
+        if(end_x>80)
+            end_x = 80;
+        if(end_y>64)
+            end_y = 64;
         cout<<"startx = "<<start_x<<" starty = "<<start_y<<" end_x = "<<end_x<<" end_y = "<<end_y<<endl;
         num=0;
         tempc[k].lowTemp = 1000;
@@ -50,7 +62,7 @@ temprule::temprule(RECTSET *rectset, int len, float **temp, sharedspace *ss, TEM
         {
             for(int j=start_x;j<end_x;++j)
             {
-                //temp_compensation(temp[i][j],Ta,0.95);
+                temp_compensation(temp[i][j],Ta,0.95);
                 if(tempc[k].highTemp<temp[i][j])
                     tempc[k].highTemp = temp[i][j];
                 if(tempc[k].lowTemp>temp[i][j])
@@ -62,6 +74,7 @@ temprule::temprule(RECTSET *rectset, int len, float **temp, sharedspace *ss, TEM
                     if(temp[i][j]>rectset->highvalue)
                     {
                         alarmmode[k] |=0x01;
+                        alarmnum.push_back(i*80+j);
                     }
                 }
                 if(rectset[k].lowalarm == 1)
@@ -81,7 +94,6 @@ temprule::temprule(RECTSET *rectset, int len, float **temp, sharedspace *ss, TEM
                             alarmmode[k] |=0x04;
                         }
                     }
-
                 }
             }
         }
@@ -109,4 +121,26 @@ void temprule::temp_compensation(float &temp,int Ta,double a)
         double tb = pow(ta,1/4.09);
         temp = static_cast<float>(tb);
     }
+}
+/**
+ * @brief 温度补偿
+ * @param temp,温度二维数组
+ * @param env_temp,环境温度
+ */
+void temprule::all_temp_selector(float **temp,float env_temp)
+{
+    for(int i=0;i<64;++i)
+    {
+        for(int j=0;j<80;++j)
+        {
+            float differ = abs(temp[i][j]-env_temp);
+            if(differ<TEMP_DIFFER)
+                temp[i][j] = env_temp;
+        }
+    }
+}
+
+list<int> temprule::getAlarmnum()
+{
+    return alarmnum;
 }

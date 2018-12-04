@@ -12,7 +12,7 @@ public:
     myProtocol(char *);
     ~myProtocol();
     unsigned char GetSync();
-    CJsonObject GetJson();
+    jsoncpp *GetJson();
     unsigned char *GetData();
     unsigned long Getlength();
     unsigned char GetPlatform();
@@ -25,7 +25,8 @@ private:
     size_t json_len;
     unsigned char *data;
     char *json_data;
-    CJsonObject json;
+    CJsonObject *json;
+    jsoncpp *jsonc;
     bool check;
     bool isrecv=false;
 };

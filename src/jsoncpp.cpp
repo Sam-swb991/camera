@@ -8,20 +8,141 @@ jsoncpp::jsoncpp()
 {
 
 }
-//jsoncpp::jsoncpp(std::string json)
-//{
-//    std::unique_ptr<Json::CharReader> const reader(readbuilder.newCharReader());
-//    const char * cjson = json.c_str();
-//    std::string error;
-//    if(!reader->parse(cjson,cjson+json.size(),&myjson,&error))
-//    {
-//        std::cout<<"parse error"<<endl;
-//        return;
-//    }
-//    std::string function = myjson["function"].asString();
+jsoncpp::jsoncpp(std::string json)
+{
+    std::unique_ptr<Json::CharReader> const reader(readbuilder.newCharReader());
+    const char * cjson = json.c_str();
+    std::string error;
+    if(!reader->parse(cjson,cjson+json.size(),&myjson,&error))
+    {
+        std::cout<<"parse error"<<endl;
+        return;
+    }
+    else
+        cout<<"right"<<endl;
+    std::string function = myjson["function"].asString();
+    if(!function.empty())
+    {
+        rectlen = static_cast<int>(myjson["body"]["rect"].size());
+        cout<<"**********rectlen is :"<<rectlen<<endl;
+        if(rectlen != 0)
+        {
+            rectset = new RECTSET[rectlen];
+            if(function == "rectadd")
+            {
+
+                    for(int i=0;i<rectlen;i++)
+                    {
+                        mode = ADD;
+                        rectset[i].id = myjson["body"]["rect"][static_cast<unsigned int>(i)]["ID"].asInt();
+                        rectset[i].name = myjson["body"]["rect"][static_cast<unsigned int>(i)]["name"].asString();
+                        rectset[i].rect.x1 = myjson["body"]["rect"][static_cast<unsigned int>(i)]["x1"].asFloat();
+                        rectset[i].rect.y1 = myjson["body"]["rect"][static_cast<unsigned int>(i)]["y1"].asFloat();
+                        rectset[i].rect.x2 = myjson["body"]["rect"][static_cast<unsigned int>(i)]["x2"].asFloat();
+                        rectset[i].rect.y2 = myjson["body"]["rect"][static_cast<unsigned int>(i)]["y2"].asFloat();
+                        rectset[i].highalarm = myjson["body"]["rect"][static_cast<unsigned int>(i)]["highalarm"].asInt();
+                        rectset[i].highvalue = myjson["body"]["rect"][static_cast<unsigned int>(i)]["highvalue"].asInt();
+                        rectset[i].lowalarm = myjson["body"]["rect"][static_cast<unsigned int>(i)]["lowalarm"].asInt();
+                        rectset[i].lowvalue = myjson["body"]["rect"][static_cast<unsigned int>(i)]["lowvalue"].asInt();
+                        rectset[i].rapidtempchangealarm = myjson["body"]["rect"][static_cast<unsigned int>(i)]["rapidtempchangealarm"].asInt();
+                        rectset[i].rapidtempchangevalue = myjson["body"]["rect"][static_cast<unsigned int>(i)]["rapidtempchangevalue"].asInt();
+                        rectset[i].alarm_level = myjson["body"]["rect"][static_cast<unsigned int>(i)]["alarm_level"].asInt();
+                    }
+                    cout<<"rectset:"<<rectset->name<<endl;
+                }
+
+            else if(function == "rectdel")
+            {
+                for(int i=0;i<rectlen;i++)
+                {
+                    mode = DEL;
+                    rectset[i].id = myjson["body"]["rect"][static_cast<unsigned int>(i)]["ID"].asInt();
+                }
+
+            }
+            else if(function == "rectset")
+            {
+                for(int i=0;i<rectlen;i++)
+                {
+                    mode = SET;
+                    rectset[i].id = myjson["body"]["rect"][static_cast<unsigned int>(i)]["ID"].asInt();
+                }
+            }
+            else if(function == "rectunset")
+            {
+                for(int i=0;i<rectlen;i++)
+                {
+                    mode = UNSET;
+                    rectset[i].id = myjson["body"]["rect"][static_cast<unsigned int>(i)]["ID"].asInt();
+                }
+            }
+            else if(function == "rectmodify")
+            {
+                for(int i=0;i<rectlen;i++)
+                {
+                    mode = MODIFY;
+                    rectset[i].id = myjson["body"]["rect"][static_cast<unsigned int>(i)]["ID"].asInt();
+                    rectset[i].name = myjson["body"]["rect"][static_cast<unsigned int>(i)]["name"].asString();
+                    rectset[i].rect.x1 = myjson["body"]["rect"][static_cast<unsigned int>(i)]["x1"].asFloat();
+                    rectset[i].rect.y1 = myjson["body"]["rect"][static_cast<unsigned int>(i)]["y1"].asFloat();
+                    rectset[i].rect.x2 = myjson["body"]["rect"][static_cast<unsigned int>(i)]["x2"].asFloat();
+                    rectset[i].rect.y2 = myjson["body"]["rect"][static_cast<unsigned int>(i)]["y2"].asFloat();
+                    rectset[i].highalarm = myjson["body"]["rect"][static_cast<unsigned int>(i)]["highalarm"].asInt();
+                    rectset[i].highvalue = myjson["body"]["rect"][static_cast<unsigned int>(i)]["highvalue"].asInt();
+                    rectset[i].lowalarm = myjson["body"]["rect"][static_cast<unsigned int>(i)]["lowalarm"].asInt();
+                    rectset[i].lowvalue = myjson["body"]["rect"][static_cast<unsigned int>(i)]["lowvalue"].asInt();
+                    rectset[i].rapidtempchangealarm = myjson["body"]["rect"][static_cast<unsigned int>(i)]["rapidtempchangealarm"].asInt();
+                    rectset[i].rapidtempchangevalue = myjson["body"]["rect"][static_cast<unsigned int>(i)]["rapidtempchangevalue"].asInt();
+                    rectset[i].alarm_level = myjson["body"]["rect"][static_cast<unsigned int>(i)]["alarm_level"].asInt();
+                }
+            }
+            else if(function == "getrect")
+            {
+                mode = GET;
+                cout<<"mode inner is :"<<mode<<endl;
+            }
+            else
+                return;
+        }
+        else
+        {
+            if(function == "getrect")
+            {
+                mode = GET;
+                cout<<"mode is :"<<mode<<endl;
+            }
+        }
+    }
 
 
-//}
+    else
+    {
+        code = myjson["code"].asInt();
+        std::cout<<"code is:"<<code<<std::endl;
+    }
+    cout<<"end json"<<endl;
+    delete cjson;
+
+
+}
+std::string jsoncpp::toStyledString()
+{
+    return myjson.toStyledString();
+}
+int jsoncpp::getCode()
+{
+    return code;
+}
+int jsoncpp::getMode()
+{
+    return mode;
+}
+RECTSET * jsoncpp::getRectset(int *len)
+{
+    cout<<"jsoncpp getrect"<<endl;
+    *len = rectlen;
+    return rectset;
+}
 /**
  * @brief 穿件需要传输的json数据
  * @param windos，窗口大小
@@ -29,7 +150,7 @@ jsoncpp::jsoncpp()
  * @param rectnum，区域的个数
  * @param temp，温度的二维数组
  */
-void jsoncpp::create_temp(WINDOW windos, RECT *rect, int rectnum, float **temp)
+void jsoncpp::create_temp(WINDOW windos, RECT *rect, int rectnum,list<int> alarmnum, float **temp)
 {
     myjson["function"] = "temp";
     myjson["body"]["height"] = HEIGHT;
@@ -57,6 +178,13 @@ void jsoncpp::create_temp(WINDOW windos, RECT *rect, int rectnum, float **temp)
     {
         myjson["body"]["point"][i] =static_cast<int>(temp[i/80][i%80]);
     }
+//    int num = (int)alarmnum.size();
+//    list<int>::iterator j= alarmnum.begin();
+//    for(int i =0;i<num;++i)
+//    {
+//        myjson["body"]["alarm"][i] = *j;
+//        ++j;
+//    }
 
 }
 /**

@@ -12,12 +12,15 @@
 #include "json/json.h"
 #include <time.h>
 #include <pthread.h>
+#include <signal.h>
 using namespace Json;
 int main()
 {
+    signal(SIGPIPE,SIG_IGN);
+    signal(SIGABRT,SIG_IGN);
     sharedspace *shared = new sharedspace();
     socketServer *ss = new socketServer(12345,shared);
-    ss->startServer();
+    pthread_t id_s = ss->startServer();
     socketclient *sc = new socketclient(shared);
  New:while(true)
     {
@@ -35,7 +38,7 @@ int main()
 
     pthread_join(id,nullptr);
     goto New;
-
+       // pthread_join(id_s,nullptr);
 
 }
 

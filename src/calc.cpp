@@ -68,6 +68,7 @@ void calc::get_all_temp(float **temp)
         delete sm_data;
 
     }
+    cout<<"end temp"<<endl;
 //    for(int i =0;i<64;++i)
 //    {
 //        for(int j=0;j<80;++j)
@@ -98,6 +99,7 @@ void calc::get_all_temp(float **temp)
 //            //cout<<"bad value repaire is :"<<temp[x][y]<<endl;
 //        }
 //    }
+    cout<<"end calc"<<endl;
     delete sc_data;
 }
 /**

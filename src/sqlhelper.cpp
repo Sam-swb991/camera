@@ -177,6 +177,7 @@ void sqlHelper::update_table(string table, list < string > name, list < string >
     sql+=" where ID = ";
     sql+=*value.begin();
     sql+=";";
+    //cout<<sql<<endl;
     int res = sqlite3_exec(db,sql.c_str(),nullptr,nullptr,&errorMsg);
     if(res != SQLITE_OK)
     {
@@ -281,7 +282,7 @@ RECTSET * sqlHelper::getRect(int *nRow,bool isset)
 
     int nIndex = nCol;
     /**
-      * @brief
+      * @brief　pResult
       * 第n列的名称，存放于pResult[n]
       * 第n行第m列的数据，存放于pResult [(n+1) * nCol + m]
       */

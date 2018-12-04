@@ -50,7 +50,7 @@ sharedspace::sharedspace()
  * @param Ta，Ta值
  * @return 返回RECT对象
  */
-RECT * sharedspace::GetRect(float **temp,int Ta)
+RECT * sharedspace::GetRect(float **temp,WINDOW windows,int Ta)
 {
     cout<<"start get rect!"<<endl;
     if(set)
@@ -76,7 +76,10 @@ RECT * sharedspace::GetRect(float **temp,int Ta)
     {
         TEMP_C *tempc = new TEMP_C[rectsetlen];
         int *alarmmode = new int[rectsetlen];
-        trule = new temprule(this->rectset,rectsetlen,temp,this,tempc,alarmmode,Ta);
+
+        trule = new temprule(this->rectset,rectsetlen,windows,temp,this,tempc,alarmmode,Ta);
+        alarmnum = trule->getAlarmnum();
+
         for(int i =0;i<rectsetlen;++i)
         {
             printf("alarmmode is %d\n",alarmmode[i]);
@@ -129,6 +132,7 @@ void sharedspace::SetRect(RECTSET *rectset,int len,int mode)
     if(mode !=GET)
         rectsetlen = len;
     this->mode = mode;
+    cout<<"mode is :"<<mode<<"len is :"<<len<<endl;
     if(rectsetlen != 0)
     {
 
@@ -136,6 +140,7 @@ void sharedspace::SetRect(RECTSET *rectset,int len,int mode)
         {
         case ADD:
         case MODIFY:{
+            cout<<"modify"<<endl;
             list<string> value;
             for(int i=0;i<len;++i)
             {
@@ -176,13 +181,19 @@ void sharedspace::SetRect(RECTSET *rectset,int len,int mode)
             }
             set = true;
         }break;
-        case SET:{
+        case SET:
+        case UNSET:{
+            string sqlstr;
             for(int i=0;i<len;++i)
             {
-                string sqlstr = "update rect set isset = 1 where ID = ";
+                if(mode == SET)
+                    sqlstr = "update rect set isset = 1 where ID = ";
+                else if(mode == UNSET)
+                    sqlstr = "update rect set isset = 0 where ID = ";
                 sqlstr+= common::to_string(rectset[i].id);
                 sqlstr+=";";
                 sql->exec(sqlstr);
+                sqlstr.clear();
             }
             set = true;
         }break;
@@ -307,4 +318,9 @@ int sharedspace::getTemp(int **temp)
     }
     else
         return -1;
+}
+
+list<int> sharedspace::getAlarmnum()
+{
+    return alarmnum;
 }
