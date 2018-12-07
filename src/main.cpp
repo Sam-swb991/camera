@@ -10,6 +10,7 @@
 #include "socketclient.h"
 #include "sqlhelper.h"
 #include "json/json.h"
+#include "serialport.h"
 #include <time.h>
 #include <pthread.h>
 #include <signal.h>
@@ -19,6 +20,8 @@ int main()
     signal(SIGPIPE,SIG_IGN);
     signal(SIGABRT,SIG_IGN);
     sharedspace *shared = new sharedspace();
+    serialPort *serial = new serialPort(shared);
+    serial->startRead();
     socketServer *ss = new socketServer(12345,shared);
     pthread_t id_s = ss->startServer();
     socketclient *sc = new socketclient(shared);
@@ -38,7 +41,7 @@ int main()
 
     pthread_join(id,nullptr);
     goto New;
-       // pthread_join(id_s,nullptr);
+        //pthread_join(id_s,nullptr);
 
 }
 

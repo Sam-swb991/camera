@@ -16,12 +16,12 @@ SOURCES += \
     myprotocol.cpp \
     CJsonObject/CJsonObject.cpp \
     CJsonObject/cJSON.c \
-    jsonhelper.cpp \
     socketclient.cpp \
     temprule.cpp \
     sharedspace.cpp \
     sqlhelper.cpp \
-    jsoncpp.cpp
+    jsoncpp.cpp \
+    serialport.cpp
 
 HEADERS += \
     ./include/spi.h \
@@ -35,7 +35,6 @@ HEADERS += \
     include/cJSON.h \
     include/socketserver.h \
     include/myprotocol.h \
-    include/jsonhelper.h \
     include/transport.h \
     include/socketclient.h \
     include/temprule.h \
@@ -53,7 +52,8 @@ HEADERS += \
     include/json/value.h \
     include/json/version.h \
     include/json/writer.h \
-    include/jsoncpp.h
+    include/jsoncpp.h \
+    include/serialport.h
 
 INCLUDEPATH = ./include
 LIBS += -lsqlite -lpthread

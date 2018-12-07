@@ -22,7 +22,11 @@ sharedspace::sharedspace()
     }
     if(pthread_mutex_init(&mutexsql, nullptr) != 0)
     {
-        perror("mutexmq init error!");
+        perror("mutexsql init error!");
+    }
+    if(pthread_mutex_init(&mutexSerial, nullptr) != 0)
+    {
+        perror("mutexserial init error!");
     }
     rectsetlen = 0;
     sql = new sqlHelper();
@@ -33,13 +37,16 @@ sharedspace::sharedspace()
     tableName.push_back("y1");
     tableName.push_back("x2");
     tableName.push_back("y2");
+    tableName.push_back("prealarm");
+    tableName.push_back("prevalue");
     tableName.push_back("highalarm");
     tableName.push_back("highvalue");
-    tableName.push_back("lowalarm");
-    tableName.push_back("lowvalue");
+    tableName.push_back("linkagealarm");
+    tableName.push_back("linkagevalue");
     tableName.push_back("rapidtempchangealarm");
     tableName.push_back("rapidtempchangevalue");
-    tableName.push_back("alarm_level");
+    tableName.push_back("radiance");
+    tableName.push_back("distance");
     set = true;
     mode = -1;
 
@@ -55,7 +62,7 @@ RECT * sharedspace::GetRect(float **temp,WINDOW windows,int Ta)
     cout<<"start get rect!"<<endl;
     if(set)
     {
-        delete this->rectset;
+        //delete this->rectset;
         pthread_mutex_lock(&this->mutexsql);
         this->rectset = sql->getRect(&rectsetlen,false);
         pthread_mutex_unlock(&this->mutexsql);
@@ -78,8 +85,9 @@ RECT * sharedspace::GetRect(float **temp,WINDOW windows,int Ta)
         int *alarmmode = new int[rectsetlen];
 
         trule = new temprule(this->rectset,rectsetlen,windows,temp,this,tempc,alarmmode,Ta);
-        alarmnum = trule->getAlarmnum();
-
+        highalarm = trule->getHighAlarm();
+        prealarm = trule->getPreAlarm();
+        linkagealarm = trule->getLinkageAlarm();
         for(int i =0;i<rectsetlen;++i)
         {
             printf("alarmmode is %d\n",alarmmode[i]);
@@ -151,13 +159,16 @@ void sharedspace::SetRect(RECTSET *rectset,int len,int mode)
                 value.push_back(common::to_string(rectset[i].rect.y1));
                 value.push_back(common::to_string(rectset[i].rect.x2));
                 value.push_back(common::to_string(rectset[i].rect.y2));
+                value.push_back(common::to_string(rectset[i].prealarm));
+                value.push_back(common::to_string(rectset[i].prevalue));
                 value.push_back(common::to_string(rectset[i].highalarm));
                 value.push_back(common::to_string(rectset[i].highvalue));
-                value.push_back(common::to_string(rectset[i].lowalarm));
-                value.push_back(common::to_string(rectset[i].lowvalue));
+                value.push_back(common::to_string(rectset[i].linkagealarm));
+                value.push_back(common::to_string(rectset[i].linkagevalue));
                 value.push_back(common::to_string(rectset[i].rapidtempchangealarm));
                 value.push_back(common::to_string(rectset[i].rapidtempchangevalue));
-                value.push_back(common::to_string(rectset[i].alarm_level));
+                value.push_back(common::to_string(rectset[i].radiance));
+                value.push_back(common::to_string(rectset[i].distance));
 
             }
             if(mode == ADD)
@@ -320,7 +331,25 @@ int sharedspace::getTemp(int **temp)
         return -1;
 }
 
-list<int> sharedspace::getAlarmnum()
+list<int> sharedspace::getHighAlarm()
 {
-    return alarmnum;
+    return highalarm;
+}
+list <int> sharedspace::getPreAlarm()
+{
+    return prealarm;
+}
+list<int > sharedspace::getLinkageAlarm()
+{
+    return linkagealarm;
+}
+
+void sharedspace::setSerialTemp(float temp)
+{
+    serial_temp = temp;
+}
+
+float sharedspace::getSerialTemp()
+{
+    return serial_temp;
 }

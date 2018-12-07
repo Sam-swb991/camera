@@ -8,7 +8,6 @@
 #include <cstring>
 #include "common.h"
 #include "myprotocol.h"
-#include "jsonhelper.h"
 #include "transport.h"
 #include <signal.h>
 /**
@@ -177,7 +176,7 @@ void * socketServer::serverthread(void *)
                 cout<<"send start"<<endl;
                 unsigned char *sendmsg;
 				int rectsetlen;
-                CJsonObject json;
+                jsoncpp *json =new jsoncpp();
                 if(check)
                 {
                 	if(mode == GET)
@@ -185,19 +184,17 @@ void * socketServer::serverthread(void *)
                         pthread_mutex_lock(&ss->mutexsql);
                         RECTSET * rectset = ss->sql->getRect(&rectsetlen,true);
                         pthread_mutex_unlock(&ss->mutexsql);
-						jsonhelper *jsonh = new jsonhelper();
-						jsonh->create_rect(rectset,rectsetlen);
-						json = jsonh->getJson();
-                        delete jsonh;
+                        json->create_rect(rectset,rectsetlen);
                         delete rectset;
+
 					}
 					else
-                    	json.Add("code","100");
+                        json->create_code(100);
                 }
                 else
-                    json.Add("code","110");
+                    json->create_code(110);
                 //std::cout<<json.ToFormattedString()<<std::endl<<json.ToString().size()<<std::endl;;
-                myProtocol *pro = new myProtocol(0x02,0x01,json);
+                myProtocol *pro = new myProtocol(0x02,0x01,json->toStyledString());
                 sendmsg = pro->GetData();
                 len = pro->Getlength();
                 cout<<"send data is:"<<endl;
@@ -214,6 +211,7 @@ void * socketServer::serverthread(void *)
                 ev.events = EPOLLIN|EPOLLET;
                 epoll_ctl(epfd,EPOLL_CTL_MOD,rsock,&ev);
                 delete sendmsg;
+                delete json;
                // delete pro;
 
 

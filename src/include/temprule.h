@@ -7,13 +7,17 @@ class temprule
 {
 public:
     temprule(RECTSET *rectset, int len, WINDOW windows, float **temp, sharedspace *ss, TEMP_C *tempc, int *alarmmode, int Ta);
-    list<int> getAlarmnum();
+    list<int> getHighAlarm();
+    list<int> getPreAlarm();
+    list<int> getLinkageAlarm();
 private:
-    void temp_compensation(float &temp, int Ta, double a);
-    void all_temp_selector(float **temp,float env_temp);
+    void temp_compensation(float &temp, float env_temp, double a);
+    void all_temp_selector(float **temp, float env_temp, int Ta);
     int len;
     const int TEMP_DIFFER = 3;
-    list<int> alarmnum;
+    list<int> linkagealarm;
+    list<int> highalarm;
+    list<int> prealarm;
 
 };
 

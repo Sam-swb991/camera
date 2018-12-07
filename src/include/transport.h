@@ -16,27 +16,28 @@ typedef struct inner_rect{
 	int id;
     std::string name;
     struct rect rect;
+    int prealarm;
+    int prevalue;
     int highalarm;
     int highvalue;
-    int lowalarm;
-    int lowvalue;
+    int linkagealarm;
+    int linkagevalue;
     int rapidtempchangealarm;
     int rapidtempchangevalue;
-    int alarm_level;
+    float radiance;
+    float distance;
 	int isset;
 }RECTSET;
 typedef struct trans_rect{
     std::string name;
     int mode;
     struct commontemp tempc;
-    int alarmLevel;
     int alarmMode;
     struct rect transrect;
     void copy(struct inner_rect& rect)
     {
         name = rect.name;
         transrect = rect.rect;
-        alarmLevel = rect.alarm_level;
     }
 }RECT;
 

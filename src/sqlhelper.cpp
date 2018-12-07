@@ -53,9 +53,10 @@ void sqlHelper::create_table()
 {
     string sql = "create table if not exists temperature(ID integer primary key autoincrement,tempData text not null,time integer);";
     string sql1 = "CREATE TABLE if not exists rect(ID integer primary key ,name varchar(30) not null,x1 float not null,x2 float not null,"\
-                  "y1 float not null,y2 float not null ,highalarm integer not null,highvalue integer not null,lowalarm integer not null,"\
-                  "lowvalue integer not null,rapidtempchangealarm integer not null,rapidtempchangevalue integer not null,"\
-                  "alarm_level integer not null,isset integer default 0);";
+                  "y1 float not null,y2 float not null,prealarm integer not null,prevalue integer not null,highalarm integer not null,"\
+                  "highvalue integer not null,linkagealarm integer not null,linkagevalue integer not null,"\
+                  "rapidtempchangealarm integer not null,rapidtempchangevalue integer not null,"\
+                  "radiance float not null,distance float not null,isset integer default 0);";
     char *errorMsg;
     char *errorMsg1;
     int res = sqlite3_exec(db,sql.c_str(),nullptr,nullptr,&errorMsg);
@@ -315,6 +316,14 @@ RECTSET * sqlHelper::getRect(int *nRow,bool isset)
             {
                 rectset[i].rect.y2 = (float)atof(pResult[nIndex]);
             }
+            else if(strcmp(pResult[j],"prealarm")==0)
+            {
+                rectset[i].prealarm = atoi(pResult[nIndex]);
+            }
+            else if(strcmp(pResult[j],"prevalue")==0)
+            {
+                rectset[i].prevalue = atoi(pResult[nIndex]);
+            }
             else if(strcmp(pResult[j],"highalarm")==0)
             {
                 rectset[i].highalarm = atoi(pResult[nIndex]);
@@ -323,13 +332,13 @@ RECTSET * sqlHelper::getRect(int *nRow,bool isset)
             {
                 rectset[i].highvalue = atoi(pResult[nIndex]);
             }
-            else if(strcmp(pResult[j],"lowalarm")==0)
+            else if(strcmp(pResult[j],"linkagealarm")==0)
             {
-                rectset[i].lowalarm = atoi(pResult[nIndex]);
+                rectset[i].linkagealarm = atoi(pResult[nIndex]);
             }
-            else if(strcmp(pResult[j],"lowvalue")==0)
+            else if(strcmp(pResult[j],"linkagevalue")==0)
             {
-                rectset[i].lowvalue = atoi(pResult[nIndex]);
+                rectset[i].linkagevalue = atoi(pResult[nIndex]);
             }
             else if(strcmp(pResult[j],"rapidtempchangealarm")==0)
             {
@@ -339,9 +348,13 @@ RECTSET * sqlHelper::getRect(int *nRow,bool isset)
             {
                 rectset[i].rapidtempchangevalue = atoi(pResult[nIndex]);
             }
-            else if(strcmp(pResult[j],"alarm_level")==0)
+            else if(strcmp(pResult[j],"radiance")==0)
             {
-                rectset[i].alarm_level = atoi(pResult[nIndex]);
+                rectset[i].radiance= (float)atof(pResult[nIndex]);
+            }
+            else if(strcmp(pResult[j],"distance")==0)
+            {
+                rectset[i].distance= (float)atof(pResult[nIndex]);
             }
             else if(strcmp(pResult[j],"isset")==0)
             {

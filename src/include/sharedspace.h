@@ -15,8 +15,12 @@ public:
     int getRectlen();
     void resetSql();
     void getMode();
-    list<int >getAlarmnum();
-    pthread_mutex_t mutex,mutexsql;
+    float getSerialTemp();
+    void setSerialTemp(float temp);
+    list<int >getHighAlarm();
+    list<int> getPreAlarm();
+    list<int> getLinkageAlarm();
+    pthread_mutex_t mutex,mutexsql,mutexSerial;
     sqlHelper *sql;
 private:
     RECT *rect =nullptr;
@@ -26,7 +30,10 @@ private:
 	list<string> tableName;
 	bool set;
     int mode;
-    list <int >alarmnum;
+    list <int >highalarm;
+    list <int> prealarm;
+    list <int> linkagealarm;
+    float serial_temp;
 };
 
 #endif // SHAREDSPACE_H

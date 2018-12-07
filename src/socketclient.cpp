@@ -89,7 +89,9 @@ void *socketclient::clientthread(void *)
         pthread_mutex_lock(&ss->mutex);
         rect = ss->GetRect(temp,window,c->getTa());
         len = ss->getRectlen();
-        list <int> alarmnum = ss->getAlarmnum();
+        list <int> highalarm = ss->getHighAlarm();
+        list <int> prealarm = ss->getPreAlarm();
+        list <int> linkagealarm = ss->getLinkageAlarm();
         pthread_mutex_unlock(&ss->mutex);
 
         end_t =clock();
@@ -115,10 +117,10 @@ void *socketclient::clientthread(void *)
 //        json->create_temp(window,rect,len,temp);
 //        jsonobject = json->getJson();
         jsoncpp *json = new jsoncpp();
-        json->create_temp(window,rect,len,alarmnum,temp);
+        json->create_temp(window,rect,len,linkagealarm,highalarm,prealarm,temp);
         end_t =clock();
         cout<<"time 5:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
-//        cout<<json->getJsonString()<<endl;
+       // cout<<json->getJsonString()<<endl;
 
         myProtocol *pro = new myProtocol(0x01,0x03,json->getJsonString());
         unsigned long prolen = pro->Getlength();

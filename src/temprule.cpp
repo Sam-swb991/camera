@@ -35,16 +35,22 @@ temprule::temprule(RECTSET *rectset, int len, WINDOW windows, float **temp, shar
     float win_x = windows.x2 -windows.x1;
     float win_y = windows.y2 - windows.y1;
     float win_mid_x = win_x/2+windows.x1;
+    pthread_mutex_lock(&ss->mutexSerial);
+    float serial_temp = ss->getSerialTemp();
+    pthread_mutex_unlock(&ss->mutexSerial);
+    all_temp_selector(temp,serial_temp,Ta);
     for(int k = 0 ;k<len;++k)
     {
         cout<<"rect x"<<rectset[k].rect.x2<<"rect y"<<rectset[k].rect.y2<<endl;
         float rect_x = rectset[k].rect.x2 - rectset[k].rect.x1;
         float rect_mid_x = rect_x/2+rectset[k].rect.x1;
         float real_mid_x = 2*win_mid_x-rect_mid_x;
-        int start_x = static_cast<int>((real_mid_x-rect_x/2-windows.x1)*WIDTH/win_x);
+        float real_end = real_mid_x+(rect_x/2)-windows.x1;
+        int start_x = static_cast<int>((real_mid_x-(rect_x/2)-windows.x1)*WIDTH/win_x);
         int start_y = static_cast<int>((rectset[k].rect.y1-windows.y1)*HEIGHT/win_y);
-        int end_x = static_cast<int>(ceil(static_cast<double>((rect_mid_x+rect_x/2-windows.x1)*WIDTH/win_x)));
+        int end_x = static_cast<int>(ceil(static_cast<double>(real_end*WIDTH/win_x)));
         int end_y = static_cast<int>(ceil(static_cast<double>((rectset[k].rect.y2-windows.y1)*HEIGHT/win_y)));
+        cout<<"real_mid_x"<<real_mid_x<<"rect_x"<<rect_x<<"real_end "<<real_end<<endl;
         if(start_x<0)
             start_x = 0;
         if(start_y<0)
@@ -62,26 +68,39 @@ temprule::temprule(RECTSET *rectset, int len, WINDOW windows, float **temp, shar
         {
             for(int j=start_x;j<end_x;++j)
             {
-                temp_compensation(temp[i][j],Ta,0.95);
+                //temp_compensation(temp[i][j],serial_temp,(double)rectset[k].radiance);
                 if(tempc[k].highTemp<temp[i][j])
                     tempc[k].highTemp = temp[i][j];
                 if(tempc[k].lowTemp>temp[i][j])
                     tempc[k].lowTemp = temp[i][j];
                 tempc[k].avgTemp +=temp[i][j];
                 num++;
-                if(rectset[k].highalarm == 1)
+                if(rectset[k].linkagealarm == 1)
                 {
-                    if(temp[i][j]>rectset->highvalue)
+                    if(temp[i][j]>rectset[k].linkagevalue)
                     {
-                        alarmmode[k] |=0x01;
-                        alarmnum.push_back(i*80+j);
+                        alarmmode[k] |=0x04;
+                        linkagealarm.push_back(i*80+j);
+
                     }
                 }
-                if(rectset[k].lowalarm == 1)
+                if(rectset[k].highalarm == 1)
                 {
-                    if(temp[i][j]<rectset->lowvalue)
+                    if(temp[i][j]>rectset[k].highvalue&&temp[i][j]<=rectset[k].linkagevalue)
                     {
                         alarmmode[k] |=0x02;
+                        highalarm.push_back(i*80+j);
+                    }
+                }
+                if(rectset[k].prealarm == 1)
+                {
+                    if(temp[i][j]>rectset[k].prevalue)
+                    {
+                        alarmmode[k] |=0x01;
+                    }
+                    if(temp[i][j]>rectset[k].prevalue&&temp[i][j]<=rectset[k].highvalue)
+                    {
+                        prealarm.push_back(i*80+j);
                     }
                 }
                 if(rectset[k].rapidtempchangealarm == 1)
@@ -89,21 +108,23 @@ temprule::temprule(RECTSET *rectset, int len, WINDOW windows, float **temp, shar
 
                     if(ret ==0)
                     {
-                        if(abs(temp[i][j]-ftemp[i][j])>rectset->rapidtempchangevalue)
+                        if(abs(temp[i][j]-ftemp[i][j])>rectset[k].rapidtempchangevalue)
                         {
-                            alarmmode[k] |=0x04;
+                            alarmmode[k] |=0x08;
                         }
                     }
                 }
             }
         }
         tempc[k].avgTemp /=num;
+        cout<<"avg :"<<tempc[k].avgTemp<<"low :"<<tempc[k].lowTemp<<"high :"<<tempc[k].highTemp<<endl;
     }
     for(int i=0; i<64; ++i)
     {
         delete []ftemp[i];
     }
     delete []ftemp;
+    cout<<highalarm.size()<<"   "<<prealarm.size()<<endl;
 }
 /**
  * @brief 温度补偿
@@ -111,10 +132,9 @@ temprule::temprule(RECTSET *rectset, int len, WINDOW windows, float **temp, shar
  * @param Ta，Ta值
  * @param a，反射系数，范围为0-1之间
  */
-void temprule::temp_compensation(float &temp,int Ta,double a)
+void temprule::temp_compensation(float &temp,float env_temp,double a)
 {
-    double T0 = Ta/10-273.15;
-    double to = pow(temp,4.09)-(1-a)*pow(T0,4.09);
+    double to = pow(temp,4.09)-(1-a)*pow(env_temp,4.09);
     if(to>0)
     {
         double ta = to*(1/a);
@@ -127,20 +147,30 @@ void temprule::temp_compensation(float &temp,int Ta,double a)
  * @param temp,温度二维数组
  * @param env_temp,环境温度
  */
-void temprule::all_temp_selector(float **temp,float env_temp)
+void temprule::all_temp_selector(float **temp,float env_temp,int Ta)
 {
+    float T0 = Ta/10-273.15f;
     for(int i=0;i<64;++i)
     {
         for(int j=0;j<80;++j)
         {
-            float differ = abs(temp[i][j]-env_temp);
-            if(differ<TEMP_DIFFER)
+            if(temp[i][j]<T0)
                 temp[i][j] = env_temp;
         }
     }
 }
 
-list<int> temprule::getAlarmnum()
+list<int> temprule::getHighAlarm()
 {
-    return alarmnum;
+    return highalarm;
+}
+
+list<int> temprule::getPreAlarm()
+{
+    return prealarm;
+}
+
+list<int> temprule::getLinkageAlarm()
+{
+    return linkagealarm;
 }
