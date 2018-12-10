@@ -210,8 +210,8 @@ void jsoncpp::create_temp(WINDOW windos, RECT *rect, int rectnum,list<int> linka
         ++j;
     }
     cout<<"linkagealarm:"<<myjson["body"]["linkagealarm"].toStyledString()<<endl;
-    //cout<<"prealarm:"<<myjson["body"]["prealarm"].toStyledString()<<endl;
-    //cout<<"highalarm:"<<myjson["body"]["highalarm"].toStyledString()<<endl;
+    cout<<"prealarm:"<<myjson["body"]["prealarm"].toStyledString()<<endl;
+    cout<<"highalarm:"<<myjson["body"]["highalarm"].toStyledString()<<endl;
 }
 /**
  * @brief 把json转化为字符串
@@ -239,8 +239,8 @@ void jsoncpp::create_rect(RECTSET *rectset ,int len)
          myjson["body"]["rect"][i]["linkagevalue"] = rectset[i].linkagevalue;
          myjson["body"]["rect"][i]["rapidtempchangealarm"] = rectset[i].rapidtempchangealarm;
          myjson["body"]["rect"][i]["rapidtempchangevalue"] = rectset[i].rapidtempchangevalue;
-         myjson["body"]["rect"][i]["radiance"] = rectset[i].highalarm;
-         myjson["body"]["rect"][i]["distance"] = rectset[i].highvalue;
+         myjson["body"]["rect"][i]["radiance"] = (double)rectset[i].radiance;
+         myjson["body"]["rect"][i]["distance"] = (double)rectset[i].distance;
          myjson["body"]["rect"][i]["isset"] = rectset[i].isset;
          myjson["body"]["rect"][i]["x1"] = (double)rectset[i].rect.x1;
          myjson["body"]["rect"][i]["y1"] = (double)rectset[i].rect.y1;

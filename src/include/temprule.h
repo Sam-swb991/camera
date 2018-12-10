@@ -14,6 +14,8 @@ private:
     void temp_compensation(float &temp, float env_temp, double a);
     void all_temp_selector(float **temp, float env_temp, int Ta);
     int len;
+    void initWhole();
+    POINT_WHOLE point[5120];
     const int TEMP_DIFFER = 3;
     list<int> linkagealarm;
     list<int> highalarm;

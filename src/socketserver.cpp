@@ -185,7 +185,7 @@ void * socketServer::serverthread(void *)
                         RECTSET * rectset = ss->sql->getRect(&rectsetlen,true);
                         pthread_mutex_unlock(&ss->mutexsql);
                         json->create_rect(rectset,rectsetlen);
-                        delete rectset;
+                        //delete rectset;
 
 					}
 					else

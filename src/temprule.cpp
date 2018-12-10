@@ -26,7 +26,7 @@ temprule::temprule(RECTSET *rectset, int len, WINDOW windows, float **temp, shar
 
         memset(ftemp[i],0,80*sizeof(int));
     }
-
+    initWhole();
     int ret = 0;
     pthread_mutex_lock(&ss->mutexsql);
     ret = ss->getTemp(ftemp);
@@ -41,90 +41,167 @@ temprule::temprule(RECTSET *rectset, int len, WINDOW windows, float **temp, shar
     all_temp_selector(temp,serial_temp,Ta);
     for(int k = 0 ;k<len;++k)
     {
-        cout<<"rect x"<<rectset[k].rect.x2<<"rect y"<<rectset[k].rect.y2<<endl;
-        float rect_x = rectset[k].rect.x2 - rectset[k].rect.x1;
-        float rect_mid_x = rect_x/2+rectset[k].rect.x1;
-        float real_mid_x = 2*win_mid_x-rect_mid_x;
-        float real_end = real_mid_x+(rect_x/2)-windows.x1;
-        int start_x = static_cast<int>((real_mid_x-(rect_x/2)-windows.x1)*WIDTH/win_x);
-        int start_y = static_cast<int>((rectset[k].rect.y1-windows.y1)*HEIGHT/win_y);
-        int end_x = static_cast<int>(ceil(static_cast<double>(real_end*WIDTH/win_x)));
-        int end_y = static_cast<int>(ceil(static_cast<double>((rectset[k].rect.y2-windows.y1)*HEIGHT/win_y)));
-        cout<<"real_mid_x"<<real_mid_x<<"rect_x"<<rect_x<<"real_end "<<real_end<<endl;
-        if(start_x<0)
-            start_x = 0;
-        if(start_y<0)
-            start_y = 0;
-        if(end_x>80)
-            end_x = 80;
-        if(end_y>64)
-            end_y = 64;
-        cout<<"startx = "<<start_x<<" starty = "<<start_y<<" end_x = "<<end_x<<" end_y = "<<end_y<<endl;
-        num=0;
-        tempc[k].lowTemp = 1000;
-        tempc[k].highTemp = -100;
-
-        for(int i=start_y;i<end_y;++i)
+        if(rectset[k].id!=-1)
         {
-            for(int j=start_x;j<end_x;++j)
+            cout<<"rect x"<<rectset[k].rect.x2<<"rect y"<<rectset[k].rect.y2<<endl;
+            float rect_x = rectset[k].rect.x2 - rectset[k].rect.x1;
+            float rect_mid_x = rect_x/2+rectset[k].rect.x1;
+            float real_mid_x = 2*win_mid_x-rect_mid_x;
+            float real_end = real_mid_x+(rect_x/2)-windows.x1;
+            int start_x = static_cast<int>((real_mid_x-(rect_x/2)-windows.x1)*WIDTH/win_x);
+            int start_y = static_cast<int>((rectset[k].rect.y1-windows.y1)*HEIGHT/win_y);
+            int end_x = static_cast<int>(ceil(static_cast<double>(real_end*WIDTH/win_x)));
+            int end_y = static_cast<int>(ceil(static_cast<double>((rectset[k].rect.y2-windows.y1)*HEIGHT/win_y)));
+            cout<<"real_mid_x"<<real_mid_x<<"rect_x"<<rect_x<<"real_end "<<real_end<<endl;
+            if(start_x<0)
+                start_x = 0;
+            if(start_y<0)
+                start_y = 0;
+            if(end_x>80)
+                end_x = 80;
+            if(end_y>64)
+                end_y = 64;
+            cout<<"startx = "<<start_x<<" starty = "<<start_y<<" end_x = "<<end_x<<" end_y = "<<end_y<<endl;
+            num=0;
+            tempc[k].lowTemp = 1000;
+            tempc[k].highTemp = -100;
+
+            for(int i=start_y;i<end_y;++i)
             {
-                //temp_compensation(temp[i][j],serial_temp,(double)rectset[k].radiance);
-                if(tempc[k].highTemp<temp[i][j])
-                    tempc[k].highTemp = temp[i][j];
-                if(tempc[k].lowTemp>temp[i][j])
-                    tempc[k].lowTemp = temp[i][j];
-                tempc[k].avgTemp +=temp[i][j];
-                num++;
-                if(rectset[k].linkagealarm == 1)
+                for(int j=start_x;j<end_x;++j)
                 {
-                    if(temp[i][j]>rectset[k].linkagevalue)
+                    temp_compensation(temp[i][j],serial_temp,(double)rectset[k].radiance);
+                    if(tempc[k].highTemp<temp[i][j])
+                        tempc[k].highTemp = temp[i][j];
+                    if(tempc[k].lowTemp>temp[i][j])
+                        tempc[k].lowTemp = temp[i][j];
+                    tempc[k].avgTemp +=temp[i][j];
+                    num++;
+                    int num_whole = i*80+j;
+                    point[num_whole].whole =false;
+                    point[num_whole].rectid = rectset[k].id;
+                    float delta_temp = temp[i][j] - serial_temp;
+                    if(rectset[k].linkagealarm == 1)
                     {
-                        alarmmode[k] |=0x04;
-                        linkagealarm.push_back(i*80+j);
 
-                    }
-                }
-                if(rectset[k].highalarm == 1)
-                {
-                    if(temp[i][j]>rectset[k].highvalue&&temp[i][j]<=rectset[k].linkagevalue)
-                    {
-                        alarmmode[k] |=0x02;
-                        highalarm.push_back(i*80+j);
-                    }
-                }
-                if(rectset[k].prealarm == 1)
-                {
-                    if(temp[i][j]>rectset[k].prevalue)
-                    {
-                        alarmmode[k] |=0x01;
-                    }
-                    if(temp[i][j]>rectset[k].prevalue&&temp[i][j]<=rectset[k].highvalue)
-                    {
-                        prealarm.push_back(i*80+j);
-                    }
-                }
-                if(rectset[k].rapidtempchangealarm == 1)
-                {
-
-                    if(ret ==0)
-                    {
-                        if(abs(temp[i][j]-ftemp[i][j])>rectset[k].rapidtempchangevalue)
+                        if(delta_temp>rectset[k].linkagevalue)
                         {
-                            alarmmode[k] |=0x08;
+                            alarmmode[k] |=0x04;
+                            linkagealarm.push_back(num_whole);
+                        }
+                    }
+                    if(rectset[k].highalarm == 1)
+                    {
+                        if(delta_temp>rectset[k].highvalue)
+                        {
+                            alarmmode[k] |=0x02;
+                        }
+                        if(delta_temp>rectset[k].highvalue&&delta_temp<=rectset[k].linkagevalue)
+                        {
+                            highalarm.push_back(num_whole);
+                        }
+                    }
+                    if(rectset[k].prealarm == 1)
+                    {
+                        if(delta_temp>rectset[k].prevalue)
+                        {
+                            alarmmode[k] |=0x01;
+                        }
+                        if(delta_temp>rectset[k].prevalue&&delta_temp<=rectset[k].highvalue)
+                        {
+                            prealarm.push_back(num_whole);
+                        }
+                    }
+                    if(rectset[k].rapidtempchangealarm == 1)
+                    {
+
+                        if(ret ==0)
+                        {
+                            if(abs(temp[i][j]-ftemp[i][j])>rectset[k].rapidtempchangevalue)
+                            {
+                                alarmmode[k] |=0x08;
+                            }
                         }
                     }
                 }
             }
+            tempc[k].avgTemp /=num;
+            cout<<"avg :"<<tempc[k].avgTemp<<"low :"<<tempc[k].lowTemp<<"high :"<<tempc[k].highTemp<<endl;
         }
-        tempc[k].avgTemp /=num;
-        cout<<"avg :"<<tempc[k].avgTemp<<"low :"<<tempc[k].lowTemp<<"high :"<<tempc[k].highTemp<<endl;
+        else
+        {
+            tempc[k].lowTemp = 1000;
+            tempc[k].highTemp = -100;
+            num =0;
+            for(int i=0;i<64;++i)
+            {
+                for(int j =0;j<80;++j)
+                {
+
+                    int num_whole = i*80+j;
+
+                    if(point[num_whole].whole)
+                    {
+                        if(tempc[k].highTemp<temp[i][j])
+                            tempc[k].highTemp = temp[i][j];
+                        if(tempc[k].lowTemp>temp[i][j])
+                            tempc[k].lowTemp = temp[i][j];
+                        tempc[k].avgTemp +=temp[i][j];
+                        num++;
+                        float delta_temp = temp[i][j] - serial_temp;
+                        if(rectset[k].linkagealarm == 1)
+                        {
+                            if(delta_temp>rectset[k].linkagevalue)
+                            {
+                                alarmmode[k] |=0x04;
+                                linkagealarm.push_back(num_whole);
+                            }
+                        }
+                        if(rectset[k].highalarm == 1)
+                        {
+                            if(delta_temp>rectset[k].highvalue)
+                            {
+                                alarmmode[k] |=0x02;
+                            }
+                            if(delta_temp>rectset[k].highvalue&&delta_temp<=rectset[k].linkagevalue)
+                            {
+                                highalarm.push_back(num_whole);
+                            }
+                        }
+                        if(rectset[k].prealarm == 1)
+                        {
+                            if(delta_temp>rectset[k].prevalue)
+                            {
+                                alarmmode[k] |=0x01;
+                            }
+                            if(delta_temp>rectset[k].prevalue&&delta_temp<=rectset[k].highvalue)
+                            {
+                                prealarm.push_back(num_whole);
+                            }
+                        }
+                        if(rectset[k].rapidtempchangealarm == 1)
+                        {
+
+                            if(ret ==0)
+                            {
+                                if(abs(temp[i][j]-ftemp[i][j])>rectset[k].rapidtempchangevalue)
+                                {
+                                    alarmmode[k] |=0x08;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            tempc[k].avgTemp /=num;
+        }
     }
     for(int i=0; i<64; ++i)
     {
         delete []ftemp[i];
     }
     delete []ftemp;
-    cout<<highalarm.size()<<"   "<<prealarm.size()<<endl;
+    cout<<prealarm.size()<<"   "<<highalarm.size()<<"   "<<linkagealarm.size()<<endl;
 }
 /**
  * @brief 温度补偿
@@ -159,7 +236,14 @@ void temprule::all_temp_selector(float **temp,float env_temp,int Ta)
         }
     }
 }
-
+void temprule::initWhole()
+{
+    for(int i =0;i<5120;++i)
+    {
+        point[i].whole = true;
+        point[i].rectid = -1;
+    }
+}
 list<int> temprule::getHighAlarm()
 {
     return highalarm;

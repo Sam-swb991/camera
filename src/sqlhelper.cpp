@@ -178,7 +178,7 @@ void sqlHelper::update_table(string table, list < string > name, list < string >
     sql+=" where ID = ";
     sql+=*value.begin();
     sql+=";";
-    //cout<<sql<<endl;
+    cout<<sql<<endl;
     int res = sqlite3_exec(db,sql.c_str(),nullptr,nullptr,&errorMsg);
     if(res != SQLITE_OK)
     {

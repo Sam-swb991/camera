@@ -12,6 +12,10 @@ typedef struct commontemp{
     float lowTemp;
     float avgTemp;
 }TEMP_C;
+typedef struct point_whole{
+    bool whole;
+    int rectid;
+}POINT_WHOLE;
 typedef struct inner_rect{
 	int id;
     std::string name;
