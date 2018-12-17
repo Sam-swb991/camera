@@ -48,6 +48,7 @@ typedef struct trans_rect{
 /**
  * @brief 模式enum
  */
-enum mode{ADD,DEL,MODIFY,SET,UNSET,GET};
+enum mode{ADD,DEL,MODIFY,SET,UNSET,GET,GETRTEMP};
+enum direction{UP,DOWN,LEFT,RIGHT};
 
 #endif // TRANSPORT_H

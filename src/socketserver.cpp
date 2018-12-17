@@ -188,6 +188,13 @@ void * socketServer::serverthread(void *)
                         //delete rectset;
 
 					}
+                    else if(mode == GETRTEMP)
+                    {
+                        pthread_mutex_lock(&ss->mutexSerial);
+                        float realtemp = ss->getSerialTemp();
+                        pthread_mutex_unlock(&ss->mutexSerial);
+                        json->create_real_temp(realtemp);
+                    }
 					else
                         json->create_code(100);
                 }

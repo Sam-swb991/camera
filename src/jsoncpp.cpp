@@ -8,6 +8,10 @@ jsoncpp::jsoncpp()
 {
 
 }
+jsoncpp::jsoncpp(Json::Value json)
+{
+    myjson = json;
+}
 jsoncpp::jsoncpp(std::string json)
 {
     std::unique_ptr<Json::CharReader> const reader(readbuilder.newCharReader());
@@ -31,29 +35,29 @@ jsoncpp::jsoncpp(std::string json)
             if(function == "rectadd")
             {
 
-                    for(int i=0;i<rectlen;i++)
-                    {
-                        mode = ADD;
-                        rectset[i].id = myjson["body"]["rect"][static_cast<unsigned int>(i)]["ID"].asInt();
-                        rectset[i].name = myjson["body"]["rect"][static_cast<unsigned int>(i)]["name"].asString();
-                        rectset[i].rect.x1 = myjson["body"]["rect"][static_cast<unsigned int>(i)]["x1"].asFloat();
-                        rectset[i].rect.y1 = myjson["body"]["rect"][static_cast<unsigned int>(i)]["y1"].asFloat();
-                        rectset[i].rect.x2 = myjson["body"]["rect"][static_cast<unsigned int>(i)]["x2"].asFloat();
-                        rectset[i].rect.y2 = myjson["body"]["rect"][static_cast<unsigned int>(i)]["y2"].asFloat();
-                        rectset[i].prealarm = myjson["body"]["rect"][static_cast<unsigned int>(i)]["prealarm"].asInt();
-                        rectset[i].prevalue = myjson["body"]["rect"][static_cast<unsigned int>(i)]["prevalue"].asInt();
-                        rectset[i].highalarm = myjson["body"]["rect"][static_cast<unsigned int>(i)]["highalarm"].asInt();
-                        rectset[i].highvalue = myjson["body"]["rect"][static_cast<unsigned int>(i)]["highvalue"].asInt();
-                        rectset[i].linkagealarm = myjson["body"]["rect"][static_cast<unsigned int>(i)]["linkagealarm"].asInt();
-                        rectset[i].linkagevalue = myjson["body"]["rect"][static_cast<unsigned int>(i)]["linkagevalue"].asInt();
-                        rectset[i].rapidtempchangealarm = myjson["body"]["rect"][static_cast<unsigned int>(i)]["rapidtempchangealarm"].asInt();
-                        rectset[i].rapidtempchangevalue = myjson["body"]["rect"][static_cast<unsigned int>(i)]["rapidtempchangevalue"].asInt();
-                        rectset[i].radiance = myjson["body"]["rect"][static_cast<unsigned int>(i)]["radiance"].asInt();
-                        rectset[i].distance = myjson["body"]["rect"][static_cast<unsigned int>(i)]["distance"].asInt();
+                for(int i=0;i<rectlen;i++)
+                {
+                    mode = ADD;
+                    rectset[i].id = myjson["body"]["rect"][static_cast<unsigned int>(i)]["ID"].asInt();
+                    rectset[i].name = myjson["body"]["rect"][static_cast<unsigned int>(i)]["name"].asString();
+                    rectset[i].rect.x1 = myjson["body"]["rect"][static_cast<unsigned int>(i)]["x1"].asFloat();
+                    rectset[i].rect.y1 = myjson["body"]["rect"][static_cast<unsigned int>(i)]["y1"].asFloat();
+                    rectset[i].rect.x2 = myjson["body"]["rect"][static_cast<unsigned int>(i)]["x2"].asFloat();
+                    rectset[i].rect.y2 = myjson["body"]["rect"][static_cast<unsigned int>(i)]["y2"].asFloat();
+                    rectset[i].prealarm = myjson["body"]["rect"][static_cast<unsigned int>(i)]["prealarm"].asInt();
+                    rectset[i].prevalue = myjson["body"]["rect"][static_cast<unsigned int>(i)]["prevalue"].asInt();
+                    rectset[i].highalarm = myjson["body"]["rect"][static_cast<unsigned int>(i)]["highalarm"].asInt();
+                    rectset[i].highvalue = myjson["body"]["rect"][static_cast<unsigned int>(i)]["highvalue"].asInt();
+                    rectset[i].linkagealarm = myjson["body"]["rect"][static_cast<unsigned int>(i)]["linkagealarm"].asInt();
+                    rectset[i].linkagevalue = myjson["body"]["rect"][static_cast<unsigned int>(i)]["linkagevalue"].asInt();
+                    rectset[i].rapidtempchangealarm = myjson["body"]["rect"][static_cast<unsigned int>(i)]["rapidtempchangealarm"].asInt();
+                    rectset[i].rapidtempchangevalue = myjson["body"]["rect"][static_cast<unsigned int>(i)]["rapidtempchangevalue"].asInt();
+                    rectset[i].radiance = myjson["body"]["rect"][static_cast<unsigned int>(i)]["radiance"].asInt();
+                    rectset[i].distance = myjson["body"]["rect"][static_cast<unsigned int>(i)]["distance"].asInt();
 
-                    }
-                    cout<<"rectset:"<<rectset->name<<endl;
                 }
+                cout<<"rectset:"<<rectset->name<<endl;
+            }
 
             else if(function == "rectdel")
             {
@@ -103,22 +107,20 @@ jsoncpp::jsoncpp(std::string json)
                     rectset[i].distance = myjson["body"]["rect"][static_cast<unsigned int>(i)]["distance"].asInt();
                 }
             }
-            else if(function == "getrect")
-            {
-                mode = GET;
-                cout<<"mode inner is :"<<mode<<endl;
-            }
             else
                 return;
         }
-        else
+
+        if(function == "getrect")
         {
-            if(function == "getrect")
-            {
-                mode = GET;
-                cout<<"mode is :"<<mode<<endl;
-            }
+            mode = GET;
+            cout<<"mode is :"<<mode<<endl;
         }
+        else if(function == "getrealtemp")
+        {
+            mode = GETRTEMP;
+        }
+
     }
 
 
@@ -169,16 +171,16 @@ void jsoncpp::create_temp(WINDOW windos, RECT *rect, int rectnum,list<int> linka
     cout<<"rect num is :"<<rectnum<<endl;
     for(int i =0;i<rectnum;++i)
     {
-         myjson["body"]["rect"][i]["name"] = rect[i].name;
-         myjson["body"]["rect"][i]["mode"] = rect[i].mode;
-         myjson["body"]["rect"][i]["hightemp"] = (double)rect[i].tempc.highTemp;
-         myjson["body"]["rect"][i]["lowtemp"] = (double)rect[i].tempc.lowTemp;
-         myjson["body"]["rect"][i]["avgtemp"] = (double)rect[i].tempc.avgTemp;
-         myjson["body"]["rect"][i]["alarmmode"] = rect[i].alarmMode;
-         myjson["body"]["rect"][i]["x1"] = (double)rect[i].transrect.x1;
-         myjson["body"]["rect"][i]["y1"] = (double)rect[i].transrect.y1;
-         myjson["body"]["rect"][i]["x2"] = (double)rect[i].transrect.x2;
-         myjson["body"]["rect"][i]["y2"] = (double)rect[i].transrect.y2;
+        myjson["body"]["rect"][i]["name"] = rect[i].name;
+        myjson["body"]["rect"][i]["mode"] = rect[i].mode;
+        myjson["body"]["rect"][i]["hightemp"] = (double)rect[i].tempc.highTemp;
+        myjson["body"]["rect"][i]["lowtemp"] = (double)rect[i].tempc.lowTemp;
+        myjson["body"]["rect"][i]["avgtemp"] = (double)rect[i].tempc.avgTemp;
+        myjson["body"]["rect"][i]["alarmmode"] = rect[i].alarmMode;
+        myjson["body"]["rect"][i]["x1"] = (double)rect[i].transrect.x1;
+        myjson["body"]["rect"][i]["y1"] = (double)rect[i].transrect.y1;
+        myjson["body"]["rect"][i]["x2"] = (double)rect[i].transrect.x2;
+        myjson["body"]["rect"][i]["y2"] = (double)rect[i].transrect.y2;
 
     }
     for(int i=0;i<5120;i++)
@@ -210,8 +212,9 @@ void jsoncpp::create_temp(WINDOW windos, RECT *rect, int rectnum,list<int> linka
         ++j;
     }
     cout<<"linkagealarm:"<<myjson["body"]["linkagealarm"].toStyledString()<<endl;
-    cout<<"prealarm:"<<myjson["body"]["prealarm"].toStyledString()<<endl;
+    //   cout<<"prealarm:"<<myjson["body"]["prealarm"].toStyledString()<<endl;
     cout<<"highalarm:"<<myjson["body"]["highalarm"].toStyledString()<<endl;
+    cout<<"window:"<<myjson["body"]["window"].toStyledString()<<endl;
 }
 /**
  * @brief 把json转化为字符串
@@ -229,28 +232,32 @@ void jsoncpp::create_rect(RECTSET *rectset ,int len)
     myjson["function"] = "rect";
     for(int i =0;i<len;++i)
     {
-         myjson["body"]["rect"][i]["id"] = rectset[i].id;
-         myjson["body"]["rect"][i]["name"] = rectset[i].name;
-         myjson["body"]["rect"][i]["prealarm"] = rectset[i].prealarm;
-         myjson["body"]["rect"][i]["prevalue"] = rectset[i].prevalue;
-         myjson["body"]["rect"][i]["highalarm"] = rectset[i].highalarm;
-         myjson["body"]["rect"][i]["highvalue"] = rectset[i].highvalue;
-         myjson["body"]["rect"][i]["linkagealarm"] = rectset[i].linkagealarm;
-         myjson["body"]["rect"][i]["linkagevalue"] = rectset[i].linkagevalue;
-         myjson["body"]["rect"][i]["rapidtempchangealarm"] = rectset[i].rapidtempchangealarm;
-         myjson["body"]["rect"][i]["rapidtempchangevalue"] = rectset[i].rapidtempchangevalue;
-         myjson["body"]["rect"][i]["radiance"] = (double)rectset[i].radiance;
-         myjson["body"]["rect"][i]["distance"] = (double)rectset[i].distance;
-         myjson["body"]["rect"][i]["isset"] = rectset[i].isset;
-         myjson["body"]["rect"][i]["x1"] = (double)rectset[i].rect.x1;
-         myjson["body"]["rect"][i]["y1"] = (double)rectset[i].rect.y1;
-         myjson["body"]["rect"][i]["x2"] = (double)rectset[i].rect.x2;
-         myjson["body"]["rect"][i]["y2"] = (double)rectset[i].rect.y2;
+        myjson["body"]["rect"][i]["id"] = rectset[i].id;
+        myjson["body"]["rect"][i]["name"] = rectset[i].name;
+        myjson["body"]["rect"][i]["prealarm"] = rectset[i].prealarm;
+        myjson["body"]["rect"][i]["prevalue"] = rectset[i].prevalue;
+        myjson["body"]["rect"][i]["highalarm"] = rectset[i].highalarm;
+        myjson["body"]["rect"][i]["highvalue"] = rectset[i].highvalue;
+        myjson["body"]["rect"][i]["linkagealarm"] = rectset[i].linkagealarm;
+        myjson["body"]["rect"][i]["linkagevalue"] = rectset[i].linkagevalue;
+        myjson["body"]["rect"][i]["rapidtempchangealarm"] = rectset[i].rapidtempchangealarm;
+        myjson["body"]["rect"][i]["rapidtempchangevalue"] = rectset[i].rapidtempchangevalue;
+        myjson["body"]["rect"][i]["radiance"] = (double)rectset[i].radiance;
+        myjson["body"]["rect"][i]["distance"] = (double)rectset[i].distance;
+        myjson["body"]["rect"][i]["isset"] = rectset[i].isset;
+        myjson["body"]["rect"][i]["x1"] = (double)rectset[i].rect.x1;
+        myjson["body"]["rect"][i]["y1"] = (double)rectset[i].rect.y1;
+        myjson["body"]["rect"][i]["x2"] = (double)rectset[i].rect.x2;
+        myjson["body"]["rect"][i]["y2"] = (double)rectset[i].rect.y2;
 
     }
 
 }
-
+void jsoncpp::create_real_temp(float realtemp)
+{
+    myjson["fuction"] = "realtemp";
+    myjson["body"]["temp"] = (double)realtemp;
+}
 void jsoncpp::create_code(int code)
 {
     myjson["code"] = code;

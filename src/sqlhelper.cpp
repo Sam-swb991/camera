@@ -57,8 +57,10 @@ void sqlHelper::create_table()
                   "highvalue integer not null,linkagealarm integer not null,linkagevalue integer not null,"\
                   "rapidtempchangealarm integer not null,rapidtempchangevalue integer not null,"\
                   "radiance float not null,distance float not null,isset integer default 0);";
+    string sql2 = "create table if not exists window(ID integer primary key,x1 float not null,x2 float not null,y1 float not null,y2 float not null);";
     char *errorMsg;
     char *errorMsg1;
+    char *errorMsg2;
     int res = sqlite3_exec(db,sql.c_str(),nullptr,nullptr,&errorMsg);
     if(res != SQLITE_OK)
     {
@@ -82,6 +84,18 @@ void sqlHelper::create_table()
         cout<<"create rect OK!"<<endl;
         sqlite3_free(errorMsg1);
         delete errorMsg1;
+    }
+    res = sqlite3_exec(db,sql2.c_str(),nullptr,nullptr,&errorMsg2);
+    if(res != SQLITE_OK)
+    {
+        fprintf(stderr, "SQL error: %s\n", errorMsg2);
+        sqlite3_free(errorMsg2);
+    }
+    else
+    {
+        cout<<"create window OK!"<<endl;
+        sqlite3_free(errorMsg2);
+        delete errorMsg2;
     }
 
 }
@@ -424,6 +438,48 @@ void sqlHelper::clear_table(string table)
         sqlite3_free(errorMsg1);
         delete errorMsg1;
     }
+}
+WINDOW sqlHelper::getWindow()
+{
+    string strsql = "select * from window where ID = 1";
+    char * errmsg;
+    char** pResult;
+    int nCol;
+    int nRow;
+    int res = sqlite3_get_table(db,strsql.c_str(),&pResult,&nRow,&nCol,&errmsg);
+    WINDOW window;
+    memset(&window,0,sizeof(window));
+    if (res != SQLITE_OK)
+    {
+        printf("sqlite3_get_table error\n");
+        fprintf(stderr,"get table error %s\n",sqlite3_errmsg(db));
+        sqlite3_free(errmsg);
+        return window;
+    }
+    int nIndex = nCol;
+    for(int j=0;j<nCol;j++)
+    {
+         if(strcmp(pResult[j],"x1")==0)
+         {
+             window.x1 = (float)atof(pResult[nIndex]);
+         }
+         else if(strcmp(pResult[j],"x2")==0)
+         {
+             window.x2 = (float)atof(pResult[nIndex]);
+         }
+         else if(strcmp(pResult[j],"y1")==0)
+         {
+             window.y1 = (float)atof(pResult[nIndex]);
+         }
+         else if(strcmp(pResult[j],"y2")==0)
+         {
+             window.y2 = (float)atof(pResult[nIndex]);
+         }
+         nIndex ++;
+    }
+    sqlite3_free_table(pResult);
+    sqlite3_free(errmsg);
+    return window;
 }
 /**
  * @brief 执行sql语句

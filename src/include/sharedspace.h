@@ -20,6 +20,8 @@ public:
     list<int >getHighAlarm();
     list<int> getPreAlarm();
     list<int> getLinkageAlarm();
+    void setWindow(int direction);
+    WINDOW getWindow();
     pthread_mutex_t mutex,mutexsql,mutexSerial;
     sqlHelper *sql;
 private:
@@ -28,7 +30,8 @@ private:
     int rectsetlen;
     temprule *trule;
 	list<string> tableName;
-	bool set;
+    WINDOW window;
+    bool set,setwindow;
     int mode;
     list <int >highalarm;
     list <int> prealarm;

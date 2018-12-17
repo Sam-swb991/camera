@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <cstring>
 #include <stdio.h>
+#include <unistd.h>
 /**
  * @brief 构造函数，初始化
  */
@@ -108,6 +109,7 @@ int socketHelper::SocketClientBuilder(const char *addr,int port)
     if(connect(clientfd,(struct sockaddr *)&remote_addr,sizeof(struct sockaddr))<0)
     {
         perror("connect to server failed");
+        close(clientfd);
         return -1;
     }
     client = true;

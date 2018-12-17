@@ -14,6 +14,7 @@
 #include <time.h>
 #include <pthread.h>
 #include <signal.h>
+#define UNUSED(var) {var++;var--;}
 using namespace Json;
 int main()
 {
@@ -24,6 +25,7 @@ int main()
     serial->startRead();
     socketServer *ss = new socketServer(12345,shared);
     pthread_t id_s = ss->startServer();
+    UNUSED(id_s);
     socketclient *sc = new socketclient(shared);
  New:while(true)
     {

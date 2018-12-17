@@ -57,12 +57,9 @@ int socketclient::connect(const char *addr, int port)
  */
 void *socketclient::clientthread(void *)
 {
-    WINDOW window;
+    WINDOW window=ss->getWindow();
     // 6 mm camera
-    window.x1 = 0.093f;
-    window.y1 = -0.04f;
-    window.x2 = 0.9f;
-    window.y2 = 1.093f;
+
     //    POINT point[5120];
     RECT *rect;
     int len;
@@ -132,7 +129,7 @@ void *socketclient::clientthread(void *)
             start = false;
             delete json;
             delete pro;
-            delete rect;
+            //delete rect;
             break;
         }
         end_t =clock();
@@ -140,7 +137,7 @@ void *socketclient::clientthread(void *)
         //usleep(200000);
         delete json;
         delete pro;
-        delete rect;
+        //delete rect;
         //        if(++times == 10)
         //        {
         //            cout<<"***times is :"<<times<<endl;

@@ -31,6 +31,38 @@ sharedspace::sharedspace()
     rectsetlen = 0;
     sql = new sqlHelper();
     sql->clear_table("temperature");
+    string sqlstr ="select count(*) from window;";
+    pthread_mutex_lock(&mutexsql);
+    string num = sql->select_table(sqlstr);
+    pthread_mutex_unlock(&mutexsql);
+    if(atoi(num.c_str()) == 0)
+    {
+        window.x1 = 0.143f;
+        window.y1 = -0.055f;
+        window.x2 = 0.95f;
+        window.y2 = 1.088f;
+        list<string> tname;
+        tname.push_back("ID");
+        tname.push_back("x1");
+        tname.push_back("x2");
+        tname.push_back("y1");
+        tname.push_back("y2");
+        list<string> value;
+        value.push_back("1");
+        value.push_back(common::to_string(window.x1));
+        value.push_back(common::to_string(window.x2));
+        value.push_back(common::to_string(window.y1));
+        value.push_back(common::to_string(window.y2));
+        pthread_mutex_lock(&mutexsql);
+        sql->insert_table("window",tname,value);
+        pthread_mutex_unlock(&mutexsql);
+    }
+    else
+    {
+        pthread_mutex_lock(&mutexsql);
+        window = sql->getWindow();
+        pthread_mutex_unlock(&mutexsql);
+    }
     tableName.push_back("ID");
     tableName.push_back("name");
     tableName.push_back("x1");
@@ -48,6 +80,7 @@ sharedspace::sharedspace()
     tableName.push_back("radiance");
     tableName.push_back("distance");
     set = true;
+    setwindow = true;
     mode = -1;
 
 }
@@ -330,7 +363,47 @@ int sharedspace::getTemp(int **temp)
     else
         return -1;
 }
+WINDOW sharedspace::getWindow()
+{
+    return window;
+}
+void sharedspace::setWindow(int direction)
+{
+    switch (direction) {
+    case UP:{
+        window.y1 -=0.01f;
+        window.y2 -=0.01f;
+    }break;
+    case DOWN:{
+        window.y1 +=0.01f;
+        window.y2 +=0.01f;
+    }break;
+    case LEFT:{
+        window.x1 -=0.01f;
+        window.x2 -=0.01f;
+    }break;
+    case RIGHT:{
+        window.x1 +=0.01f;
+        window.x2 +=0.01f;
+    }break;
+    default:break;
+    }
+    list<string> tname;
+    tname.push_back("ID");
+    tname.push_back("x1");
+    tname.push_back("x2");
+    tname.push_back("y1");
+    tname.push_back("y2");
+    list<string> value;
+    value.push_back("1");
+    value.push_back(common::to_string(window.x1));
+    value.push_back(common::to_string(window.x2));
+    value.push_back(common::to_string(window.y1));
+    value.push_back(common::to_string(window.y2));
+    sql->update_table("window",tname,value);
+    setwindow = true;
 
+}
 list<int> sharedspace::getHighAlarm()
 {
     return highalarm;

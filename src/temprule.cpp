@@ -39,6 +39,8 @@ temprule::temprule(RECTSET *rectset, int len, WINDOW windows, float **temp, shar
     float serial_temp = ss->getSerialTemp();
     pthread_mutex_unlock(&ss->mutexSerial);
     all_temp_selector(temp,serial_temp,Ta);
+    int whole_id =-1;
+
     for(int k = 0 ;k<len;++k)
     {
         if(rectset[k].id!=-1)
@@ -130,71 +132,79 @@ temprule::temprule(RECTSET *rectset, int len, WINDOW windows, float **temp, shar
         }
         else
         {
-            tempc[k].lowTemp = 1000;
-            tempc[k].highTemp = -100;
-            num =0;
-            for(int i=0;i<64;++i)
+            whole_id = k;
+        }
+    }
+    if(whole_id !=-1)
+    {
+        cout<<"whole set**********************************"<<endl;
+        tempc[whole_id].lowTemp = 1000;
+        tempc[whole_id].highTemp = -100;
+        num =0;
+        for(int i=0;i<64;++i)
+        {
+            for(int j =0;j<80;++j)
             {
-                for(int j =0;j<80;++j)
+
+                int num_whole = i*80+j;
+
+                if(point[num_whole].whole)
                 {
 
-                    int num_whole = i*80+j;
-
-                    if(point[num_whole].whole)
+                    if(tempc[whole_id].highTemp<temp[i][j])
+                        tempc[whole_id].highTemp = temp[i][j];
+                    if(tempc[whole_id].lowTemp>temp[i][j])
+                        tempc[whole_id].lowTemp = temp[i][j];
+                    tempc[whole_id].avgTemp +=temp[i][j];
+                    num++;
+                    float delta_temp = temp[i][j] - serial_temp;
+                    if(rectset[whole_id].linkagealarm == 1)
                     {
-                        if(tempc[k].highTemp<temp[i][j])
-                            tempc[k].highTemp = temp[i][j];
-                        if(tempc[k].lowTemp>temp[i][j])
-                            tempc[k].lowTemp = temp[i][j];
-                        tempc[k].avgTemp +=temp[i][j];
-                        num++;
-                        float delta_temp = temp[i][j] - serial_temp;
-                        if(rectset[k].linkagealarm == 1)
+                        if(delta_temp>rectset[whole_id].linkagevalue)
                         {
-                            if(delta_temp>rectset[k].linkagevalue)
-                            {
-                                alarmmode[k] |=0x04;
-                                linkagealarm.push_back(num_whole);
-                            }
+                            alarmmode[whole_id] |=0x04;
+                            linkagealarm.push_back(num_whole);
                         }
-                        if(rectset[k].highalarm == 1)
+                    }
+                    if(rectset[whole_id].highalarm == 1)
+                    {
+                        if(delta_temp>rectset[whole_id].highvalue)
                         {
-                            if(delta_temp>rectset[k].highvalue)
-                            {
-                                alarmmode[k] |=0x02;
-                            }
-                            if(delta_temp>rectset[k].highvalue&&delta_temp<=rectset[k].linkagevalue)
-                            {
-                                highalarm.push_back(num_whole);
-                            }
+                            alarmmode[whole_id] |=0x02;
                         }
-                        if(rectset[k].prealarm == 1)
+                        if(delta_temp>rectset[whole_id].highvalue&&delta_temp<=rectset[whole_id].linkagevalue)
                         {
-                            if(delta_temp>rectset[k].prevalue)
-                            {
-                                alarmmode[k] |=0x01;
-                            }
-                            if(delta_temp>rectset[k].prevalue&&delta_temp<=rectset[k].highvalue)
-                            {
-                                prealarm.push_back(num_whole);
-                            }
+                            highalarm.push_back(num_whole);
                         }
-                        if(rectset[k].rapidtempchangealarm == 1)
-                        {
+                    }
+                    if(rectset[whole_id].prealarm == 1)
+                    {
 
-                            if(ret ==0)
+                        if(delta_temp>rectset[whole_id].prevalue)
+                        {
+                            alarmmode[whole_id] |=0x01;
+                        }
+                        if(delta_temp>rectset[whole_id].prevalue&&delta_temp<=rectset[whole_id].highvalue)
+                        {
+                            prealarm.push_back(num_whole);
+                        }
+                    }
+                    if(rectset[whole_id].rapidtempchangealarm == 1)
+                    {
+
+                        if(ret ==0)
+                        {
+                            if(abs(temp[i][j]-ftemp[i][j])>rectset[whole_id].rapidtempchangevalue)
                             {
-                                if(abs(temp[i][j]-ftemp[i][j])>rectset[k].rapidtempchangevalue)
-                                {
-                                    alarmmode[k] |=0x08;
-                                }
+                                alarmmode[whole_id] |=0x08;
                             }
                         }
                     }
                 }
             }
-            tempc[k].avgTemp /=num;
         }
+        tempc[whole_id].avgTemp /=num;
+
     }
     for(int i=0; i<64; ++i)
     {
@@ -232,6 +242,7 @@ void temprule::all_temp_selector(float **temp,float env_temp,int Ta)
         for(int j=0;j<80;++j)
         {
             if(temp[i][j]<T0)
+            //if(abs(temp[i][j]-env_temp)<8)
                 temp[i][j] = env_temp;
         }
     }

@@ -7,6 +7,7 @@ class jsoncpp
 {
 public:
     jsoncpp();
+    jsoncpp(Json::Value json);
     jsoncpp(std::string json);
     std::string getJsonString();
     int getMode();
@@ -16,6 +17,7 @@ public:
     std::string toStyledString();
     void create_rect(RECTSET *rectset,int len);
     void create_temp(WINDOW windos, RECT *rect, int rectnum, std::list<int> linkagealarm, std::list<int> highalarm, std::list<int> prealarm, float **temp);
+    void create_real_temp(float realtemp);
 private:
     Json::Value myjson;
     Json::CharReaderBuilder readbuilder;

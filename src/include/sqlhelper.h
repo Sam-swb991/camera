@@ -19,6 +19,7 @@ public:
 	void update_table(string table,list<string> name,list<string> value);
 	void exec(string sql);
 	RECTSET *getRect(int *len,bool isset);
+    WINDOW getWindow();
 private:
     sqlite3 *db;
     list<string> ret;
