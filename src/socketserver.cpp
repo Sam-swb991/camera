@@ -10,6 +10,7 @@
 #include "myprotocol.h"
 #include "transport.h"
 #include <signal.h>
+#include "ipset.h"
 /**
  * @brief 初始化静态数据
  */
@@ -86,6 +87,7 @@ void * socketServer::serverthread(void *)
     unsigned char sync,platform;
     bool check = true;
     int mode =-1;
+    int direction=-1;
     for(;;)
     {
         if(closeThread)
@@ -153,8 +155,9 @@ void * socketServer::serverthread(void *)
                         std::cout<<std::endl;
                         jsoncpp *json = pro->GetJson();
                         std::cout<<json->toStyledString()<<std::endl;
-                        RECTSET *rect = json->getRectset(&rectlen);
+                        std::vector<RECTSET> rect = json->getRectset(&rectlen);
                         mode = json->getMode();
+                        direction = json->getDirection();
                         cout<<"mode is "<<mode<<endl;
                         pthread_mutex_lock(&ss->mutex);
                         ss->SetRect(rect,rectlen,mode);
@@ -182,7 +185,7 @@ void * socketServer::serverthread(void *)
                 	if(mode == GET)
                 	{
                         pthread_mutex_lock(&ss->mutexsql);
-                        RECTSET * rectset = ss->sql->getRect(&rectsetlen,true);
+                        std::vector<RECTSET> rectset = ss->sql->getRect(&rectsetlen,true);
                         pthread_mutex_unlock(&ss->mutexsql);
                         json->create_rect(rectset,rectsetlen);
                         //delete rectset;
@@ -195,7 +198,40 @@ void * socketServer::serverthread(void *)
                         pthread_mutex_unlock(&ss->mutexSerial);
                         json->create_real_temp(realtemp);
                     }
-					else
+                    else if(mode ==MOVE)
+                    {
+                        ss->setWindow(direction);
+                        WINDOW window = ss->getWindow();
+                        json->create_window(window);
+                    }
+                    else if(mode ==GETWIN)
+                    {
+                        WINDOW window = ss->getWindow();
+                        json->create_window(window);
+                    }
+                    else if(mode == IPSET)
+                    {
+                        char origin_ip[16] = {0};
+                        ipset::getip(origin_ip);
+                        string new_ip = json->getip();
+                        int ret = ipset::setip(new_ip.c_str());
+                        if(ret<0)
+                        {
+                            json->create_code(120);
+                        }
+                        else
+                        {
+                            ret = ipset::sed(origin_ip,new_ip);
+                            if(ret==-1||ret == 127)
+                            {
+                                json->create_code(120);
+                            }
+                            else
+                                json->create_code(100);
+                        }
+
+                    }
+                    else
                         json->create_code(100);
                 }
                 else

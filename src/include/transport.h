@@ -38,17 +38,13 @@ typedef struct trans_rect{
     struct commontemp tempc;
     int alarmMode;
     struct rect transrect;
-    void copy(struct inner_rect& rect)
-    {
-        name = rect.name;
-        transrect = rect.rect;
-    }
+
 }RECT;
 
 /**
  * @brief 模式enum
  */
-enum mode{ADD,DEL,MODIFY,SET,UNSET,GET,GETRTEMP};
+enum mode{ADD,DEL,MODIFY,SET,UNSET,GET,GETRTEMP,MOVE,GETWIN,IPSET};
 enum direction{UP,DOWN,LEFT,RIGHT};
 
 #endif // TRANSPORT_H

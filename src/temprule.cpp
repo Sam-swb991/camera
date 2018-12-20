@@ -14,7 +14,7 @@
  * @param alarmmode，需要传出的alarmmode数组
  * @param Ta，Ta值传入
  */
-temprule::temprule(RECTSET *rectset, int len, WINDOW windows, float **temp, sharedspace *ss, TEMP_C * tempc, int *alarmmode, int Ta)
+temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float **temp, sharedspace *ss, TEMP_C * tempc, int *alarmmode, int Ta)
 {
     cout<<"temprule"<<endl;
     memset(alarmmode,0,sizeof(int)*static_cast<size_t>(len));
@@ -37,11 +37,12 @@ temprule::temprule(RECTSET *rectset, int len, WINDOW windows, float **temp, shar
     float win_mid_x = win_x/2+windows.x1;
     pthread_mutex_lock(&ss->mutexSerial);
     float serial_temp = ss->getSerialTemp();
+    cout<<"serial temp"<<serial_temp<<endl;
     pthread_mutex_unlock(&ss->mutexSerial);
-    all_temp_selector(temp,serial_temp,Ta);
+   // all_temp_selector(temp,serial_temp,Ta);
     int whole_id =-1;
 
-    for(int k = 0 ;k<len;++k)
+    for(size_t k = 0 ;k<static_cast<size_t>(len);++k)
     {
         if(rectset[k].id!=-1)
         {
@@ -72,7 +73,7 @@ temprule::temprule(RECTSET *rectset, int len, WINDOW windows, float **temp, shar
             {
                 for(int j=start_x;j<end_x;++j)
                 {
-                    temp_compensation(temp[i][j],serial_temp,(double)rectset[k].radiance);
+                   // temp_compensation(temp[i][j],serial_temp,(double)rectset[k].radiance);
                     if(tempc[k].highTemp<temp[i][j])
                         tempc[k].highTemp = temp[i][j];
                     if(tempc[k].lowTemp>temp[i][j])
@@ -132,7 +133,7 @@ temprule::temprule(RECTSET *rectset, int len, WINDOW windows, float **temp, shar
         }
         else
         {
-            whole_id = k;
+            whole_id = (int)k;
         }
     }
     if(whole_id !=-1)
@@ -158,43 +159,43 @@ temprule::temprule(RECTSET *rectset, int len, WINDOW windows, float **temp, shar
                     tempc[whole_id].avgTemp +=temp[i][j];
                     num++;
                     float delta_temp = temp[i][j] - serial_temp;
-                    if(rectset[whole_id].linkagealarm == 1)
+                    if(rectset[(size_t)whole_id].linkagealarm == 1)
                     {
-                        if(delta_temp>rectset[whole_id].linkagevalue)
+                        if(delta_temp>rectset[(size_t)whole_id].linkagevalue)
                         {
                             alarmmode[whole_id] |=0x04;
                             linkagealarm.push_back(num_whole);
                         }
                     }
-                    if(rectset[whole_id].highalarm == 1)
+                    if(rectset[(size_t)whole_id].highalarm == 1)
                     {
-                        if(delta_temp>rectset[whole_id].highvalue)
+                        if(delta_temp>rectset[(size_t)whole_id].highvalue)
                         {
                             alarmmode[whole_id] |=0x02;
                         }
-                        if(delta_temp>rectset[whole_id].highvalue&&delta_temp<=rectset[whole_id].linkagevalue)
+                        if(delta_temp>rectset[(size_t)whole_id].highvalue&&delta_temp<=rectset[(size_t)whole_id].linkagevalue)
                         {
                             highalarm.push_back(num_whole);
                         }
                     }
-                    if(rectset[whole_id].prealarm == 1)
+                    if(rectset[(size_t)whole_id].prealarm == 1)
                     {
 
-                        if(delta_temp>rectset[whole_id].prevalue)
+                        if(delta_temp>rectset[(size_t)whole_id].prevalue)
                         {
                             alarmmode[whole_id] |=0x01;
                         }
-                        if(delta_temp>rectset[whole_id].prevalue&&delta_temp<=rectset[whole_id].highvalue)
+                        if(delta_temp>rectset[(size_t)whole_id].prevalue&&delta_temp<=rectset[(size_t)whole_id].highvalue)
                         {
                             prealarm.push_back(num_whole);
                         }
                     }
-                    if(rectset[whole_id].rapidtempchangealarm == 1)
+                    if(rectset[(size_t)whole_id].rapidtempchangealarm == 1)
                     {
 
                         if(ret ==0)
                         {
-                            if(abs(temp[i][j]-ftemp[i][j])>rectset[whole_id].rapidtempchangevalue)
+                            if(abs(temp[i][j]-ftemp[i][j])>rectset[(size_t)whole_id].rapidtempchangevalue)
                             {
                                 alarmmode[whole_id] |=0x08;
                             }
@@ -241,12 +242,15 @@ void temprule::all_temp_selector(float **temp,float env_temp,int Ta)
     {
         for(int j=0;j<80;++j)
         {
-            if(temp[i][j]<T0)
-            //if(abs(temp[i][j]-env_temp)<8)
+            if(temp[i][j]<(T0+TEMP_DIFFER))
+            //if(abs(temp[i][j]-env_temp)<10)
                 temp[i][j] = env_temp;
         }
     }
 }
+/**
+ * @brief 初始化每个像素的参数
+ */
 void temprule::initWhole()
 {
     for(int i =0;i<5120;++i)
@@ -255,16 +259,26 @@ void temprule::initWhole()
         point[i].rectid = -1;
     }
 }
+/**
+ * @brief 获取高温报警点的坐标
+ * @return 返回高温报警的点的坐标(0~5119)
+ */
 list<int> temprule::getHighAlarm()
 {
     return highalarm;
 }
-
+/**
+ * @brief 获取预警点的坐标
+ * @return 返回预警的点的坐标(0~5119)
+ */
 list<int> temprule::getPreAlarm()
 {
     return prealarm;
 }
-
+/**
+ * @brief 获取联动报警点的坐标
+ * @return 返回联动报警的点的坐标(0~5119)
+ */
 list<int> temprule::getLinkageAlarm()
 {
     return linkagealarm;

@@ -90,14 +90,14 @@ sharedspace::sharedspace()
  * @param Ta，Ta值
  * @return 返回RECT对象
  */
-RECT * sharedspace::GetRect(float **temp,WINDOW windows,int Ta)
+std::vector<RECT>  sharedspace::GetRect(float **temp,WINDOW windows,int Ta)
 {
     cout<<"start get rect!"<<endl;
     if(set)
     {
         //delete this->rectset;
         pthread_mutex_lock(&this->mutexsql);
-        this->rectset = sql->getRect(&rectsetlen,false);
+        rectset = sql->getRect(&rectsetlen,false);
         pthread_mutex_unlock(&this->mutexsql);
         set = false;
     }
@@ -117,7 +117,7 @@ RECT * sharedspace::GetRect(float **temp,WINDOW windows,int Ta)
         TEMP_C *tempc = new TEMP_C[rectsetlen];
         int *alarmmode = new int[rectsetlen];
 
-        trule = new temprule(this->rectset,rectsetlen,windows,temp,this,tempc,alarmmode,Ta);
+        trule = new temprule(rectset,rectsetlen,windows,temp,this,tempc,alarmmode,Ta);
         highalarm = trule->getHighAlarm();
         prealarm = trule->getPreAlarm();
         linkagealarm = trule->getLinkageAlarm();
@@ -126,29 +126,33 @@ RECT * sharedspace::GetRect(float **temp,WINDOW windows,int Ta)
             printf("alarmmode is %d\n",alarmmode[i]);
             printf("tempc avg = %f,high = %f,low = %f\n",tempc[i].avgTemp,tempc[i].highTemp,tempc[i].lowTemp);
         }
+        rect.clear();
 
-        rect = new RECT[rectsetlen];
         for(int i =0;i<rectsetlen;++i)
         {
+            RECT  * _rect = new RECT[1];
             if(alarmmode[i] == 0)
             {
-                rect[i].mode = 0;
+                _rect->mode = 0;
             }
             else
             {
 
-                rect[i].mode = 1;
+                _rect->mode = 1;
 
             }
 
-            rect[i].alarmMode = alarmmode[i];
+            _rect->alarmMode = alarmmode[i];
 
             //cout<<rectset[i].name<<endl;
-            rect[i].copy(rectset[i]);
+            _rect->name=rectset[(size_t)i].name;
+            _rect->transrect = rectset[(size_t)i].rect;
 
 
-            rect[i].tempc = tempc[i];
+            _rect->tempc = tempc[i];
 
+            rect.push_back(*_rect);
+            delete [] _rect;
         }
         delete []alarmmode;
         delete []tempc;
@@ -158,7 +162,9 @@ RECT * sharedspace::GetRect(float **temp,WINDOW windows,int Ta)
 
     }
     else
-        rect = nullptr;
+    {
+
+    }
     return rect;
 
 }
@@ -168,9 +174,9 @@ RECT * sharedspace::GetRect(float **temp,WINDOW windows,int Ta)
  * @param len，区域个数
  * @param mode，模式
  */
-void sharedspace::SetRect(RECTSET *rectset,int len,int mode)
+void sharedspace::SetRect(std::vector<RECTSET> rectset,int len,int mode)
 {
-    if(mode !=GET)
+    if(mode <GET)
         rectsetlen = len;
     this->mode = mode;
     cout<<"mode is :"<<mode<<"len is :"<<len<<endl;
@@ -183,9 +189,9 @@ void sharedspace::SetRect(RECTSET *rectset,int len,int mode)
         case MODIFY:{
             cout<<"modify"<<endl;
             list<string> value;
-            for(int i=0;i<len;++i)
+            for(size_t i=0;i<(size_t)len;++i)
             {
-
+                cout<<"radiance:"<<rectset[i].radiance<<endl;
                 value.push_back(common::to_string(rectset[i].id));
                 value.push_back(rectset[i].name);
                 value.push_back(common::to_string(rectset[i].rect.x1));
@@ -215,7 +221,7 @@ void sharedspace::SetRect(RECTSET *rectset,int len,int mode)
             set = true;
         }break;
         case DEL:{
-            for(int i =0 ;i<len;++i)
+            for(size_t i =0 ;i<(size_t)len;++i)
             {
                 string sqlstr = "delete from rect where ID = ";
                 sqlstr+= common::to_string(rectset[i].id);
@@ -228,7 +234,7 @@ void sharedspace::SetRect(RECTSET *rectset,int len,int mode)
         case SET:
         case UNSET:{
             string sqlstr;
-            for(int i=0;i<len;++i)
+            for(size_t i=0;i<(size_t)len;++i)
             {
                 if(mode == SET)
                     sqlstr = "update rect set isset = 1 where ID = ";
@@ -363,10 +369,18 @@ int sharedspace::getTemp(int **temp)
     else
         return -1;
 }
+/**
+ * @brief 获取红外像素在可见光中的坐标
+ * @return 返回WINDOW结构体
+ */
 WINDOW sharedspace::getWindow()
 {
     return window;
 }
+/**
+ * @brief 设置window坐标，在可见光坐标中移动
+ * @param direction,方向参数，可以设置上下左右
+ */
 void sharedspace::setWindow(int direction)
 {
     switch (direction) {
@@ -404,24 +418,42 @@ void sharedspace::setWindow(int direction)
     setwindow = true;
 
 }
+/**
+ * @brief 获取高温报警点的坐标
+ * @return 返回高温报警点的坐标
+ */
 list<int> sharedspace::getHighAlarm()
 {
     return highalarm;
 }
+/**
+ * @brief 获取预警点的坐标
+ * @return 返回预警点的坐标
+ */
 list <int> sharedspace::getPreAlarm()
 {
     return prealarm;
 }
+/**
+ * @brief 获取联动报警点的坐标
+ * @return 返回联动报警点的坐标
+ */
 list<int > sharedspace::getLinkageAlarm()
 {
     return linkagealarm;
 }
-
+/**
+ * @brief 记录串口读出的温度
+ * @param temp,读出的串口温度
+ */
 void sharedspace::setSerialTemp(float temp)
 {
     serial_temp = temp;
 }
-
+/**
+ * @brief 获取串口读出的温度
+ * @return 返回串口读出的温度
+ */
 float sharedspace::getSerialTemp()
 {
     return serial_temp;

@@ -3,10 +3,11 @@
 
 #include "transport.h"
 #include "sharedspace.h"
+#include <vector>
 class temprule
 {
 public:
-    temprule(RECTSET *rectset, int len, WINDOW windows, float **temp, sharedspace *ss, TEMP_C *tempc, int *alarmmode, int Ta);
+    temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float **temp, sharedspace *ss, TEMP_C *tempc, int *alarmmode, int Ta);
     list<int> getHighAlarm();
     list<int> getPreAlarm();
     list<int> getLinkageAlarm();

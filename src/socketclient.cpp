@@ -57,11 +57,11 @@ int socketclient::connect(const char *addr, int port)
  */
 void *socketclient::clientthread(void *)
 {
-    WINDOW window=ss->getWindow();
+    WINDOW window;
     // 6 mm camera
 
     //    POINT point[5120];
-    RECT *rect;
+    std::vector<RECT> rect;
     int len;
     CJsonObject jsonobject;
     clock_t start_t,end_t;
@@ -69,6 +69,7 @@ void *socketclient::clientthread(void *)
     while(start)
     {
         start_t =clock();
+        window=ss->getWindow();
 
         usleep(50000);
         getTemp();
@@ -110,9 +111,6 @@ void *socketclient::clientthread(void *)
         end_t =clock();
         cout<<"time 4:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
 
-//        jsonhelper *json =new jsonhelper();
-//        json->create_temp(window,rect,len,temp);
-//        jsonobject = json->getJson();
         jsoncpp *json = new jsoncpp();
         json->create_temp(window,rect,len,linkagealarm,highalarm,prealarm,temp);
         end_t =clock();
@@ -188,13 +186,13 @@ void socketclient::getTemp()
 
     c->get_all_temp(temp);
 
-    //    for(int i = 0;i<64;i++)
-    //    {
-    //        for(int j = 0;j<80;j++)
-    //        {
-    //            cout<<temp[i][j]<<" ";
-    //        }
-    //        cout<<endl;
-    //    }
-    //    cout<<"print end"<<endl;
+//        for(int i = 0;i<64;i++)
+//        {
+//            for(int j = 0;j<80;j++)
+//            {
+//                cout<<temp[i][j]<<" ";
+//            }
+//            cout<<endl;
+//        }
+//        cout<<"print end"<<endl;
 }

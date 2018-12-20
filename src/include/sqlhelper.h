@@ -4,6 +4,7 @@
 #include <iostream>
 #include <list>
 #include "transport.h"
+#include <vector>
 using namespace std;
 class sqlHelper
 {
@@ -18,7 +19,7 @@ public:
     void clear_table(string table);
 	void update_table(string table,list<string> name,list<string> value);
 	void exec(string sql);
-	RECTSET *getRect(int *len,bool isset);
+    std::vector <RECTSET> getRect(int *len,bool isset);
     WINDOW getWindow();
 private:
     sqlite3 *db;

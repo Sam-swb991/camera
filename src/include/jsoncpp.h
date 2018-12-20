@@ -12,18 +12,23 @@ public:
     std::string getJsonString();
     int getMode();
     int getCode();
+    int getDirection();
+    std::string getip();
     void create_code(int code);
-    RECTSET *getRectset(int *len);
+    std::vector<RECTSET> getRectset(int *len);
     std::string toStyledString();
-    void create_rect(RECTSET *rectset,int len);
-    void create_temp(WINDOW windos, RECT *rect, int rectnum, std::list<int> linkagealarm, std::list<int> highalarm, std::list<int> prealarm, float **temp);
+    void create_rect(std::vector<RECTSET> rectset, int len);
+    void create_temp(WINDOW window, std::vector<RECT> rect, int rectnum, std::list<int> linkagealarm, std::list<int> highalarm, std::list<int> prealarm, float **temp);
     void create_real_temp(float realtemp);
+    void create_window(WINDOW window);
 private:
     Json::Value myjson;
     Json::CharReaderBuilder readbuilder;
     Json::StreamWriterBuilder  writebuilder;
     int rectlen;
-    RECTSET *rectset;
+    int direction;
+    std::string ip;
+    std::vector<RECTSET> rectset;
     int mode;
     int code;
 };

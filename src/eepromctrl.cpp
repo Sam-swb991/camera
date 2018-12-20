@@ -271,7 +271,9 @@ void eepromCtrl::printvalue()
     cout<<"   gradScale:";
     common::print_V(&gradscale,1,1);
     cout<<endl;
-    cout<<"Divice ID :"<<DeviceID;
+    cout<<"Divice ID :";
+    common::print_V(&DeviceID,4,1);
+
     cout<<"  TN :";
     common::print_V(&TN,1,2);
     cout<<endl;

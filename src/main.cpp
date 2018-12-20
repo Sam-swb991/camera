@@ -14,15 +14,21 @@
 #include <time.h>
 #include <pthread.h>
 #include <signal.h>
+#include <stdlib.h>
 #define UNUSED(var) {var++;var--;}
 using namespace Json;
 int main()
 {
     signal(SIGPIPE,SIG_IGN);
     signal(SIGABRT,SIG_IGN);
+    //system("insmod /ko/ds1338.ko");
+   // system("/mnt/time/rtc_sync");
+    //int status = system("ntpd -p 120.25.115.20 -qNn");
+    //printf("normal termination, exit status = %d\n", WEXITSTATUS(status));
     sharedspace *shared = new sharedspace();
     serialPort *serial = new serialPort(shared);
-    serial->startRead();
+    if(serial->getIsHave())
+        serial->startRead();
     socketServer *ss = new socketServer(12345,shared);
     pthread_t id_s = ss->startServer();
     UNUSED(id_s);

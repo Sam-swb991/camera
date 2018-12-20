@@ -273,10 +273,11 @@ string sqlHelper::select_table(string sql)
  * @param isset，是否需要查询出所有区域信息，true为所有，false为只需要isset为1的区域数据
  * @return 返回RECTSET结构体
  */
-RECTSET * sqlHelper::getRect(int *nRow,bool isset)
+std::vector<RECTSET>  sqlHelper::getRect(int *nRow,bool isset)
 {
     char * errmsg;
     string strSql;
+    std::vector <RECTSET> rectset;
     if(isset)
         strSql = "select * from rect;";
     else
@@ -289,11 +290,11 @@ RECTSET * sqlHelper::getRect(int *nRow,bool isset)
         printf("sqlite3_get_table error\n");
         fprintf(stderr,"get table error %s\n",sqlite3_errmsg(db));
         sqlite3_free(errmsg);
-        return nullptr;
+        return rectset;
     }
 
 
-    RECTSET * rectset = new RECTSET[*nRow];
+
 
     int nIndex = nCol;
     /**
@@ -303,79 +304,84 @@ RECTSET * sqlHelper::getRect(int *nRow,bool isset)
       */
     for(int i=0;i<*nRow;i++)
     {
+        RECTSET *rect_set = new RECTSET[1];
+        //memset(&rect_set,0,sizeof(RECTSET));
         for(int j=0;j<nCol;j++)
         {
 
             if(strcmp(pResult[j],"ID")==0)
             {
-                rectset[i].id = atoi(pResult[nIndex]);
+                rect_set->id = atoi(pResult[nIndex]);
             }
             else if(strcmp(pResult[j],"name")==0)
             {
-                rectset[i].name = pResult[nIndex];
+                rect_set->name = std::string(pResult[nIndex]);
             }
             else if(strcmp(pResult[j],"x1")==0)
             {
-                rectset[i].rect.x1 = (float)atof(pResult[nIndex]);
+                rect_set->rect.x1 = (float)atof(pResult[nIndex]);
             }
             else if(strcmp(pResult[j],"y1")==0)
             {
-                rectset[i].rect.y1 = (float)atof(pResult[nIndex]);
+                rect_set->rect.y1 = (float)atof(pResult[nIndex]);
             }
             else if(strcmp(pResult[j],"x2")==0)
             {
-                rectset[i].rect.x2 = (float)atof(pResult[nIndex]);
+                rect_set->rect.x2 = (float)atof(pResult[nIndex]);
             }
             else if(strcmp(pResult[j],"y2")==0)
             {
-                rectset[i].rect.y2 = (float)atof(pResult[nIndex]);
+                rect_set->rect.y2 = (float)atof(pResult[nIndex]);
             }
             else if(strcmp(pResult[j],"prealarm")==0)
             {
-                rectset[i].prealarm = atoi(pResult[nIndex]);
+                rect_set->prealarm = atoi(pResult[nIndex]);
             }
             else if(strcmp(pResult[j],"prevalue")==0)
             {
-                rectset[i].prevalue = atoi(pResult[nIndex]);
+                rect_set->prevalue = atoi(pResult[nIndex]);
             }
             else if(strcmp(pResult[j],"highalarm")==0)
             {
-                rectset[i].highalarm = atoi(pResult[nIndex]);
+                rect_set->highalarm = atoi(pResult[nIndex]);
             }
             else if(strcmp(pResult[j],"highvalue")==0)
             {
-                rectset[i].highvalue = atoi(pResult[nIndex]);
+                rect_set->highvalue = atoi(pResult[nIndex]);
             }
             else if(strcmp(pResult[j],"linkagealarm")==0)
             {
-                rectset[i].linkagealarm = atoi(pResult[nIndex]);
+                rect_set->linkagealarm = atoi(pResult[nIndex]);
             }
             else if(strcmp(pResult[j],"linkagevalue")==0)
             {
-                rectset[i].linkagevalue = atoi(pResult[nIndex]);
+                rect_set->linkagevalue = atoi(pResult[nIndex]);
             }
             else if(strcmp(pResult[j],"rapidtempchangealarm")==0)
             {
-                rectset[i].rapidtempchangealarm = atoi(pResult[nIndex]);
+                rect_set->rapidtempchangealarm = atoi(pResult[nIndex]);
             }
             else if(strcmp(pResult[j],"rapidtempchangevalue")==0)
             {
-                rectset[i].rapidtempchangevalue = atoi(pResult[nIndex]);
+                rect_set->rapidtempchangevalue = atoi(pResult[nIndex]);
             }
             else if(strcmp(pResult[j],"radiance")==0)
             {
-                rectset[i].radiance= (float)atof(pResult[nIndex]);
+                rect_set->radiance= (float)atof(pResult[nIndex]);
             }
             else if(strcmp(pResult[j],"distance")==0)
             {
-                rectset[i].distance= (float)atof(pResult[nIndex]);
+                rect_set->distance= (float)atof(pResult[nIndex]);
             }
             else if(strcmp(pResult[j],"isset")==0)
             {
-                rectset[i].isset = atoi(pResult[nIndex]);
+                rect_set->isset = atoi(pResult[nIndex]);
             }
+
             ++nIndex;
         }
+        rectset.push_back(*rect_set);
+        delete []rect_set;
     }
     sqlite3_free_table(pResult);
     sqlite3_free(errmsg);
@@ -439,6 +445,10 @@ void sqlHelper::clear_table(string table)
         delete errorMsg1;
     }
 }
+/**
+ * @brief 查询数据库，获取window表信息
+ * @return 返回WINDOW结构体
+ */
 WINDOW sqlHelper::getWindow()
 {
     string strsql = "select * from window where ID = 1";

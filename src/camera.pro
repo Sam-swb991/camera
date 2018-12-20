@@ -21,7 +21,8 @@ SOURCES += \
     sharedspace.cpp \
     sqlhelper.cpp \
     jsoncpp.cpp \
-    serialport.cpp
+    serialport.cpp \
+    ipset.cpp
 
 HEADERS += \
     ./include/spi.h \
@@ -53,7 +54,8 @@ HEADERS += \
     include/json/version.h \
     include/json/writer.h \
     include/jsoncpp.h \
-    include/serialport.h
+    include/serialport.h \
+    include/ipset.h
 
 INCLUDEPATH = ./include
 LIBS += -lsqlite -lpthread
