@@ -13,7 +13,7 @@ public:
     int getMode();
     int getCode();
     int getDirection();
-    std::string getip();
+    std::string getip(char *buf);
     void create_code(int code);
     std::vector<RECTSET> getRectset(int *len);
     std::string toStyledString();
@@ -27,7 +27,7 @@ private:
     Json::StreamWriterBuilder  writebuilder;
     int rectlen;
     int direction;
-    std::string ip;
+    char ip[16]={0};
     std::vector<RECTSET> rectset;
     int mode;
     int code;

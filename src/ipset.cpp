@@ -9,6 +9,7 @@
 #include <net/if.h>
 #include <unistd.h>
 #include <string>
+#include <iostream>
 int ipset::setip(const char *ip)
 {
     struct ifreq temp;
@@ -52,7 +53,8 @@ char *ipset::getip(char *ip_buf)
 
 int ipset::sed(std::string origin_ip, std::string new_ip)
 {
-
+    std::cout<<origin_ip<<std::endl;
+    std::cout<<new_ip<<std::endl;
     std::string str = "sed -i 's/"+origin_ip+"/"+new_ip+"/g' /etc/init.d/rcS";
     int ret = system(str.c_str());
     return ret;

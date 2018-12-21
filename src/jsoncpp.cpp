@@ -160,7 +160,8 @@ jsoncpp::jsoncpp(std::string json)
         }
         else if(function == "ipset")
         {
-            ip = myjson["body"]["ip"].asString();
+            memcpy(ip,myjson["body"]["ip"].asCString(),16);
+            cout<<"ip is:"<<string(ip)<<endl;
             mode = IPSET;
         }
 
@@ -210,9 +211,11 @@ int jsoncpp::getDirection()
     return direction;
 }
 
-string jsoncpp::getip()
+string jsoncpp::getip(char * buf)
 {
-    return ip;
+    cout<<"get ip:"<<string(ip)<<endl;
+    memcpy(buf,ip,16);
+    return string(ip);
 }
 /**
  * @brief 获取RECTSET结构体

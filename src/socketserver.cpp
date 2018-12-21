@@ -11,6 +11,7 @@
 #include "transport.h"
 #include <signal.h>
 #include "ipset.h"
+#include <stdlib.h>
 /**
  * @brief 初始化静态数据
  */
@@ -88,6 +89,7 @@ void * socketServer::serverthread(void *)
     bool check = true;
     int mode =-1;
     int direction=-1;
+    bool reset = false;
     for(;;)
     {
         if(closeThread)
@@ -95,15 +97,17 @@ void * socketServer::serverthread(void *)
 
         memset(&peer,0,sizeof(peer));
         nfds=epoll_wait(epfd,events,20,1);
+        jsoncpp *myjson= nullptr;
         //cout<<"waiting :"<<nfds<<endl;
         for(int i=0; i < nfds; ++i)
         {
-            cout<<"fd is :"<<events[i].data.fd<<endl;
+
             if(events[i].data.fd == serverfd)
             {
                 int clientfd = accept(serverfd,(struct sockaddr*)&peer,&socketlen);
                 if(clientfd > 0)
                 {
+                    cout<<"server fd is :"<<clientfd<<endl;
                     printf("get a new client:%s:%d\n",inet_ntoa(peer.sin_addr),ntohs(peer.sin_port));
                     ev.data.fd = clientfd;
                     ev.events = EPOLLIN|EPOLLET;
@@ -117,6 +121,7 @@ void * socketServer::serverthread(void *)
                 rsock = events[i].data.fd;
                 if ( rsock < 0)
                     continue;
+                cout<<"recv fd :"<<rsock<<endl;
                 if ( (n = recv(rsock, line, sizeof(line), 0)) < 0)
                 {
                     
@@ -128,7 +133,7 @@ void * socketServer::serverthread(void *)
                     else
                         std::cout<<"readline error"<<std::endl;
                 }
-                else if (n == 0) 
+                else if (n == 0)
                 {
                     std::cout<<"close socket!"<<std::endl;
                     close(rsock);
@@ -153,44 +158,44 @@ void * socketServer::serverthread(void *)
                         std::cout<<" platform :";
                         common::print_V(&platform,1,1);
                         std::cout<<std::endl;
-                        jsoncpp *json = pro->GetJson();
-                        std::cout<<json->toStyledString()<<std::endl;
-                        std::vector<RECTSET> rect = json->getRectset(&rectlen);
-                        mode = json->getMode();
-                        direction = json->getDirection();
+                        myjson= pro->GetJson();
+                        std::cout<<myjson->toStyledString()<<std::endl;
+                        std::vector<RECTSET> rect = myjson->getRectset(&rectlen);
+                        mode = myjson->getMode();
+                        direction = myjson->getDirection();
                         cout<<"mode is "<<mode<<endl;
                         pthread_mutex_lock(&ss->mutex);
                         ss->SetRect(rect,rectlen,mode);
                         pthread_mutex_unlock(&ss->mutex);
-                        //****************************                       
-                       // delete json;
+                        //****************************
+                        // delete json;
 
                     }
 
                     ev.data.fd=rsock;
                     ev.events=EPOLLOUT|EPOLLET;
                     epoll_ctl(epfd,EPOLL_CTL_MOD,rsock,&ev);
-                   // delete pro;
-               //     cout<<"2"<<endl;
+                    // delete pro;
+                    //     cout<<"2"<<endl;
                 }
             }
             else if(events[i].events&EPOLLOUT)
             {
                 cout<<"send start"<<endl;
                 unsigned char *sendmsg;
-				int rectsetlen;
+                int rectsetlen;
                 jsoncpp *json =new jsoncpp();
                 if(check)
                 {
-                	if(mode == GET)
-                	{
+                    if(mode == GET)
+                    {
                         pthread_mutex_lock(&ss->mutexsql);
                         std::vector<RECTSET> rectset = ss->sql->getRect(&rectsetlen,true);
                         pthread_mutex_unlock(&ss->mutexsql);
                         json->create_rect(rectset,rectsetlen);
                         //delete rectset;
 
-					}
+                    }
                     else if(mode == GETRTEMP)
                     {
                         pthread_mutex_lock(&ss->mutexSerial);
@@ -212,22 +217,20 @@ void * socketServer::serverthread(void *)
                     else if(mode == IPSET)
                     {
                         char origin_ip[16] = {0};
+                        char new_ip[16] = {0};
                         ipset::getip(origin_ip);
-                        string new_ip = json->getip();
-                        int ret = ipset::setip(new_ip.c_str());
-                        if(ret<0)
+                        myjson->getip(new_ip);
+                        cout<<origin_ip<<endl;
+                        cout<<new_ip<<endl;
+                        int ret = ipset::sed(origin_ip,new_ip);
+                        if(ret==-1||ret == 127)
                         {
                             json->create_code(120);
                         }
                         else
                         {
-                            ret = ipset::sed(origin_ip,new_ip);
-                            if(ret==-1||ret == 127)
-                            {
-                                json->create_code(120);
-                            }
-                            else
-                                json->create_code(100);
+                            json->create_code(100);
+                            reset = true;
                         }
 
                     }
@@ -245,17 +248,23 @@ void * socketServer::serverthread(void *)
                 std::cout<<std::endl;
                 rsock = events[i].data.fd;
                 setnonblocking(rsock);
+                cout<<"send fd :"<<rsock<<endl;
                 ssize_t tmp = send(rsock, sendmsg, len, 0);
                 if(tmp <0)
                 {
                     cout<<"server send error!"<<endl;
+                }
+                else
+                {
+                    if(reset)
+                        system("reboot");
                 }
                 ev.data.fd=rsock;
                 ev.events = EPOLLIN|EPOLLET;
                 epoll_ctl(epfd,EPOLL_CTL_MOD,rsock,&ev);
                 delete sendmsg;
                 delete json;
-               // delete pro;
+                // delete pro;
 
 
             }

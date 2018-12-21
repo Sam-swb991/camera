@@ -30,9 +30,9 @@ sharedspace::sharedspace()
     }
     rectsetlen = 0;
     sql = new sqlHelper();
+    pthread_mutex_lock(&mutexsql);
     sql->clear_table("temperature");
     string sqlstr ="select count(*) from window;";
-    pthread_mutex_lock(&mutexsql);
     string num = sql->select_table(sqlstr);
     pthread_mutex_unlock(&mutexsql);
     if(atoi(num.c_str()) == 0)
@@ -212,11 +212,15 @@ void sharedspace::SetRect(std::vector<RECTSET> rectset,int len,int mode)
             }
             if(mode == ADD)
             {
+                pthread_mutex_lock(&mutexsql);
                 sql->insert_table("rect",tableName,value);
+                pthread_mutex_unlock(&mutexsql);
             }
             else if(mode == MODIFY)
             {
+                pthread_mutex_lock(&mutexsql);
                 sql->update_table("rect",tableName,value);
+                pthread_mutex_unlock(&mutexsql);
             }
             set = true;
         }break;
@@ -227,7 +231,9 @@ void sharedspace::SetRect(std::vector<RECTSET> rectset,int len,int mode)
                 sqlstr+= common::to_string(rectset[i].id);
                 sqlstr+=";";
                 cout<<sqlstr<<endl;
+                pthread_mutex_lock(&mutexsql);
                 sql->exec(sqlstr);
+                pthread_mutex_unlock(&mutexsql);
             }
             set = true;
         }break;
@@ -242,7 +248,9 @@ void sharedspace::SetRect(std::vector<RECTSET> rectset,int len,int mode)
                     sqlstr = "update rect set isset = 0 where ID = ";
                 sqlstr+= common::to_string(rectset[i].id);
                 sqlstr+=";";
+                pthread_mutex_lock(&mutexsql);
                 sql->exec(sqlstr);
+                pthread_mutex_unlock(&mutexsql);
                 sqlstr.clear();
             }
             set = true;
@@ -296,10 +304,12 @@ void sharedspace::storeTemp(float **temp)
     sprintf(str,"%ld",time(nullptr));
     cout<<"time is:"<<str<<endl;
     value.push_back(str);
+   // pthread_mutex_lock(&mutexsql);
     sql->insert_table("temperature",name,value);
     t<<(time(nullptr)-65);
     string delsql ="time < "+ t.str();
     sql->delete_table("temperature",delsql);
+   // pthread_mutex_unlock(&mutexsql);
 
 }
 /**
@@ -334,7 +344,9 @@ vector<string> split(const string& str, const string& delim) {
  */
 void sharedspace::resetSql()
 {
+    pthread_mutex_lock(&mutexsql);
     sql->reset();
+    pthread_mutex_unlock(&mutexsql);
 }
 /**
  * @brief 从数据库读取1分钟前的温度数据
@@ -349,7 +361,9 @@ int sharedspace::getTemp(int **temp)
     string ret;
     ss<<(time(nullptr)-60);
     string sqlstr = "select tempData from temperature where time < "+ ss.str()+" order by time DESC LIMIT 1 OFFSET 0;";
+ //   pthread_mutex_lock(&mutexsql);
     ret = sql->select_table(sqlstr);
+ //   pthread_mutex_unlock(&mutexsql);
     if(!ret.empty()&&ret!="error")
     {
 
@@ -414,7 +428,9 @@ void sharedspace::setWindow(int direction)
     value.push_back(common::to_string(window.x2));
     value.push_back(common::to_string(window.y1));
     value.push_back(common::to_string(window.y2));
+    pthread_mutex_lock(&mutexsql);
     sql->update_table("window",tname,value);
+    pthread_mutex_unlock(&mutexsql);
     setwindow = true;
 
 }
