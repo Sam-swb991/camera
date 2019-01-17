@@ -13,7 +13,7 @@ public:
     int getMode();
     int getCode();
     int getDirection();
-    std::string getip(char *buf);
+    std::string getip();
     void create_code(int code);
     std::vector<RECTSET> getRectset(int *len);
     std::string toStyledString();
@@ -21,13 +21,16 @@ public:
     void create_temp(WINDOW window, std::vector<RECT> rect, int rectnum, std::list<int> linkagealarm, std::list<int> highalarm, std::list<int> prealarm, float **temp);
     void create_real_temp(float realtemp);
     void create_window(WINDOW window);
+    void create_ver();
+    int execshellcmd();
 private:
     Json::Value myjson;
     Json::CharReaderBuilder readbuilder;
     Json::StreamWriterBuilder  writebuilder;
     int rectlen;
     int direction;
-    char ip[16]={0};
+    std::string ip;
+    std::string shellcmd;
     std::vector<RECTSET> rectset;
     int mode;
     int code;

@@ -22,7 +22,11 @@ SOURCES += \
     sqlhelper.cpp \
     jsoncpp.cpp \
     serialport.cpp \
-    ipset.cpp
+    ipset.cpp \
+    httprequest.cpp \
+    threadPool.cpp \
+    thread.cpp \
+    recovery.cpp
 
 HEADERS += \
     ./include/spi.h \
@@ -55,7 +59,13 @@ HEADERS += \
     include/json/writer.h \
     include/jsoncpp.h \
     include/serialport.h \
-    include/ipset.h
+    include/ipset.h \
+    include/curl/curl.h \
+    include/httprequest.h \
+    include/threadPool.h \
+    include/thread.h \
+    include/recovery.h \
+    include/md5.h
 
 INCLUDEPATH = ./include
 LIBS += -lsqlite -lpthread

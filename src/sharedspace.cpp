@@ -10,6 +10,7 @@
 #include <common.h>
 #include <pthread.h>
 #include <vector>
+#include "ipset.h"
 using namespace std;
 /**
  * @brief 构造函数，初始化各种数据
@@ -28,6 +29,10 @@ sharedspace::sharedspace()
     {
         perror("mutexserial init error!");
     }
+    if(pthread_mutex_init(&mutexurl, nullptr) != 0)
+    {
+        perror("mutexurl init error!");
+    }
     rectsetlen = 0;
     sql = new sqlHelper();
     pthread_mutex_lock(&mutexsql);
@@ -37,10 +42,20 @@ sharedspace::sharedspace()
     pthread_mutex_unlock(&mutexsql);
     if(atoi(num.c_str()) == 0)
     {
-        window.x1 = 0.143f;
-        window.y1 = -0.055f;
-        window.x2 = 0.95f;
-        window.y2 = 1.088f;
+        if(TABLENUMBER == 124)
+        {
+            window.x1 = 0.143f;
+            window.y1 = -0.055f;
+            window.x2 = 0.95f;
+            window.y2 = 1.088f;
+        }
+        else if(TABLENUMBER == 123)
+        {
+            window.x1 = -0.02f;
+            window.y1 = -0.13f;
+            window.x2 = 0.96f;
+            window.y2 = 1.23f;
+        }
         list<string> tname;
         tname.push_back("ID");
         tname.push_back("x1");
@@ -82,6 +97,11 @@ sharedspace::sharedspace()
     set = true;
     setwindow = true;
     mode = -1;
+    char ipbuf[16] = {0};
+    ip = ipset::getip(ipbuf);
+    threadpool = new ClThreadPool();
+    threadpool->Create(10);
+    url = new HTTPURL[1];
 
 }
 /**
@@ -312,33 +332,7 @@ void sharedspace::storeTemp(float **temp)
    // pthread_mutex_unlock(&mutexsql);
 
 }
-/**
- * @brief 把数据库读出的温度字符串分割成单个温度字符串
- * @param str，数据库读出温度字符串
- * @param delim，分隔符
- * @return 返回单个温度字符串组成的容器
- */
-vector<string> split(const string& str, const string& delim) {
-    vector<string> res;
-    if("" == str) return res;
-    
-    char * strs = new char[str.length() + 1] ;
-    strcpy(strs, str.c_str());
 
-    char * d = new char[delim.length() + 1];
-    strcpy(d, delim.c_str());
-
-    char *p = strtok(strs, d);
-    while(p) {
-        string s = p;
-        res.push_back(s);
-        p = strtok(nullptr, d);
-    }
-    delete []strs;
-    delete []d;
-    delete p;
-    return res;
-}
 /**
  * @brief 重置数据库
  */
@@ -357,10 +351,11 @@ int sharedspace::getTemp(int **temp)
 {
     cout<<"gettemp"<<endl;
     stringstream ss;
-    stringstream t;
     string ret;
-    ss<<(time(nullptr)-60);
-    string sqlstr = "select tempData from temperature where time < "+ ss.str()+" order by time DESC LIMIT 1 OFFSET 0;";
+    time_t g_time = time(nullptr)-60;
+    time_t l_time = time(nullptr)-65;
+    string sqlstr = "select tempData from temperature where time < "+ common::to_string(g_time)+
+            " and time > "+common::to_string(l_time)+" order by time DESC LIMIT 1 OFFSET 0;";
  //   pthread_mutex_lock(&mutexsql);
     ret = sql->select_table(sqlstr);
  //   pthread_mutex_unlock(&mutexsql);
@@ -368,7 +363,7 @@ int sharedspace::getTemp(int **temp)
     {
 
         //cout<<ret<<endl;
-        vector <string> res = split(ret,",");
+        vector <string> res = common::split(ret,",");
         //cout<<"res size is:"<<res.size()<<endl;
         for(int i = 0;i<64;++i)
         {
@@ -473,4 +468,9 @@ void sharedspace::setSerialTemp(float temp)
 float sharedspace::getSerialTemp()
 {
     return serial_temp;
+}
+
+string sharedspace::getip()
+{
+    return  ip;
 }

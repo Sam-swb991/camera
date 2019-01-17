@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include "sqlhelper.h"
 #include <vector>
+#include "threadPool.h"
 class temprule;
 class sharedspace
 {
@@ -23,8 +24,11 @@ public:
     list<int> getLinkageAlarm();
     void setWindow(int direction);
     WINDOW getWindow();
-    pthread_mutex_t mutex,mutexsql,mutexSerial;
+    pthread_mutex_t mutex,mutexsql,mutexSerial,mutexurl;
     sqlHelper *sql;
+    ClThreadPool *threadpool;
+    string getip();
+    HTTPURL * url;
 private:
     //RECT *rect =nullptr;
     //RECTSET *rectset =nullptr ;
@@ -41,6 +45,9 @@ private:
     list <int> prealarm;
     list <int> linkagealarm;
     float serial_temp;
+    string ip;
+
+
 };
 
 #endif // SHAREDSPACE_H

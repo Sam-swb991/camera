@@ -40,11 +40,18 @@ typedef struct trans_rect{
     struct rect transrect;
 
 }RECT;
-
+typedef struct http_url{
+    std::string rectname;
+    int alarmmode;
+    TEMP_C com_temp;
+    std::string ip;
+    std::string camera_id;
+    time_t time;
+}HTTPURL;
 /**
  * @brief 模式enum
  */
-enum mode{ADD,DEL,MODIFY,SET,UNSET,GET,GETRTEMP,MOVE,GETWIN,IPSET};
+enum mode{ADD,DEL,MODIFY,SET,UNSET,GET,GETRTEMP,MOVE,GETWIN,IPSET,RECOVERY,REBOOT,UPDATE,GETVER};
 enum direction{UP,DOWN,LEFT,RIGHT};
 
 #endif // TRANSPORT_H

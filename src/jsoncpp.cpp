@@ -1,6 +1,7 @@
 #include "jsoncpp.h"
 #include "common.h"
 #include <memory>
+#include <stdio.h>
 /**
  * @brief 默认构造函数
  */
@@ -160,9 +161,42 @@ jsoncpp::jsoncpp(std::string json)
         }
         else if(function == "ipset")
         {
-            memcpy(ip,myjson["body"]["ip"].asCString(),16);
-            cout<<"ip is:"<<string(ip)<<endl;
+            ip=myjson["body"]["ip"].asString();
+            cout<<"ip is:"<<ip<<endl;
             mode = IPSET;
+        }
+        else if(function == "recovery")
+        {
+            mode = RECOVERY;
+        }
+        else if(function == "reboot")
+        {
+            mode = REBOOT;
+        }
+        else if(function == "update")
+        {
+            mode = UPDATE;
+            int updatemode =myjson["body"]["updatemode"].asInt();
+            if(updatemode == 1)
+            {
+                shellcmd = "/mnt/download/down.sh ";
+                ip=myjson["body"]["ip"].asString();
+                shellcmd +=ip +" ";
+                int file = myjson["body"]["file"].asInt();
+                if(file == 1)
+                shellcmd +="camera ";
+                else if(file == 2)
+                {
+                    shellcmd +="IRIPC ";
+                }
+                string md5 = myjson["body"]["md5"].asString();
+                shellcmd +=md5;
+                cout<<"shellcmd:"<<shellcmd<<endl;
+            }
+        }
+        else if(function == "getver")
+        {
+            mode = GETVER;
         }
 
     }
@@ -211,11 +245,10 @@ int jsoncpp::getDirection()
     return direction;
 }
 
-string jsoncpp::getip(char * buf)
+string jsoncpp::getip()
 {
-    cout<<"get ip:"<<string(ip)<<endl;
-    memcpy(buf,ip,16);
-    return string(ip);
+    cout<<"get ip:"<<ip<<endl;
+    return ip;
 }
 /**
  * @brief 获取RECTSET结构体
@@ -361,4 +394,31 @@ void jsoncpp::create_window(WINDOW window)
     myjson["body"]["y1"] = (double)window.y1;
     myjson["body"]["x2"] = (double)window.x2;
     myjson["body"]["y2"] = (double)window.y2;
+}
+void jsoncpp::create_ver()
+{
+    myjson["ver"] = VER;
+}
+int jsoncpp::execshellcmd()
+{
+    FILE *fp;
+    char buffer[80];
+    memset(buffer,0,80);
+    fp = popen(shellcmd.c_str(),"r");
+    fgets(buffer,sizeof(buffer),fp);
+    printf("cmdbuf:%s\n",buffer);
+    pclose(fp);
+    if(strcmp(buffer,"ok\n") == 0)
+    {
+        return 0;
+    }
+    else if(strcmp(buffer,"fail\n") == 0)
+    {
+        return -1;
+    }
+    else if(strcmp(buffer,"error\n") == 0)
+    {
+        return -2;
+    }
+    return -3;
 }

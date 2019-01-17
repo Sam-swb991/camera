@@ -12,6 +12,7 @@
 #include <signal.h>
 #include "ipset.h"
 #include <stdlib.h>
+#include <recovery.h>
 /**
  * @brief 初始化静态数据
  */
@@ -90,6 +91,8 @@ void * socketServer::serverthread(void *)
     int mode =-1;
     int direction=-1;
     bool reset = false;
+    string new_ip ="";
+    int cmdret = 0;
     for(;;)
     {
         if(closeThread)
@@ -163,6 +166,15 @@ void * socketServer::serverthread(void *)
                         std::vector<RECTSET> rect = myjson->getRectset(&rectlen);
                         mode = myjson->getMode();
                         direction = myjson->getDirection();
+                        if(mode ==IPSET)
+                        {
+                            new_ip.clear();
+                            new_ip = myjson->getip();
+                        }
+                        else if(mode == UPDATE)
+                        {
+                            cmdret = myjson->execshellcmd();
+                        }
                         cout<<"mode is "<<mode<<endl;
                         pthread_mutex_lock(&ss->mutex);
                         ss->SetRect(rect,rectlen,mode);
@@ -217,9 +229,7 @@ void * socketServer::serverthread(void *)
                     else if(mode == IPSET)
                     {
                         char origin_ip[16] = {0};
-                        char new_ip[16] = {0};
                         ipset::getip(origin_ip);
-                        myjson->getip(new_ip);
                         cout<<origin_ip<<endl;
                         cout<<new_ip<<endl;
                         int ret = ipset::sed(origin_ip,new_ip);
@@ -233,6 +243,47 @@ void * socketServer::serverthread(void *)
                             reset = true;
                         }
 
+                    }
+                    else if(mode == RECOVERY)
+                    {
+                        recovery *recover = new recovery(ss);
+                        int ret = recover->getret();
+                        if(ret == -1)
+                            json->create_code(220);
+                        else if(ret == 0)
+                        {
+                            json->create_code(200);
+                            reset = true;
+                        }
+                        else
+                            json->create_code(210);
+                    }
+                    else if(mode == REBOOT)
+                    {
+                        json->create_code(300);
+                        reset = true;
+                    }
+                    else if(mode == UPDATE)
+                    {
+                        if(cmdret == 0)
+                        {
+                            json->create_code(400);
+                            reset = true;
+                        }
+                        else if(cmdret == -1)
+                        {
+                            json->create_code(410);
+                        }
+                        else if (cmdret == -2)
+                        {
+                            json->create_code(420);
+                        }
+                        else
+                            json->create_code(430);
+                    }
+                    else if (mode == GETVER)
+                    {
+                        json->create_ver();
                     }
                     else
                         json->create_code(100);

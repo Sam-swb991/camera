@@ -42,7 +42,7 @@ calc::~calc()
 }
 /**
  * @brief 获取所有像素点的温度
- * @param 温度的二维数组
+ * @param temp,温度的二维数组
  */
 void calc::get_all_temp(float **temp)
 {
@@ -69,17 +69,33 @@ void calc::get_all_temp(float **temp)
 
     }
     cout<<"end temp"<<endl;
-//    for(int i =0;i<64;++i)
-//    {
-//        for(int j=0;j<80;++j)
-//        {
-//            printf("%d ",temp[i][j]);
-//        }
-//        printf("\n");
-//    }
-    sort_temp(temp);
 
+    sort_temp(temp);
     //repaire bad value
+    for(int i =0;i<64;++i)
+    {
+        for(int j=0;j<80;++j)
+        {
+            if(temp[i][j]>3000)
+            {
+                if(i == 63)
+                {
+                    temp[i][j] = ((temp[i-1][j-1]+temp[i-1][j]+temp[i-1][j+1]+
+                                       temp[i][j-1]+temp[i][j+1])/5);
+                }
+                else
+                {
+                    temp[i][j] = (temp[i-1][j-1]+temp[i-1][j]+temp[i-1][j+1]+
+                                        temp[i][j-1]+temp[i][j+1]+temp[i+1][j-1]+temp[i+1][j]+
+                                        temp[i+1][j+1])/8;
+                }
+                cout<<"bad value repaire is :"<<temp[i][j]<<endl;
+            }
+        }
+
+    }
+
+
 //    for(int i=0;i<4;i++)
 //    {
 
@@ -92,7 +108,7 @@ void calc::get_all_temp(float **temp)
 //            //cout<<"bad value repaire is :"<<temp[x][y]<<endl;
 //        }
 //        else
-//        {
+//        {sqlite where
 //            temp[x][y] = (temp[x-1][y-1]+temp[x-1][y]+temp[x-1][y+1]+
 //                    temp[x][y-1]+temp[x][y+1]+temp[x+1][y-1]+temp[x+1][y]+
 //                    temp[x+1][y+1])/8;

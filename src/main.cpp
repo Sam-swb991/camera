@@ -15,16 +15,23 @@
 #include <pthread.h>
 #include <signal.h>
 #include <stdlib.h>
+#include "httprequest.h"
+#include "md5.h"
+#include "common.h"
 #define UNUSED(var) {var++;var--;}
 using namespace Json;
 int main()
 {
+//    string shellcmd = "/mnt/download/down.sh 192.168.0.29 camera fc10deecfd92aec6236395e970489da8";
+//    FILE *fp;
+//    char buffer[80];
+//    fp = popen(shellcmd.c_str(),"r");
+//    fgets(buffer,sizeof(buffer),fp);
+//    printf("buf is:\n%s\n",buffer);
+//    pclose(fp);
     signal(SIGPIPE,SIG_IGN);
     signal(SIGABRT,SIG_IGN);
-    //system("insmod /ko/ds1338.ko");
-   // system("/mnt/time/rtc_sync");
-    //int status = system("ntpd -p 120.25.115.20 -qNn");
-    //printf("normal termination, exit status = %d\n", WEXITSTATUS(status));
+    printf("VERSION:%s\n",VER);
     sharedspace *shared = new sharedspace();
     serialPort *serial = new serialPort(shared);
     if(serial->getIsHave())
@@ -49,7 +56,7 @@ int main()
 
     pthread_join(id,nullptr);
     goto New;
-        //pthread_join(id_s,nullptr);
+       // pthread_join(id_s,nullptr);
 
 }
 

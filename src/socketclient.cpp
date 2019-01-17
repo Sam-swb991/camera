@@ -190,9 +190,12 @@ void socketclient::getTemp()
 //        {
 //            for(int j = 0;j<80;j++)
 //            {
-//                cout<<temp[i][j]<<" ";
+//                if(temp[i][j]>3000)
+//                {
+//                    cout<<"position:"<<i*80+j<<endl;
+//                }
+
 //            }
-//            cout<<endl;
 //        }
 //        cout<<"print end"<<endl;
 }

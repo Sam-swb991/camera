@@ -512,3 +512,48 @@ void sqlHelper::exec(string sql)
     }
 
 }
+
+void sqlHelper::recovery(bool clear_window)
+{
+    if(clear_window)
+        clear_table("window");
+    clear_table("rect");
+    clear_table("temperature");
+    list<string> tableName,value;
+    tableName.push_back("ID");
+    tableName.push_back("name");
+    tableName.push_back("x1");
+    tableName.push_back("y1");
+    tableName.push_back("x2");
+    tableName.push_back("y2");
+    tableName.push_back("prealarm");
+    tableName.push_back("prevalue");
+    tableName.push_back("highalarm");
+    tableName.push_back("highvalue");
+    tableName.push_back("linkagealarm");
+    tableName.push_back("linkagevalue");
+    tableName.push_back("rapidtempchangealarm");
+    tableName.push_back("rapidtempchangevalue");
+    tableName.push_back("radiance");
+    tableName.push_back("distance");
+    tableName.push_back("isset");
+    value.push_back("-1");
+    value.push_back("'未设置区域'");
+    value.push_back("0");
+    value.push_back("0");
+    value.push_back("0");
+    value.push_back("0");
+    value.push_back("1");
+    value.push_back("65");
+    value.push_back("1");
+    value.push_back("80");
+    value.push_back("1");
+    value.push_back("110");
+    value.push_back("0");
+    value.push_back("0");
+    value.push_back("0");
+    value.push_back("0");
+    value.push_back("1");
+    insert_table("rect",tableName,value);
+
+}

@@ -12,7 +12,7 @@ public:
     list<int> getPreAlarm();
     list<int> getLinkageAlarm();
 private:
-    void temp_compensation(float &temp, float env_temp, double a);
+    void temp_compensation(float &temp, int Ta, double a);
     void all_temp_selector(float **temp, float env_temp, int Ta);
     int len;
     void initWhole();

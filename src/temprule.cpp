@@ -4,6 +4,7 @@
 #include <cstring>
 #include <pthread.h>
 #include <stdio.h>
+#include "httprequest.h"
 /**
  * @brief 构造函数，温度策略
  * @param rectset，RECTSET对象，区域信息
@@ -41,7 +42,6 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
     pthread_mutex_unlock(&ss->mutexSerial);
    // all_temp_selector(temp,serial_temp,Ta);
     int whole_id =-1;
-
     for(size_t k = 0 ;k<static_cast<size_t>(len);++k)
     {
         if(rectset[k].id!=-1)
@@ -73,7 +73,7 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
             {
                 for(int j=start_x;j<end_x;++j)
                 {
-                   // temp_compensation(temp[i][j],serial_temp,(double)rectset[k].radiance);
+                    temp_compensation(temp[i][j],Ta,static_cast<double>(rectset[k].radiance));
                     if(tempc[k].highTemp<temp[i][j])
                         tempc[k].highTemp = temp[i][j];
                     if(tempc[k].lowTemp>temp[i][j])
@@ -130,6 +130,19 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
             }
             tempc[k].avgTemp /=num;
             cout<<"avg :"<<tempc[k].avgTemp<<"low :"<<tempc[k].lowTemp<<"high :"<<tempc[k].highTemp<<endl;
+            if(alarmmode[k] !=0)
+            {
+                pthread_mutex_lock(&ss->mutexurl);
+                ss->url->alarmmode = alarmmode[k];
+                ss->url->com_temp = tempc[k];
+                ss->url->camera_id = "hora_188";
+                ss->url->ip = ss->getip();
+                ss->url->rectname = rectset[k].name;
+                ss->url->time = time(nullptr);
+                httpRequest * http = new httpRequest(ss->threadpool);
+                http->start(ss->url);
+                pthread_mutex_unlock(&ss->mutexurl);
+            }
         }
         else
         {
@@ -205,7 +218,20 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
             }
         }
         tempc[whole_id].avgTemp /=num;
-
+        if(alarmmode[whole_id] !=0)
+        {
+            pthread_mutex_lock(&ss->mutexurl);
+            ss->url->alarmmode = alarmmode[whole_id];
+            ss->url->com_temp = tempc[whole_id];
+            ss->url->camera_id = "hora_188";
+            ss->url->ip = ss->getip();
+            ss->url->rectname = rectset[(size_t)whole_id].name;
+            ss->url->time = time(nullptr);
+            cout<<"http ------time ------"<<ss->url->time<<endl;
+            httpRequest * http = new httpRequest(ss->threadpool);
+            http->start(ss->url);
+            pthread_mutex_unlock(&ss->mutexurl);
+        }
     }
     for(int i=0; i<64; ++i)
     {
@@ -220,9 +246,10 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
  * @param Ta，Ta值
  * @param a，反射系数，范围为0-1之间
  */
-void temprule::temp_compensation(float &temp,float env_temp,double a)
+void temprule::temp_compensation(float &temp,int Ta,double a)
 {
-    double to = pow(temp,4.09)-(1-a)*pow(env_temp,4.09);
+    float T0 = Ta/10 - 273.15f;
+    double to = pow(temp,4.09)-(1-a)*pow(T0,4.09);
     if(to>0)
     {
         double ta = to*(1/a);
