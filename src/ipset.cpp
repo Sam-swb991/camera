@@ -57,5 +57,7 @@ int ipset::sed(std::string origin_ip, std::string new_ip)
     std::cout<<new_ip<<std::endl;
     std::string str = "sed -i 's/"+origin_ip+"/"+new_ip+"/g' /mnt/config/network.sh";
     int ret = system(str.c_str());
+    std::string str1 = "sed -i 's/"+origin_ip+"/"+new_ip+"/g' /mnt/config/card_1080p_cfg.sh";
+    ret = system(str1.c_str());
     return ret;
 }

@@ -146,6 +146,7 @@ void *socketclient::clientthread(void *)
         //        }
         pthread_mutex_lock(&ss->mutexsql);
         usleep(50000);
+        cout<<"store temp"<<endl;
         ss->storeTemp(temp);
         pthread_mutex_unlock(&ss->mutexsql);
         end_t =clock();
@@ -190,12 +191,9 @@ void socketclient::getTemp()
 //        {
 //            for(int j = 0;j<80;j++)
 //            {
-//                if(temp[i][j]>3000)
-//                {
-//                    cout<<"position:"<<i*80+j<<endl;
-//                }
-
+//                cout<<temp[i][j]<<" ";
 //            }
+//            cout<<endl;
 //        }
 //        cout<<"print end"<<endl;
 }

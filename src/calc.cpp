@@ -48,13 +48,15 @@ void calc::get_all_temp(float **temp)
 {
     cout<<"start calc"<<endl;
     sctrl->read_all();
-    //sctrl->printvalue();
+    sctrl->printvalue();
 
     S_C_DATA *sc_data = sctrl->get_common_data();
     PTAT_av = sc_data->PTAT_av;
 
     VDD_av = sc_data->VDD_av;
-
+    cout<<"PTAT av:";
+    common::print_V(&sc_data->PTAT_av,1,2);
+    cout<<endl;
     Ta =static_cast<int>(PTAT_av*PTAT_gradient+PTAT_offset);
     printf("ta is %d\n",Ta);
 

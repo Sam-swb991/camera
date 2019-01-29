@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <common.h>
 #include <pthread.h>
+#include <fstream>
 #include <vector>
 #include "ipset.h"
 using namespace std;
@@ -102,6 +103,7 @@ sharedspace::sharedspace()
     threadpool = new ClThreadPool();
     threadpool->Create(10);
     url = new HTTPURL[1];
+    readSN();
 
 }
 /**
@@ -314,8 +316,9 @@ void sharedspace::storeTemp(float **temp)
             else
                 ss<<",";
         }
-        // cout<<endl;
+         //cout<<endl;
     }
+    cout<<"temp get end"<<endl;
     list<string> name,value;
     name.push_back("tempData");
     name.push_back("time");
@@ -473,4 +476,18 @@ float sharedspace::getSerialTemp()
 string sharedspace::getip()
 {
     return  ip;
+}
+
+void sharedspace::readSN()
+{
+    ifstream sn;
+    sn.open("/mnt/sn",ios::in);
+    sn.getline(SN,11);
+    cout<<SN<<endl;
+    sn.close();
+}
+
+string sharedspace::getSN()
+{
+    return SN;
 }

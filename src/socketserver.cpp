@@ -175,6 +175,10 @@ void * socketServer::serverthread(void *)
                         {
                             cmdret = myjson->execshellcmd();
                         }
+                        else if(mode == SETTIME)
+                        {
+                            cmdret = myjson->settime();
+                        }
                         cout<<"mode is "<<mode<<endl;
                         pthread_mutex_lock(&ss->mutex);
                         ss->SetRect(rect,rectlen,mode);
@@ -284,6 +288,14 @@ void * socketServer::serverthread(void *)
                     else if (mode == GETVER)
                     {
                         json->create_ver();
+                    }
+                    else if(mode == SETTIME)
+                    {
+                        json->create_code(500);
+                    }
+                    else if(mode == GETSN)
+                    {
+                        json->create_SN(ss->getSN());
                     }
                     else
                         json->create_code(100);

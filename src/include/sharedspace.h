@@ -29,6 +29,7 @@ public:
     ClThreadPool *threadpool;
     string getip();
     HTTPURL * url;
+    string getSN();
 private:
     //RECT *rect =nullptr;
     //RECTSET *rectset =nullptr ;
@@ -41,10 +42,12 @@ private:
     bool set,setwindow;
     int ID;
     int mode;
+    char SN[11]={0};
     list <int >highalarm;
     list <int> prealarm;
     list <int> linkagealarm;
     float serial_temp;
+    void readSN();
     string ip;
 
 

@@ -22,7 +22,9 @@ public:
     void create_real_temp(float realtemp);
     void create_window(WINDOW window);
     void create_ver();
+    void create_SN(std::string SN);
     int execshellcmd();
+    int settime();
 private:
     Json::Value myjson;
     Json::CharReaderBuilder readbuilder;

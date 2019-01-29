@@ -38,7 +38,7 @@ DISTNAME      = camera1.0.0
 DISTDIR = /home/swb/camera/src/.tmp/camera1.0.0
 LINK          = g++
 LFLAGS        = 
-LIBS          = $(SUBLIBS)  
+LIBS          = $(SUBLIBS) -lsqlite -lpthread 
 AR            = ar cqs
 RANLIB        = 
 SED           = sed
@@ -62,12 +62,17 @@ SOURCES       = main.cpp \
 		myprotocol.cpp \
 		CJsonObject/CJsonObject.cpp \
 		CJsonObject/cJSON.c \
-		jsonhelper.cpp \
 		socketclient.cpp \
 		temprule.cpp \
-		myqueue.cpp \
 		sharedspace.cpp \
-		sqlhelper.cpp 
+		sqlhelper.cpp \
+		jsoncpp.cpp \
+		serialport.cpp \
+		ipset.cpp \
+		httprequest.cpp \
+		threadPool.cpp \
+		thread.cpp \
+		recovery.cpp 
 OBJECTS       = main.o \
 		spi.o \
 		spictrl.o \
@@ -80,12 +85,17 @@ OBJECTS       = main.o \
 		myprotocol.o \
 		CJsonObject.o \
 		cJSON.o \
-		jsonhelper.o \
 		socketclient.o \
 		temprule.o \
-		myqueue.o \
 		sharedspace.o \
-		sqlhelper.o
+		sqlhelper.o \
+		jsoncpp.o \
+		serialport.o \
+		ipset.o \
+		httprequest.o \
+		threadPool.o \
+		thread.o \
+		recovery.o
 DIST          = ../../Qt5.11.2/5.11.2/gcc_64/mkspecs/features/spec_pre.prf \
 		../../Qt5.11.2/5.11.2/gcc_64/mkspecs/common/unix.conf \
 		../../Qt5.11.2/5.11.2/gcc_64/mkspecs/common/linux.conf \
@@ -232,6 +242,7 @@ DIST          = ../../Qt5.11.2/5.11.2/gcc_64/mkspecs/features/spec_pre.prf \
 		../../Qt5.11.2/5.11.2/gcc_64/mkspecs/features/qt_config.prf \
 		../../Qt5.11.2/5.11.2/gcc_64/mkspecs/linux-g++/qmake.conf \
 		../../Qt5.11.2/5.11.2/gcc_64/mkspecs/features/spec_post.prf \
+		.qmake.stash \
 		../../Qt5.11.2/5.11.2/gcc_64/mkspecs/features/exclusive_builds.prf \
 		../../Qt5.11.2/5.11.2/gcc_64/mkspecs/features/toolchain.prf \
 		../../Qt5.11.2/5.11.2/gcc_64/mkspecs/features/default_pre.prf \
@@ -256,14 +267,32 @@ DIST          = ../../Qt5.11.2/5.11.2/gcc_64/mkspecs/features/spec_pre.prf \
 		include/cJSON.h \
 		include/socketserver.h \
 		include/myprotocol.h \
-		include/jsonhelper.h \
 		include/transport.h \
 		include/socketclient.h \
 		include/temprule.h \
-		include/myqueue.h \
 		include/sharedspace.h \
 		include/sqlite3.h \
-		include/sqlhelper.h main.cpp \
+		include/sqlhelper.h \
+		include/json/allocator.h \
+		include/json/assertions.h \
+		include/json/autolink.h \
+		include/json/config.h \
+		include/json/features.h \
+		include/json/forwards.h \
+		include/json/json.h \
+		include/json/reader.h \
+		include/json/value.h \
+		include/json/version.h \
+		include/json/writer.h \
+		include/jsoncpp.h \
+		include/serialport.h \
+		include/ipset.h \
+		include/curl/curl.h \
+		include/httprequest.h \
+		include/threadPool.h \
+		include/thread.h \
+		include/recovery.h \
+		include/md5.h main.cpp \
 		spi/spi.c \
 		spictrl.cpp \
 		sensorctrl.cpp \
@@ -275,12 +304,17 @@ DIST          = ../../Qt5.11.2/5.11.2/gcc_64/mkspecs/features/spec_pre.prf \
 		myprotocol.cpp \
 		CJsonObject/CJsonObject.cpp \
 		CJsonObject/cJSON.c \
-		jsonhelper.cpp \
 		socketclient.cpp \
 		temprule.cpp \
-		myqueue.cpp \
 		sharedspace.cpp \
-		sqlhelper.cpp
+		sqlhelper.cpp \
+		jsoncpp.cpp \
+		serialport.cpp \
+		ipset.cpp \
+		httprequest.cpp \
+		threadPool.cpp \
+		thread.cpp \
+		recovery.cpp
 QMAKE_TARGET  = camera
 DESTDIR       = 
 TARGET        = camera
@@ -438,6 +472,7 @@ Makefile: camera.pro ../../Qt5.11.2/5.11.2/gcc_64/mkspecs/linux-g++/qmake.conf .
 		../../Qt5.11.2/5.11.2/gcc_64/mkspecs/features/qt_config.prf \
 		../../Qt5.11.2/5.11.2/gcc_64/mkspecs/linux-g++/qmake.conf \
 		../../Qt5.11.2/5.11.2/gcc_64/mkspecs/features/spec_post.prf \
+		.qmake.stash \
 		../../Qt5.11.2/5.11.2/gcc_64/mkspecs/features/exclusive_builds.prf \
 		../../Qt5.11.2/5.11.2/gcc_64/mkspecs/features/toolchain.prf \
 		../../Qt5.11.2/5.11.2/gcc_64/mkspecs/features/default_pre.prf \
@@ -599,6 +634,7 @@ Makefile: camera.pro ../../Qt5.11.2/5.11.2/gcc_64/mkspecs/linux-g++/qmake.conf .
 ../../Qt5.11.2/5.11.2/gcc_64/mkspecs/features/qt_config.prf:
 ../../Qt5.11.2/5.11.2/gcc_64/mkspecs/linux-g++/qmake.conf:
 ../../Qt5.11.2/5.11.2/gcc_64/mkspecs/features/spec_post.prf:
+.qmake.stash:
 ../../Qt5.11.2/5.11.2/gcc_64/mkspecs/features/exclusive_builds.prf:
 ../../Qt5.11.2/5.11.2/gcc_64/mkspecs/features/toolchain.prf:
 ../../Qt5.11.2/5.11.2/gcc_64/mkspecs/features/default_pre.prf:
@@ -667,11 +703,31 @@ main.o: main.cpp include/spictrl.h \
 		include/sockethelper.h \
 		include/sharedspace.h \
 		include/transport.h \
-		include/myqueue.h \
 		include/sqlhelper.h \
 		include/sqlite3.h \
+		include/threadPool.h \
 		include/socketclient.h \
-		include/jsonhelper.h
+		include/json/json.h \
+		include/json/autolink.h \
+		include/json/config.h \
+		include/json/version.h \
+		include/json/allocator.h \
+		include/json/value.h \
+		include/json/forwards.h \
+		include/json/reader.h \
+		include/json/features.h \
+		include/json/writer.h \
+		include/serialport.h \
+		include/httprequest.h \
+		include/curl/curl.h \
+		include/curl/curlver.h \
+		include/curl/system.h \
+		include/curl/easy.h \
+		include/curl/multi.h \
+		include/curl/urlapi.h \
+		include/curl/typecheck-gcc.h \
+		include/md5.h \
+		include/common.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o main.cpp
 
 spi.o: spi/spi.c include/spi.h
@@ -685,25 +741,23 @@ sensorctrl.o: sensorctrl.cpp include/sensorctrl.h \
 		include/spictrl.h \
 		include/spi.h \
 		include/common.h \
-		include/transport.h \
-		include/myqueue.h
+		include/transport.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o sensorctrl.o sensorctrl.cpp
 
 eepromctrl.o: eepromctrl.cpp include/eepromctrl.h \
 		include/spictrl.h \
 		include/spi.h \
 		include/common.h \
-		include/transport.h \
-		include/myqueue.h
+		include/transport.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o eepromctrl.o eepromctrl.cpp
 
 common.o: common.cpp include/common.h \
 		include/transport.h \
-		include/myqueue.h \
 		include/temprule.h \
 		include/sharedspace.h \
 		include/sqlhelper.h \
-		include/sqlite3.h
+		include/sqlite3.h \
+		include/threadPool.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o common.o common.cpp
 
 calc.o: calc.cpp include/calc.h \
@@ -712,8 +766,7 @@ calc.o: calc.cpp include/calc.h \
 		include/spi.h \
 		include/sensorctrl.h \
 		include/common.h \
-		include/transport.h \
-		include/myqueue.h
+		include/transport.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o calc.o calc.cpp
 
 sockethelper.o: sockethelper.cpp include/sockethelper.h
@@ -723,22 +776,44 @@ socketserver.o: socketserver.cpp include/socketserver.h \
 		include/sockethelper.h \
 		include/sharedspace.h \
 		include/transport.h \
-		include/myqueue.h \
 		include/sqlhelper.h \
 		include/sqlite3.h \
+		include/threadPool.h \
 		include/common.h \
 		include/myprotocol.h \
 		include/CJsonObject.hpp \
 		include/cJSON.h \
-		include/jsonhelper.h
+		include/jsoncpp.h \
+		include/json/json.h \
+		include/json/autolink.h \
+		include/json/config.h \
+		include/json/version.h \
+		include/json/allocator.h \
+		include/json/value.h \
+		include/json/forwards.h \
+		include/json/reader.h \
+		include/json/features.h \
+		include/json/writer.h \
+		include/ipset.h \
+		include/recovery.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o socketserver.o socketserver.cpp
 
 myprotocol.o: myprotocol.cpp include/myprotocol.h \
 		include/CJsonObject.hpp \
 		include/cJSON.h \
-		include/common.h \
+		include/jsoncpp.h \
 		include/transport.h \
-		include/myqueue.h
+		include/json/json.h \
+		include/json/autolink.h \
+		include/json/config.h \
+		include/json/version.h \
+		include/json/allocator.h \
+		include/json/value.h \
+		include/json/forwards.h \
+		include/json/reader.h \
+		include/json/features.h \
+		include/json/writer.h \
+		include/common.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o myprotocol.o myprotocol.cpp
 
 CJsonObject.o: CJsonObject/CJsonObject.cpp include/CJsonObject.hpp \
@@ -748,57 +823,121 @@ CJsonObject.o: CJsonObject/CJsonObject.cpp include/CJsonObject.hpp \
 cJSON.o: CJsonObject/cJSON.c include/cJSON.h
 	$(CC) -c $(CFLAGS) $(INCPATH) -o cJSON.o CJsonObject/cJSON.c
 
-jsonhelper.o: jsonhelper.cpp include/jsonhelper.h \
-		include/CJsonObject.hpp \
-		include/cJSON.h \
-		include/transport.h \
-		include/common.h \
-		include/myqueue.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o jsonhelper.o jsonhelper.cpp
-
 socketclient.o: socketclient.cpp include/socketclient.h \
 		include/sockethelper.h \
-		include/jsonhelper.h \
-		include/CJsonObject.hpp \
-		include/cJSON.h \
-		include/transport.h \
 		include/sharedspace.h \
-		include/myqueue.h \
+		include/transport.h \
 		include/sqlhelper.h \
 		include/sqlite3.h \
+		include/threadPool.h \
 		include/calc.h \
 		include/eepromctrl.h \
 		include/spictrl.h \
 		include/spi.h \
 		include/sensorctrl.h \
 		include/myprotocol.h \
+		include/CJsonObject.hpp \
+		include/cJSON.h \
+		include/jsoncpp.h \
+		include/json/json.h \
+		include/json/autolink.h \
+		include/json/config.h \
+		include/json/version.h \
+		include/json/allocator.h \
+		include/json/value.h \
+		include/json/forwards.h \
+		include/json/reader.h \
+		include/json/features.h \
+		include/json/writer.h \
 		include/common.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o socketclient.o socketclient.cpp
 
 temprule.o: temprule.cpp include/temprule.h \
 		include/transport.h \
 		include/sharedspace.h \
-		include/myqueue.h \
 		include/sqlhelper.h \
 		include/sqlite3.h \
-		include/common.h
+		include/threadPool.h \
+		include/common.h \
+		include/httprequest.h \
+		include/curl/curl.h \
+		include/curl/curlver.h \
+		include/curl/system.h \
+		include/curl/easy.h \
+		include/curl/multi.h \
+		include/curl/urlapi.h \
+		include/curl/typecheck-gcc.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o temprule.o temprule.cpp
-
-myqueue.o: myqueue.cpp include/myqueue.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o myqueue.o myqueue.cpp
 
 sharedspace.o: sharedspace.cpp include/sharedspace.h \
 		include/transport.h \
-		include/myqueue.h \
 		include/sqlhelper.h \
 		include/sqlite3.h \
+		include/threadPool.h \
 		include/temprule.h \
-		include/common.h
+		include/common.h \
+		include/ipset.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o sharedspace.o sharedspace.cpp
 
 sqlhelper.o: sqlhelper.cpp include/sqlhelper.h \
-		include/sqlite3.h
+		include/sqlite3.h \
+		include/transport.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o sqlhelper.o sqlhelper.cpp
+
+jsoncpp.o: jsoncpp.cpp include/jsoncpp.h \
+		include/transport.h \
+		include/json/json.h \
+		include/json/autolink.h \
+		include/json/config.h \
+		include/json/version.h \
+		include/json/allocator.h \
+		include/json/value.h \
+		include/json/forwards.h \
+		include/json/reader.h \
+		include/json/features.h \
+		include/json/writer.h \
+		include/common.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o jsoncpp.o jsoncpp.cpp
+
+serialport.o: serialport.cpp include/serialport.h \
+		include/sharedspace.h \
+		include/transport.h \
+		include/sqlhelper.h \
+		include/sqlite3.h \
+		include/threadPool.h \
+		include/common.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o serialport.o serialport.cpp
+
+ipset.o: ipset.cpp include/ipset.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ipset.o ipset.cpp
+
+httprequest.o: httprequest.cpp include/httprequest.h \
+		include/curl/curl.h \
+		include/curl/curlver.h \
+		include/curl/system.h \
+		include/curl/easy.h \
+		include/curl/multi.h \
+		include/curl/urlapi.h \
+		include/curl/typecheck-gcc.h \
+		include/transport.h \
+		include/threadPool.h \
+		include/common.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o httprequest.o httprequest.cpp
+
+threadPool.o: threadPool.cpp include/thread.h \
+		include/threadPool.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o threadPool.o threadPool.cpp
+
+thread.o: thread.cpp include/thread.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o thread.o thread.cpp
+
+recovery.o: recovery.cpp include/recovery.h \
+		include/sharedspace.h \
+		include/transport.h \
+		include/sqlhelper.h \
+		include/sqlite3.h \
+		include/threadPool.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o recovery.o recovery.cpp
 
 ####### Install
 

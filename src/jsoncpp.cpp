@@ -198,6 +198,19 @@ jsoncpp::jsoncpp(std::string json)
         {
             mode = GETVER;
         }
+        else if(function == "settime")
+        {
+            mode = SETTIME;
+            string time = myjson["body"]["time"].asString();
+            shellcmd.clear();
+            shellcmd = "/mnt/time/set.sh "+time;
+            cout<<"shellcmd:"<<shellcmd<<endl;
+        }
+        else if(function == "getsn")
+        {
+            mode = GETSN;
+        }
+
 
     }
 
@@ -421,4 +434,21 @@ int jsoncpp::execshellcmd()
         return -2;
     }
     return -3;
+}
+
+int jsoncpp::settime()
+{
+    FILE *fp;
+    char buffer[80];
+    memset(buffer,0,80);
+    fp = popen(shellcmd.c_str(),"r");
+    fgets(buffer,sizeof(buffer),fp);
+    printf("cmdbuf:%s\n",buffer);
+    pclose(fp);
+    return 0;
+}
+
+void jsoncpp::create_SN(string SN)
+{
+    myjson["SN"] = SN;
 }

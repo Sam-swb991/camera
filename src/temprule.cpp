@@ -135,7 +135,7 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
                 pthread_mutex_lock(&ss->mutexurl);
                 ss->url->alarmmode = alarmmode[k];
                 ss->url->com_temp = tempc[k];
-                ss->url->camera_id = "hora_188";
+                ss->url->camera_id = ss->getSN();
                 ss->url->ip = ss->getip();
                 ss->url->rectname = rectset[k].name;
                 ss->url->time = time(nullptr);
@@ -164,7 +164,7 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
 
                 if(point[num_whole].whole)
                 {
-
+                    temp_compensation(temp[i][j],Ta,static_cast<double>(rectset[(size_t)whole_id].radiance));
                     if(tempc[whole_id].highTemp<temp[i][j])
                         tempc[whole_id].highTemp = temp[i][j];
                     if(tempc[whole_id].lowTemp>temp[i][j])
@@ -223,7 +223,7 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
             pthread_mutex_lock(&ss->mutexurl);
             ss->url->alarmmode = alarmmode[whole_id];
             ss->url->com_temp = tempc[whole_id];
-            ss->url->camera_id = "hora_188";
+            ss->url->camera_id = ss->getSN();
             ss->url->ip = ss->getip();
             ss->url->rectname = rectset[(size_t)whole_id].name;
             ss->url->time = time(nullptr);
@@ -248,6 +248,10 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
  */
 void temprule::temp_compensation(float &temp,int Ta,double a)
 {
+    if(a == 0.0||a == 1.0)
+    {
+        return;
+    }
     float T0 = Ta/10 - 273.15f;
     double to = pow(temp,4.09)-(1-a)*pow(T0,4.09);
     if(to>0)
