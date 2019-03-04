@@ -14,6 +14,8 @@ public:
 private:
     void temp_compensation(float &temp, int Ta, double a);
     void all_temp_selector(float **temp, float env_temp, int Ta);
+    bool findidinvector(int id,vector<WARN> warning);
+    unsigned long findidinwitch(int id,vector<WARN> warning);
     int len;
     void initWhole();
     POINT_WHOLE point[5120];

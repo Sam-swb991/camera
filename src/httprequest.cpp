@@ -2,8 +2,11 @@
 #include "common.h"
 #include <sstream>
 #include "threadPool.h"
-//const string httpRequest::URL_HRAD = "http://www.horaintel.com/wx/data";
-const string httpRequest::URL_HRAD = "http://192.168.0.88:8080/wx/data";
+#include "jsoncpp.h"
+#include "myprotocol.h"
+#include "sockethelper.h"
+const string httpRequest::URL_HRAD = "http://www.horaintel.com/wx/alarm/data";
+//const string httpRequest::URL_HRAD = "http://192.168.0.88:8080/wx/data";
 httpRequest::httpRequest(ClThreadPool * threadpool)
 {
     this->threadpool = threadpool;
@@ -132,7 +135,7 @@ string httpRequest::cat_url(HTTPURL *url)
     URL+="&avgtemp="+common::to_string(url->com_temp.avgTemp);
     URL+="&lowtemp="+common::to_string(url->com_temp.lowTemp);
     URL+="&ip="+url->ip;
-    URL+="&time="+common::to_string(url->time);
+    URL+="&time="+url->time;
     URL+="&cameraid="+url->camera_id;
     cout<<"request url:"<<URL<<endl;
     return URL;
@@ -142,8 +145,9 @@ void * httpRequest::httpsend(void * url)
 {
     HTTPURL *sendURL = (HTTPURL *)url;
     string sendurl = cat_url(sendURL);
+ //  string sendjson =cat_json(sendURL);
     string response;
-    int res = curl_req(sendurl,response,GET);
+    int res = curl_req(sendurl,response,POST);
     if(res == 0)
     {
 
@@ -151,6 +155,21 @@ void * httpRequest::httpsend(void * url)
     }
     else
         cout<<"send alarm error!"<<endl;
+//    jsoncpp *json = new jsoncpp();
+//    json->create_alarm(sendURL);
+//    myProtocol *pro = new myProtocol(0x01,0x04,sendjson);
+//    socketHelper *sock = new socketHelper();
+//    int fd = sock->SocketClientBuilder("192.168.0.102",10001);
+//    if(fd<0)
+//    {
+//        cout<<"socket build error!!!!!"<<endl;
+//    }
+//    else
+//    {
+//        long len =send(fd,pro->GetData(),pro->Getlength(),0);
+//        cout<<"send alarm len :"<<len<<endl;
+//    }
+//    close(fd);
     return nullptr;
 }
 

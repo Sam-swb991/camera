@@ -24,12 +24,17 @@ public:
     list<int> getLinkageAlarm();
     void setWindow(int direction);
     WINDOW getWindow();
-    pthread_mutex_t mutex,mutexsql,mutexSerial,mutexurl;
+    pthread_mutex_t mutex,mutexsql,mutexSerial,mutexurl,mutexsendalarm;
     sqlHelper *sql;
     ClThreadPool *threadpool;
     string getip();
     HTTPURL * url;
     string getSN();
+    int warningtimes;
+    bool needsendtoarduino;
+    bool useserialtemp;
+    bool haveserialmodel;
+    std::vector<WARN> regionwarning;
 private:
     //RECT *rect =nullptr;
     //RECTSET *rectset =nullptr ;

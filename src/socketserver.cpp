@@ -179,6 +179,25 @@ void * socketServer::serverthread(void *)
                         {
                             cmdret = myjson->settime();
                         }
+                        else if(mode == SETATEMP)
+                        {
+                            int atempmode = myjson->getatempmode();
+                            if(atempmode == 0)
+                                ss->useserialtemp = true;
+                            else if(atempmode == 1)
+                            {
+                                pthread_mutex_lock(&ss->mutexSerial);
+                                ss->setSerialTemp(myjson->getatemp());
+                                pthread_mutex_unlock(&ss->mutexSerial);
+                            }
+                            else if(atempmode == 2)
+                            {
+                                pthread_mutex_lock(&ss->mutexSerial);
+                                ss->setSerialTemp(0);
+                                pthread_mutex_unlock(&ss->mutexSerial);
+                            }
+
+                        }
                         cout<<"mode is "<<mode<<endl;
                         pthread_mutex_lock(&ss->mutex);
                         ss->SetRect(rect,rectlen,mode);
@@ -296,6 +315,10 @@ void * socketServer::serverthread(void *)
                     else if(mode == GETSN)
                     {
                         json->create_SN(ss->getSN());
+                    }
+                    else if(mode == SETATEMP)
+                    {
+                        json->create_atemp(ss->haveserialmodel);
                     }
                     else
                         json->create_code(100);

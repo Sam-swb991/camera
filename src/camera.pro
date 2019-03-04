@@ -26,7 +26,8 @@ SOURCES += \
     httprequest.cpp \
     threadPool.cpp \
     thread.cpp \
-    recovery.cpp
+    recovery.cpp \
+    sendtoarduino.cpp
 
 HEADERS += \
     ./include/spi.h \
@@ -65,7 +66,8 @@ HEADERS += \
     include/threadPool.h \
     include/thread.h \
     include/recovery.h \
-    include/md5.h
+    include/md5.h \
+    include/sendtoarduino.h
 
 INCLUDEPATH = ./include
 LIBS += -lsqlite -lpthread

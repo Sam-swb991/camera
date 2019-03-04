@@ -13,6 +13,8 @@ public:
     int getMode();
     int getCode();
     int getDirection();
+    int getatempmode();
+    float getatemp();
     std::string getip();
     void create_code(int code);
     std::vector<RECTSET> getRectset(int *len);
@@ -23,6 +25,8 @@ public:
     void create_window(WINDOW window);
     void create_ver();
     void create_SN(std::string SN);
+//    void create_alarm(HTTPURL *url);
+    void create_atemp(bool havemodel);
     int execshellcmd();
     int settime();
 private:
@@ -36,6 +40,8 @@ private:
     std::vector<RECTSET> rectset;
     int mode;
     int code;
+    int atempmode;
+    float ambienttemp;
 };
 
 #endif // JSONCPP_H

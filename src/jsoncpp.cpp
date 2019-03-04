@@ -210,6 +210,15 @@ jsoncpp::jsoncpp(std::string json)
         {
             mode = GETSN;
         }
+        else if(function == "setatemp")
+        {
+            mode = SETATEMP;
+            atempmode = myjson["body"]["mode"].asInt();
+            if(atempmode == 1)
+            {
+                ambienttemp = myjson["body"]["atemp"].asFloat();
+            }
+        }
 
 
     }
@@ -251,13 +260,20 @@ int jsoncpp::getMode()
 }
 /**
  * @brief 获取direction
- * @return 返回direction
+ * @return 返回directionpthread_mutex_lock(&ss->mutexSerial);
  */
+float jsoncpp::getatemp()
+{
+    return ambienttemp;
+}
 int jsoncpp::getDirection()
 {
     return direction;
 }
-
+int jsoncpp::getatempmode()
+{
+    return atempmode;
+}
 string jsoncpp::getip()
 {
     cout<<"get ip:"<<ip<<endl;
@@ -408,6 +424,18 @@ void jsoncpp::create_window(WINDOW window)
     myjson["body"]["x2"] = (double)window.x2;
     myjson["body"]["y2"] = (double)window.y2;
 }
+void jsoncpp::create_atemp(bool havemodel)
+{
+    myjson["function"] = "setatemp";
+    int model;
+    if(havemodel)
+        model = 1;
+    else
+        model = 0;
+    myjson["body"]["havemodel"] = model;
+
+}
+
 void jsoncpp::create_ver()
 {
     myjson["ver"] = VER;

@@ -20,10 +20,14 @@ serialPort::serialPort(sharedspace *ss)
     {
         printf("cannot open /dev/ttyUSB0\r\n");
         is_have = false;
+        ss->haveserialmodel = false;
         return ;
     }
     else
+    {
         is_have = true;
+        ss->haveserialmodel = true;
+    }
     tcgetattr( fd, &oldstdio);
     cfsetispeed(&oldstdio, B9600);
     tcsetattr( fd, TCSANOW, &oldstdio);
@@ -38,18 +42,24 @@ void *serialPort::readthread(void *)
     char buf[20]={0};
     while(1)
     {
-        memset(buf,0,20);
+        if(ss->useserialtemp)
+        {
+            memset(buf,0,20);
 
-        tcflush( fd, TCIFLUSH );
+            tcflush( fd, TCIFLUSH );
 
-        read(fd,buf,20);
-        string str(buf);        
-        string spiltstr = str.substr(3,str.size()-3);
-        float temp = (double)atof(spiltstr.c_str());
-        cout<<"temp is :"<<temp<<endl;
-        pthread_mutex_lock(&ss->mutexSerial);
-        ss->setSerialTemp(temp);
-        pthread_mutex_unlock(&ss->mutexSerial);
+            read(fd,buf,20);
+            string str(buf);
+            string spiltstr = str.substr(3,str.size()-3);
+            float temp = (double)atof(spiltstr.c_str());
+            cout<<"temp is :"<<temp<<endl;
+            pthread_mutex_lock(&ss->mutexSerial);
+            ss->setSerialTemp(temp);
+            pthread_mutex_unlock(&ss->mutexSerial);
+
+        }
+        else
+            cout<<"do not set usb serial used!"<<endl;
         sleep(1);
 
     }

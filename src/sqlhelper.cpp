@@ -58,9 +58,11 @@ void sqlHelper::create_table()
                   "rapidtempchangealarm integer not null,rapidtempchangevalue integer not null,"\
                   "radiance float not null,distance float not null,isset integer default 0);";
     string sql2 = "create table if not exists window(ID integer primary key,x1 float not null,x2 float not null,y1 float not null,y2 float not null);";
+    string sql3 = "create table if not exists common(ID integer primary key,serialtemp float not null);";
     char *errorMsg;
     char *errorMsg1;
     char *errorMsg2;
+    char *errorMsg3;
     int res = sqlite3_exec(db,sql.c_str(),nullptr,nullptr,&errorMsg);
     if(res != SQLITE_OK)
     {
@@ -96,6 +98,18 @@ void sqlHelper::create_table()
         cout<<"create window OK!"<<endl;
         sqlite3_free(errorMsg2);
         delete errorMsg2;
+    }
+    res = sqlite3_exec(db,sql3.c_str(),nullptr,nullptr,&errorMsg3);
+    if(res != SQLITE_OK)
+    {
+        fprintf(stderr, "SQL error: %s\n", errorMsg3);
+        sqlite3_free(errorMsg3);
+    }
+    else
+    {
+        cout<<"create window OK!"<<endl;
+        sqlite3_free(errorMsg3);
+        delete errorMsg3;
     }
 
 }
@@ -490,6 +504,36 @@ WINDOW sqlHelper::getWindow()
     sqlite3_free_table(pResult);
     sqlite3_free(errmsg);
     return window;
+}
+
+float sqlHelper::getSerialTemp()
+{
+    string strsql = "select serialtemp from common where ID = 1";
+    char * errmsg;
+    char** pResult;
+    int nCol;
+    int nRow;
+    int res = sqlite3_get_table(db,strsql.c_str(),&pResult,&nRow,&nCol,&errmsg);
+    float serialtemp = 0;
+    if (res != SQLITE_OK)
+    {
+        printf("sqlite3_get_table error\n");
+        fprintf(stderr,"get table error %s\n",sqlite3_errmsg(db));
+        sqlite3_free(errmsg);
+        return serialtemp;
+    }
+    int nIndex = nCol;
+    for(int j=0;j<nCol;j++)
+    {
+         if(strcmp(pResult[j],"serialtemp")==0)
+         {
+            serialtemp = (float)atof(pResult[nIndex]);
+         }
+         nIndex ++;
+    }
+    sqlite3_free_table(pResult);
+    sqlite3_free(errmsg);
+    return serialtemp;
 }
 /**
  * @brief 执行sql语句

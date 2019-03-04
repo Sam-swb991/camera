@@ -46,12 +46,19 @@ typedef struct http_url{
     TEMP_C com_temp;
     std::string ip;
     std::string camera_id;
-    time_t time;
+    std::string time;
 }HTTPURL;
+
+typedef struct warning{
+    int id;
+    int times;
+}WARN;
 /**
  * @brief 模式enum
  */
-enum mode{ADD,DEL,MODIFY,SET,UNSET,GET,GETRTEMP,MOVE,GETWIN,IPSET,RECOVERY,REBOOT,UPDATE,GETVER,SETTIME,GETSN};
+enum mode{ADD,DEL,MODIFY,SET,UNSET,GET,GETRTEMP,
+          MOVE,GETWIN,IPSET,RECOVERY,REBOOT,UPDATE,
+          GETVER,SETTIME,GETSN,SETATEMP};
 enum direction{UP,DOWN,LEFT,RIGHT};
 
 #endif // TRANSPORT_H

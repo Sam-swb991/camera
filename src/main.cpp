@@ -18,6 +18,7 @@
 #include "httprequest.h"
 #include "md5.h"
 #include "common.h"
+#include "sendtoarduino.h"
 #define UNUSED(var) {var++;var--;}
 using namespace Json;
 int main()
@@ -36,10 +37,14 @@ int main()
     serialPort *serial = new serialPort(shared);
     if(serial->getIsHave())
         serial->startRead();
+
     socketServer *ss = new socketServer(12345,shared);
     pthread_t id_s = ss->startServer();
     UNUSED(id_s);
     socketclient *sc = new socketclient(shared);
+    sendtoarduino * arduino = new sendtoarduino(shared);
+    string arduinoaddr = "192.168.0.102";
+
  New:while(true)
     {
         string addr = "127.0.0.1";
@@ -53,6 +58,21 @@ int main()
         }
     }
     pthread_t id = sc->startclient();
+    while(true)
+    {
+        if(arduino->connect(arduinoaddr.c_str(),10001))
+        {
+            cout<<"connect arduino success!!"<<endl;
+            break;
+        }
+        else
+        {
+            cout<<"Waiting for arduino start!!"<<endl;
+            sleep(1);
+        }
+    }
+    if(!arduino->isstart)
+        arduino->start();
 
     pthread_join(id,nullptr);
     goto New;

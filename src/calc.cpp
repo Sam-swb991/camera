@@ -13,7 +13,6 @@ calc::calc()
     spi = new spiCtrl();
     sctrl = new sensorCtrl(spi);
     sctrl->init_sensor();
-
     ectrl = new eepromCtrl(spi);
     ectrl->readAll();
     ectrl->printvalue();
@@ -80,10 +79,41 @@ void calc::get_all_temp(float **temp)
         {
             if(temp[i][j]>3000)
             {
-                if(i == 63)
+                if(i==0&&j==0)
+                {
+                    temp[i][j] = (temp[i+1][j]+temp[i+1][j+1]+temp[i][j+1])/3;
+                }
+                else if(i==63&&j==0)
+                {
+                    temp[i][j] = (temp[i-1][j]+temp[i-1][j+1]+temp[i][j+1])/3;
+                }
+                else if(i==63&&j!=0&&j!=63)
                 {
                     temp[i][j] = ((temp[i-1][j-1]+temp[i-1][j]+temp[i-1][j+1]+
                                        temp[i][j-1]+temp[i][j+1])/5);
+                }
+                else if(i==0&&j!=0&&j!=63)
+                {
+                    temp[i][j] = ((temp[i+1][j-1]+temp[i+1][j]+temp[i+1][j+1]+
+                                       temp[i][j-1]+temp[i][j+1])/5);
+                }
+                else if(i==0&&j==63)
+                {
+                    temp[i][j] = (temp[i+1][j]+temp[i+1][j-1]+temp[i][j-1])/3;
+                }
+                else if(i==63&&j==63)
+                {
+                    temp[i][j] = (temp[i-1][j]+temp[i-1][j-1]+temp[i][j-1])/3;
+                }
+                else if(j==0&&i!=0&&i!=63)
+                {
+                    temp[i][j] = ((temp[i-1][j]+temp[i+1][j]+temp[i-1][j+1]+
+                                       temp[i][j+1]+temp[i+1][j+1])/5);
+                }
+                else if(j==63&&i!=0&&i!=63)
+                {
+                    temp[i][j] = ((temp[i-1][j-1]+temp[i][j-1]+temp[i+1][j-1]+
+                                       temp[i-1][j]+temp[i+1][j])/5);
                 }
                 else
                 {

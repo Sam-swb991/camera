@@ -46,6 +46,15 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
     {
         if(rectset[k].id!=-1)
         {
+
+            if(!findidinvector(rectset[k].id,ss->regionwarning))
+            {
+                cout<<"add warning region"<<endl;
+                WARN warning;
+                warning.id = rectset[k].id;
+                warning.times = 0;
+                ss->regionwarning.push_back(warning);
+            }
             cout<<"rect x"<<rectset[k].rect.x2<<"rect y"<<rectset[k].rect.y2<<endl;
             float rect_x = rectset[k].rect.x2 - rectset[k].rect.x1;
             float rect_mid_x = rect_x/2+rectset[k].rect.x1;
@@ -130,19 +139,33 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
             }
             tempc[k].avgTemp /=num;
             cout<<"avg :"<<tempc[k].avgTemp<<"low :"<<tempc[k].lowTemp<<"high :"<<tempc[k].highTemp<<endl;
+
+            unsigned long wnum = findidinwitch(rectset[k].id,ss->regionwarning);
             if(alarmmode[k] !=0)
             {
-                pthread_mutex_lock(&ss->mutexurl);
-                ss->url->alarmmode = alarmmode[k];
-                ss->url->com_temp = tempc[k];
-                ss->url->camera_id = ss->getSN();
-                ss->url->ip = ss->getip();
-                ss->url->rectname = rectset[k].name;
-                ss->url->time = time(nullptr);
-                httpRequest * http = new httpRequest(ss->threadpool);
-                http->start(ss->url);
-                pthread_mutex_unlock(&ss->mutexurl);
+                if(ss->regionwarning[wnum].times == 0)
+                {
+                    ss->regionwarning[wnum].times ++;
+                }
+                else
+                {
+                    pthread_mutex_lock(&ss->mutexurl);
+                    ss->url->alarmmode = alarmmode[k];
+                    ss->url->com_temp = tempc[k];
+                    ss->url->camera_id = ss->getSN();
+                    ss->url->ip = ss->getip();
+                    ss->url->rectname = rectset[k].name;
+                    ss->url->time = common::getsystime();
+                    httpRequest * http = new httpRequest(ss->threadpool);
+                    http->start(ss->url);
+                    pthread_mutex_unlock(&ss->mutexurl);
+                    pthread_mutex_lock(&ss->mutexsendalarm);
+                    ss->needsendtoarduino = true;
+                    pthread_mutex_unlock(&ss->mutexsendalarm);
+                }
             }
+            else
+                ss->regionwarning[wnum].times = 0;
         }
         else
         {
@@ -220,18 +243,30 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
         tempc[whole_id].avgTemp /=num;
         if(alarmmode[whole_id] !=0)
         {
-            pthread_mutex_lock(&ss->mutexurl);
-            ss->url->alarmmode = alarmmode[whole_id];
-            ss->url->com_temp = tempc[whole_id];
-            ss->url->camera_id = ss->getSN();
-            ss->url->ip = ss->getip();
-            ss->url->rectname = rectset[(size_t)whole_id].name;
-            ss->url->time = time(nullptr);
-            cout<<"http ------time ------"<<ss->url->time<<endl;
-            httpRequest * http = new httpRequest(ss->threadpool);
-            http->start(ss->url);
-            pthread_mutex_unlock(&ss->mutexurl);
+            if(ss->warningtimes == 0)
+            {
+                ss->warningtimes ++;
+            }
+            else
+            {
+                pthread_mutex_lock(&ss->mutexurl);
+                ss->url->alarmmode = alarmmode[whole_id];
+                ss->url->com_temp = tempc[whole_id];
+                ss->url->camera_id = ss->getSN();
+                ss->url->ip = ss->getip();
+                ss->url->rectname = rectset[(size_t)whole_id].name;
+                ss->url->time = common::getsystime();
+                cout<<"http ------time ------"<<ss->url->time<<endl;
+                httpRequest * http = new httpRequest(ss->threadpool);
+                http->start(ss->url);
+                pthread_mutex_unlock(&ss->mutexurl);
+                pthread_mutex_lock(&ss->mutexsendalarm);
+                ss->needsendtoarduino = true;
+                pthread_mutex_unlock(&ss->mutexsendalarm);
+            }
         }
+        else
+            ss->warningtimes =0;
     }
     for(int i=0; i<64; ++i)
     {
@@ -313,4 +348,32 @@ list<int> temprule::getPreAlarm()
 list<int> temprule::getLinkageAlarm()
 {
     return linkagealarm;
+}
+
+bool temprule::findidinvector(int id,vector<WARN> warning)
+{
+    ulong num = warning.size();
+    for(ulong i=0;i<num;i++)
+    {
+        if(id==warning[i].id)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+unsigned long temprule::findidinwitch(int id,vector<WARN> warning)
+{
+    unsigned long num = warning.size();
+    {
+        for(unsigned long i=0;i<num;i++)
+        {
+            if(id==warning[i].id)
+            {
+                return i;
+            }
+        }
+    }
+    return 0;
 }

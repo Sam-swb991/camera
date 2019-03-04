@@ -34,12 +34,18 @@ sharedspace::sharedspace()
     {
         perror("mutexurl init error!");
     }
+    if(pthread_mutex_init(&mutexsendalarm, nullptr) != 0)
+    {
+        perror("mutexurl init error!");
+    }
     rectsetlen = 0;
     sql = new sqlHelper();
     pthread_mutex_lock(&mutexsql);
     sql->clear_table("temperature");
     string sqlstr ="select count(*) from window;";
     string num = sql->select_table(sqlstr);
+    string sqlstr1 ="select count(*) from common;";
+    string num1 = sql->select_table(sqlstr1);
     pthread_mutex_unlock(&mutexsql);
     if(atoi(num.c_str()) == 0)
     {
@@ -79,6 +85,26 @@ sharedspace::sharedspace()
         window = sql->getWindow();
         pthread_mutex_unlock(&mutexsql);
     }
+    if(atoi(num1.c_str()) == 0)
+    {
+        list<string> tname;
+        tname.push_back("ID");
+        tname.push_back("serialtemp");
+        list<string> value;
+        value.push_back("1");
+        value.push_back("0");
+        pthread_mutex_lock(&mutexsql);
+        sql->insert_table("common",tname,value);
+        pthread_mutex_unlock(&mutexsql);
+    }
+    else
+    {
+        pthread_mutex_lock(&mutexsql);
+        serial_temp = sql->getSerialTemp();
+        pthread_mutex_unlock(&mutexsql);
+    }
+
+
     tableName.push_back("ID");
     tableName.push_back("name");
     tableName.push_back("x1");
@@ -97,6 +123,10 @@ sharedspace::sharedspace()
     tableName.push_back("distance");
     set = true;
     setwindow = true;
+    needsendtoarduino = false;
+    useserialtemp = false;
+    haveserialmodel = false;
+    warningtimes = 0;
     mode = -1;
     char ipbuf[16] = {0};
     ip = ipset::getip(ipbuf);
@@ -441,7 +471,7 @@ list<int> sharedspace::getHighAlarm()
     return highalarm;
 }
 /**
- * @brief 获取预警点的坐标
+ * @brief 获取预警点334:3的坐标
  * @return 返回预警点的坐标
  */
 list <int> sharedspace::getPreAlarm()
@@ -462,7 +492,18 @@ list<int > sharedspace::getLinkageAlarm()
  */
 void sharedspace::setSerialTemp(float temp)
 {
+    useserialtemp = false;
+    list<string> tname;
+    tname.push_back("ID");
+    tname.push_back("serialtemp");
+    list<string> value;
+    value.push_back("1");
+    value.push_back(common::to_string(temp));
+    pthread_mutex_lock(&mutexsql);
+    sql->update_table("common",tname,value);
+    pthread_mutex_unlock(&mutexsql);
     serial_temp = temp;
+    cout<<"set serial time is:"<<temp<<endl;
 }
 /**
  * @brief 获取串口读出的温度
@@ -482,8 +523,12 @@ void sharedspace::readSN()
 {
     ifstream sn;
     sn.open("/mnt/sn",ios::in);
-    sn.getline(SN,11);
+    sn.getline(SN,12);
     cout<<SN<<endl;
+    if(strcmp(SN,"")==0)
+    {
+        memcpy(SN,"NO NUMBER",9);
+    }
     sn.close();
 }
 

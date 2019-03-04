@@ -163,3 +163,24 @@ string common::charToHexString(const char* aInStr,int len)
     }
     return lStr;
 }
+
+string common::getsystime()
+{
+    time_t timep;
+    struct tm *p;
+    time(&timep);
+    p=gmtime(&timep);
+    char time[50]={0};
+//    time= to_string(1900+p->tm_year);
+//    time+="-"+to_string(1+p->tm_mon);
+//    time+="-"+to_string(p->tm_mday);
+//    time+="_"+to_string(p->tm_hour);
+//    time+=":"+to_string(p->tm_min);
+//    time+=":"+to_string(p->tm_sec);
+    sprintf(time,"%d-%d-%d_%d:%d:%d",(1900+p->tm_year), (1+p->tm_mon),p->tm_mday,p->tm_hour, p->tm_min, p->tm_sec);
+    cout<<"=======================time======================="<<endl;
+    cout<<"                      "<<time<<"                     "<<endl;
+    cout<<"===================================================="<<endl;
+    delete p;
+    return time;
+}

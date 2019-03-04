@@ -21,6 +21,7 @@ public:
 	void exec(string sql);
     std::vector <RECTSET> getRect(int *len,bool isset);
     WINDOW getWindow();
+    float getSerialTemp();
     void recovery(bool clear_window);
 private:
     sqlite3 *db;
