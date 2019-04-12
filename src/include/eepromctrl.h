@@ -47,6 +47,7 @@ private:
     spiCtrl *spictrl;
     float PixCmin,PixCmax,PTAT_gradient,PTAT_offset;
     uint8_t gradscale,Arraytype,epsilon,VddScGrad,VddScOff,GlobalOff,NrOfDefPix,*DeadPixMask,ThGrad[5120];
+    uint8_t MBIT,BIAS,CLK,BPA,PU,MBIT_user,BIAS_user,CLK_user,BPA_user,PU_user;
     unsigned short VDDTH1,VDDTH2,PTATTH1,PTATTH2,GlobalGain,TN;
     unsigned short *DeadPixAdr,VddCompGrad[1280],VddCompOff[1280],ThOffset[5120],P[5120];
     int DeviceID;

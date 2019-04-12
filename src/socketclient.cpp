@@ -10,7 +10,7 @@
  * @brief 静态数据初始化
  */
 int socketclient::clientfd = -1;
-bool socketclient::start = true;
+bool socketclient::start = false;
 float ** socketclient::temp = nullptr;
 sharedspace * socketclient::ss = nullptr;
 calc *socketclient::c = nullptr;
@@ -29,7 +29,7 @@ socketclient::socketclient(sharedspace *ss)
 
         memset(temp[i],0,80*sizeof(int));
     }
-    c= new calc();
+
 
 
 }
@@ -41,6 +41,8 @@ socketclient::socketclient(sharedspace *ss)
  */
 int socketclient::connect(const char *addr, int port)
 {
+    if(start)
+        return -2;
     clientfd = client->SocketClientBuilder(addr,port);
     if(clientfd<0)
     {
@@ -49,7 +51,7 @@ int socketclient::connect(const char *addr, int port)
     }
     else
         start = true;
-    return clientfd;
+    return 0;
 }
 /**
  * @brief socket客户端线程
@@ -59,12 +61,14 @@ void *socketclient::clientthread(void *)
 {
     WINDOW window;
     // 6 mm camera
-
+    c= new calc();
     //    POINT point[5120];
     std::vector<RECT> rect;
     int len;
     CJsonObject jsonobject;
     clock_t start_t,end_t;
+    tempManager *four_t = new tempManager(4);
+    cout<<start<<endl;
     //   int times = 0;
     while(start)
     {
@@ -73,8 +77,15 @@ void *socketclient::clientthread(void *)
 
         usleep(50000);
         getTemp();
+        ss->storeTemp(temp);
         end_t =clock();
         cout<<"time 1:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
+        pthread_mutex_lock(&ss->mutexsql);
+        cout<<"store four temp"<<endl;
+        bool isfull = four_t->addTemp(temp);
+        pthread_mutex_unlock(&ss->mutexsql);
+        end_t =clock();
+        cout<<"time 2:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
         //        for(int i =0;i<64;++i)
         //        {
         //            for(int j=0;j<80;++j)
@@ -83,77 +94,79 @@ void *socketclient::clientthread(void *)
         //            }
         //            printf("\n");
         //        }
-
-        pthread_mutex_lock(&ss->mutex);
-        rect = ss->GetRect(temp,window,c->getTa());
-        len = ss->getRectlen();
-        list <int> highalarm = ss->getHighAlarm();
-        list <int> prealarm = ss->getPreAlarm();
-        list <int> linkagealarm = ss->getLinkageAlarm();
-        pthread_mutex_unlock(&ss->mutex);
-
-        end_t =clock();
-        cout<<"time 2:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
-
-
-
-        //        end_t =clock();
-
-        //        cout<<"time 3:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
-        //        for(int i =0;i<64;i++)
-        //        {
-        //            for(int j=0;j<80;j++)
-        //            {
-        //                point[i*80+j].value = temp[i][j];
-        //                point[i*80+j].isShow = 1;
-        //            }
-        //        }
-        end_t =clock();
-        cout<<"time 4:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
-
-        jsoncpp *json = new jsoncpp();
-        json->create_temp(window,rect,len,linkagealarm,highalarm,prealarm,temp);
-        end_t =clock();
-        cout<<"time 5:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
-       // cout<<json->getJsonString()<<endl;
-
-        myProtocol *pro = new myProtocol(0x01,0x03,json->getJsonString());
-        unsigned long prolen = pro->Getlength();
-        cout<<"data lenth:"<<prolen<<endl;
-        long len = send(clientfd,pro->GetData(),prolen,0);
-        if (len <=0)
+        if(isfull)
         {
-            cout<<"send error!"<<endl;
-            start = false;
+            four_t->getCalcTemp(temp);
+            pthread_mutex_lock(&ss->mutex);
+            rect = ss->GetRect(temp,window,c->getTa());
+            len = ss->getRectlen();
+            list <int> highalarm = ss->getHighAlarm();
+            list <int> prealarm = ss->getPreAlarm();
+            list <int> linkagealarm = ss->getLinkageAlarm();
+            pthread_mutex_unlock(&ss->mutex);
+
+            end_t =clock();
+            cout<<"time 3:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
+
+
+
+            //        end_t =clock();
+
+            //        cout<<"time 3:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
+            //        for(int i =0;i<64;i++)
+            //        {
+            //            for(int j=0;j<80;j++)
+            //            {
+            //                point[i*80+j].value = temp[i][j];
+            //                point[i*80+j].isShow = 1;
+            //            }
+            //        }
+            end_t =clock();
+            cout<<"time 4:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
+
+            jsoncpp *json = new jsoncpp();
+            json->create_temp(window,rect,len,linkagealarm,highalarm,prealarm,temp);
+            end_t =clock();
+            cout<<"time 5:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
+            // cout<<json->getJsonString()<<endl;
+
+            myProtocol *pro = new myProtocol(0x01,0x03,json->getJsonString());
+            unsigned long prolen = pro->Getlength();
+            cout<<"data lenth:"<<prolen<<endl;
+            long len = send(clientfd,pro->GetData(),prolen,0);
+            if (len <=0)
+            {
+                cout<<"send error!"<<endl;
+                start = false;
+                delete json;
+                delete pro;
+                //delete rect;
+                break;
+            }
+            if(!c->getDeviceOk())
+            {
+                cout<<"Divice error!"<<endl;
+                start = false;
+                delete json;
+                delete pro;
+                //delete rect;
+                break;
+            }
+            end_t =clock();
+            cout<<"time 6:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
+            //usleep(200000);
             delete json;
             delete pro;
-            //delete rect;
-            break;
+
         }
-        end_t =clock();
-        cout<<"time 6:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
-        //usleep(200000);
-        delete json;
-        delete pro;
-        //delete rect;
-        //        if(++times == 10)
-        //        {
-        //            cout<<"***times is :"<<times<<endl;
-        //            times = 0;
-        //            pthread_mutex_lock(&ss->mutexsql);
-        //            ss->resetSql();
-        //            pthread_mutex_unlock(&ss->mutexsql);
-        //        }
-        pthread_mutex_lock(&ss->mutexsql);
-        usleep(50000);
-        cout<<"store temp"<<endl;
-        ss->storeTemp(temp);
-        pthread_mutex_unlock(&ss->mutexsql);
-        end_t =clock();
-        cout<<"time 7:"<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<endl;
+
+        usleep(600000);
+
 
     }
     cout<<"client end"<<endl;
+    close(clientfd);
+    delete four_t;
     return nullptr;
 }
 /**
@@ -187,13 +200,13 @@ void socketclient::getTemp()
 
     c->get_all_temp(temp);
 
-//        for(int i = 0;i<64;i++)
-//        {
-//            for(int j = 0;j<80;j++)
-//            {
-//                cout<<temp[i][j]<<" ";
-//            }
-//            cout<<endl;
-//        }
-//        cout<<"print end"<<endl;
+    //        for(int i = 0;i<64;i++)
+    //        {
+    //            for(int j = 0;j<80;j++)
+    //            {
+    //                cout<<temp[i][j]<<" ";
+    //            }
+    //            cout<<endl;
+    //        }
+    //        cout<<"print end"<<endl;
 }

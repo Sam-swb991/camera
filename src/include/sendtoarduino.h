@@ -8,7 +8,7 @@ class sendtoarduino
 {
 public:
     sendtoarduino(sharedspace *ss);
-    bool connect(const char * ip,int port);
+    int connect(const char * ip,int port);
     pthread_t start();
     bool isstart;
 private:
@@ -16,6 +16,7 @@ private:
     static string cat_json(HTTPURL*);
     static int fd;
     static void *thread(void *);
+    static int sendnum;
     socketHelper * socket;
 };
 

@@ -198,6 +198,11 @@ void * socketServer::serverthread(void *)
                             }
 
                         }
+                        else if (mode == SETARDUINOIP)
+                        {
+
+                            ss->setArduinoIp(myjson->getarduinoip());
+                        }
                         cout<<"mode is "<<mode<<endl;
                         pthread_mutex_lock(&ss->mutex);
                         ss->SetRect(rect,rectlen,mode);
@@ -320,6 +325,11 @@ void * socketServer::serverthread(void *)
                     {
                         json->create_atemp(ss->haveserialmodel);
                     }
+                    else if(mode == SETARDUINOIP)
+                    {
+                        reset = true;
+                        json->create_code(100);
+                    }
                     else
                         json->create_code(100);
                 }
@@ -351,7 +361,6 @@ void * socketServer::serverthread(void *)
                 delete sendmsg;
                 delete json;
                 // delete pro;
-
 
             }
         }

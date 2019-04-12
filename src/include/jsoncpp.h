@@ -16,6 +16,7 @@ public:
     int getatempmode();
     float getatemp();
     std::string getip();
+    std::string getarduinoip();
     void create_code(int code);
     std::vector<RECTSET> getRectset(int *len);
     std::string toStyledString();
@@ -35,7 +36,7 @@ private:
     Json::StreamWriterBuilder  writebuilder;
     int rectlen;
     int direction;
-    std::string ip;
+    std::string ip,arduinoip;
     std::string shellcmd;
     std::vector<RECTSET> rectset;
     int mode;

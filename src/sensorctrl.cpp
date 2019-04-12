@@ -22,8 +22,8 @@ void sensorCtrl::init_sensor()
     spictrl->spi_sensor_write(0x04,0x05);
     spictrl->spi_sensor_write(0x05,0x05);
     spictrl->spi_sensor_write(0x06,0x15);
-    spictrl->spi_sensor_write(0x07,0x0c);
-    spictrl->spi_sensor_write(0x08,0x0c);
+    spictrl->spi_sensor_write(0x07,0x03);
+    spictrl->spi_sensor_write(0x08,0x03);
     /**
       * @brief 启动sensor，开始读取温度
       */

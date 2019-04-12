@@ -5,13 +5,14 @@
 #include "sqlhelper.h"
 #include <vector>
 #include "threadPool.h"
+#include "tempmanager.h"
 class temprule;
 class sharedspace
 {
 public:
     sharedspace();
-    void storeTemp(float **temp);
-    int getTemp(int **);
+    bool storeTemp(float **temp);
+    int getTemp(float **);
     void SetRect(std::vector<RECTSET> rectset, int len, int mode);
     std::vector<RECT> GetRect(float **temp,WINDOW windows, int Ta);
     int getRectlen();
@@ -19,21 +20,23 @@ public:
     void getMode();
     float getSerialTemp();
     void setSerialTemp(float temp);
+    void setArduinoIp(string ip);
     list<int >getHighAlarm();
     list<int> getPreAlarm();
     list<int> getLinkageAlarm();
     void setWindow(int direction);
     WINDOW getWindow();
-    pthread_mutex_t mutex,mutexsql,mutexSerial,mutexurl,mutexsendalarm;
+    pthread_mutex_t mutex,mutexsql,mutexSerial,mutexurl,mutexarduinoUrl,mutexsendalarm;
     sqlHelper *sql;
     ClThreadPool *threadpool;
     string getip();
-    HTTPURL * url;
+    HTTPURL * url,*arduinoUrl;
     string getSN();
     int warningtimes;
     bool needsendtoarduino;
     bool useserialtemp;
     bool haveserialmodel;
+    string arduinoIp;
     std::vector<WARN> regionwarning;
 private:
     //RECT *rect =nullptr;
@@ -47,13 +50,14 @@ private:
     bool set,setwindow;
     int ID;
     int mode;
-    char SN[11]={0};
+    char *SN;
     list <int >highalarm;
     list <int> prealarm;
     list <int> linkagealarm;
     float serial_temp;
     void readSN();
     string ip;
+    tempManager *sixteen_t;
 
 
 };

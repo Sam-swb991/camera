@@ -27,7 +27,9 @@ SOURCES += \
     threadPool.cpp \
     thread.cpp \
     recovery.cpp \
-    sendtoarduino.cpp
+    sendtoarduino.cpp \
+    mytemp.cpp \
+    tempmanager.cpp
 
 HEADERS += \
     ./include/spi.h \
@@ -67,7 +69,12 @@ HEADERS += \
     include/thread.h \
     include/recovery.h \
     include/md5.h \
-    include/sendtoarduino.h
+    include/sendtoarduino.h \
+    include/mytemp.h \
+    include/tempmanager.h
 
 INCLUDEPATH = ./include
 LIBS += -lsqlite -lpthread
+
+DISTFILES += \
+    Makefile

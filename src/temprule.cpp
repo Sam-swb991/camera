@@ -20,10 +20,10 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
     cout<<"temprule"<<endl;
     memset(alarmmode,0,sizeof(int)*static_cast<size_t>(len));
     memset(tempc,0,sizeof(TEMP_C)*static_cast<size_t>(len));
-    int **ftemp = new int*[64];
+    float **ftemp = new float*[64];
     for(int i=0; i<64; ++i)
     {
-        ftemp[i] = new int[80];
+        ftemp[i] = new float[80];
 
         memset(ftemp[i],0,80*sizeof(int));
     }
@@ -40,8 +40,16 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
     float serial_temp = ss->getSerialTemp();
     cout<<"serial temp"<<serial_temp<<endl;
     pthread_mutex_unlock(&ss->mutexSerial);
-   // all_temp_selector(temp,serial_temp,Ta);
+    // all_temp_selector(temp,serial_temp,Ta);
     int whole_id =-1;
+//    ss->url->camera_id.clear();
+//    ss->url->camera_id.append(ss->getSN());
+//    ss->url->ip.clear();
+//    ss->url->ip.append(ss->getip());
+//    ss->arduinoUrl->camera_id.clear();
+//    ss->arduinoUrl->camera_id.append(ss->getSN());
+//    ss->arduinoUrl->ip.clear();
+//    ss->arduinoUrl->ip.append(ss->getip());
     for(size_t k = 0 ;k<static_cast<size_t>(len);++k)
     {
         if(rectset[k].id!=-1)
@@ -55,7 +63,7 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
                 warning.times = 0;
                 ss->regionwarning.push_back(warning);
             }
-            cout<<"rect x"<<rectset[k].rect.x2<<"rect y"<<rectset[k].rect.y2<<endl;
+            //cout<<"rect x"<<rectset[k].rect.x2<<"rect y"<<rectset[k].rect.y2<<endl;
             float rect_x = rectset[k].rect.x2 - rectset[k].rect.x1;
             float rect_mid_x = rect_x/2+rectset[k].rect.x1;
             float real_mid_x = 2*win_mid_x-rect_mid_x;
@@ -64,7 +72,7 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
             int start_y = static_cast<int>((rectset[k].rect.y1-windows.y1)*HEIGHT/win_y);
             int end_x = static_cast<int>(ceil(static_cast<double>(real_end*WIDTH/win_x)));
             int end_y = static_cast<int>(ceil(static_cast<double>((rectset[k].rect.y2-windows.y1)*HEIGHT/win_y)));
-            cout<<"real_mid_x"<<real_mid_x<<"rect_x"<<rect_x<<"real_end "<<real_end<<endl;
+            //cout<<"real_mid_x"<<real_mid_x<<"rect_x"<<rect_x<<"real_end "<<real_end<<endl;
             if(start_x<0)
                 start_x = 0;
             if(start_y<0)
@@ -73,7 +81,7 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
                 end_x = 80;
             if(end_y>64)
                 end_y = 64;
-            cout<<"startx = "<<start_x<<" starty = "<<start_y<<" end_x = "<<end_x<<" end_y = "<<end_y<<endl;
+            //cout<<"startx = "<<start_x<<" starty = "<<start_y<<" end_x = "<<end_x<<" end_y = "<<end_y<<endl;
             num=0;
             tempc[k].lowTemp = 1000;
             tempc[k].highTemp = -100;
@@ -149,23 +157,24 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
                 }
                 else
                 {
+                    cout<<"xxxxxxxxxxxxxxrectset IDxxxxxxxxxxxxxxx"<<rectset[k].id<<endl;
                     pthread_mutex_lock(&ss->mutexurl);
                     ss->url->alarmmode = alarmmode[k];
                     ss->url->com_temp = tempc[k];
-                    ss->url->camera_id = ss->getSN();
-                    ss->url->ip = ss->getip();
                     ss->url->rectname = rectset[k].name;
-                    ss->url->time = common::getsystime();
+                    ss->url->time.clear();
+                    ss->url->time.append(common::getsystime());
+                    ss->url->dtime = time(nullptr);
                     httpRequest * http = new httpRequest(ss->threadpool);
                     http->start(ss->url);
                     pthread_mutex_unlock(&ss->mutexurl);
-                    pthread_mutex_lock(&ss->mutexsendalarm);
-                    ss->needsendtoarduino = true;
-                    pthread_mutex_unlock(&ss->mutexsendalarm);
+
                 }
             }
             else
+            {
                 ss->regionwarning[wnum].times = 0;
+            }
         }
         else
         {
@@ -240,6 +249,7 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
                 }
             }
         }
+        cout<<"whole alarm 1"<<endl;
         tempc[whole_id].avgTemp /=num;
         if(alarmmode[whole_id] !=0)
         {
@@ -252,22 +262,49 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
                 pthread_mutex_lock(&ss->mutexurl);
                 ss->url->alarmmode = alarmmode[whole_id];
                 ss->url->com_temp = tempc[whole_id];
-                ss->url->camera_id = ss->getSN();
-                ss->url->ip = ss->getip();
                 ss->url->rectname = rectset[(size_t)whole_id].name;
-                ss->url->time = common::getsystime();
+                ss->url->time.clear();
+                ss->url->time.append(common::getsystime().c_str());
+                ss->url->dtime = time(nullptr);
                 cout<<"http ------time ------"<<ss->url->time<<endl;
                 httpRequest * http = new httpRequest(ss->threadpool);
                 http->start(ss->url);
                 pthread_mutex_unlock(&ss->mutexurl);
-                pthread_mutex_lock(&ss->mutexsendalarm);
-                ss->needsendtoarduino = true;
-                pthread_mutex_unlock(&ss->mutexsendalarm);
+
             }
         }
         else
+        {
             ss->warningtimes =0;
+        }
     }
+    int tempalarm=alarmmode[0];
+    for(int i =1 ;i<len;i++)
+    {
+        if(tempalarm<alarmmode[static_cast<size_t>(i)])
+            tempalarm = alarmmode[static_cast<size_t>(i)];
+    }
+    if(tempalarm!=0)
+    {
+        pthread_mutex_lock(&ss->mutexarduinoUrl);
+        ss->arduinoUrl->time.clear();
+        ss->arduinoUrl->time.append(common::getsystime());
+        ss->arduinoUrl->alarmmode = tempalarm;
+        pthread_mutex_unlock(&ss->mutexarduinoUrl);
+        pthread_mutex_lock(&ss->mutexsendalarm);
+        ss->needsendtoarduino = true;
+        pthread_mutex_unlock(&ss->mutexsendalarm);
+    }
+    else
+    {
+        cout<<"----------------------alarm 0------------------"<<tempalarm<<endl;
+        pthread_mutex_lock(&ss->mutexarduinoUrl);
+        ss->arduinoUrl->alarmmode = 0;
+        ss->arduinoUrl->time.clear();
+        ss->arduinoUrl->time.append(common::getsystime());
+        pthread_mutex_unlock(&ss->mutexarduinoUrl);
+    }
+    cout<<"whole alarm 2"<<endl;
     for(int i=0; i<64; ++i)
     {
         delete []ftemp[i];
@@ -309,7 +346,7 @@ void temprule::all_temp_selector(float **temp,float env_temp,int Ta)
         for(int j=0;j<80;++j)
         {
             if(temp[i][j]<(T0+TEMP_DIFFER))
-            //if(abs(temp[i][j]-env_temp)<10)
+                //if(abs(temp[i][j]-env_temp)<10)
                 temp[i][j] = env_temp;
         }
     }

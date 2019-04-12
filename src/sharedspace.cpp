@@ -13,6 +13,7 @@
 #include <vector>
 #include "ipset.h"
 using namespace std;
+
 /**
  * @brief 构造函数，初始化各种数据
  */
@@ -36,7 +37,11 @@ sharedspace::sharedspace()
     }
     if(pthread_mutex_init(&mutexsendalarm, nullptr) != 0)
     {
-        perror("mutexurl init error!");
+        perror("mutexsendalarm init error!");
+    }
+    if(pthread_mutex_init(&mutexarduinoUrl, nullptr) != 0)
+    {
+        perror("mutexarduinoUrl init error!");
     }
     rectsetlen = 0;
     sql = new sqlHelper();
@@ -104,6 +109,10 @@ sharedspace::sharedspace()
         pthread_mutex_unlock(&mutexsql);
     }
 
+    pthread_mutex_lock(&mutexsql);
+    arduinoIp = sql->getArduinoIp();
+    cout<<"arduinoIp:"<<arduinoIp<<endl;
+    pthread_mutex_unlock(&mutexsql);
 
     tableName.push_back("ID");
     tableName.push_back("name");
@@ -128,12 +137,22 @@ sharedspace::sharedspace()
     haveserialmodel = false;
     warningtimes = 0;
     mode = -1;
+    readSN();
     char ipbuf[16] = {0};
     ip = ipset::getip(ipbuf);
     threadpool = new ClThreadPool();
     threadpool->Create(10);
     url = new HTTPURL[1];
-    readSN();
+    url->camera_id.clear();
+    url->camera_id.append(SN);
+    url->ip.clear();
+    url->ip.append(ip);
+    arduinoUrl = new HTTPURL[1];
+    arduinoUrl->camera_id.clear();
+    arduinoUrl->camera_id.append(SN);
+    arduinoUrl->ip.clear();
+    arduinoUrl->ip.append(ip);
+    sixteen_t = new tempManager(60);
 
 }
 /**
@@ -210,7 +229,7 @@ std::vector<RECT>  sharedspace::GetRect(float **temp,WINDOW windows,int Ta)
         delete []tempc;
 
         delete trule;
-
+        cout<<"end get rect"<<endl;
 
     }
     else
@@ -327,42 +346,41 @@ int sharedspace::getRectlen()
  * @brief 把温度数据存储到数据库
  * @param temp,温度二维数组
  */
-void sharedspace::storeTemp(float **temp)
+bool sharedspace::storeTemp(float **temp)
 {
-    stringstream ss;
-    stringstream t;
-    char str[256] = { 0 };
-    ss<<"'";
-    for(int i = 0;i<HEIGHT;++i)
-    {
-        for(int j=0;j<WIDTH;++j)
-        {
-            ss<<static_cast<int>(temp[i][j]);
-            //cout<<static_cast<int>(temp[i][j])<<" ";
-            if(i == HEIGHT-1 && j ==WIDTH-1)
-            {
-                ss<<"'";
-            }
-            else
-                ss<<",";
-        }
-         //cout<<endl;
-    }
-    cout<<"temp get end"<<endl;
-    list<string> name,value;
-    name.push_back("tempData");
-    name.push_back("time");
-    value.push_back(ss.str());
+    return sixteen_t->addTemp(temp);
+//    stringstream ss;
+//    stringstream t;
+//    char str[256] = { 0 };
+//    ss<<"'";
+//    for(int i = 0;i<HEIGHT;++i)
+//    {
+//        for(int j=0;j<WIDTH;++j)
+//        {
+//            ss<<static_cast<int>(temp[i][j]);
+//            //cout<<static_cast<int>(temp[i][j])<<" ";
+//            if(i == HEIGHT-1 && j ==WIDTH-1)
+//            {
+//                ss<<"'";
+//            }
+//            else
+//                ss<<",";
+//        }
+//         //cout<<endl;
+//    }
+//    cout<<"temp get end"<<endl;
+//    list<string> name,value;
+//    name.push_back("tempData");
+//    name.push_back("time");
+//    value.push_back(ss.str());
 
-    sprintf(str,"%ld",time(nullptr));
-    cout<<"time is:"<<str<<endl;
-    value.push_back(str);
-   // pthread_mutex_lock(&mutexsql);
-    sql->insert_table("temperature",name,value);
-    t<<(time(nullptr)-65);
-    string delsql ="time < "+ t.str();
-    sql->delete_table("temperature",delsql);
-   // pthread_mutex_unlock(&mutexsql);
+//    sprintf(str,"%ld",time(nullptr));
+//    cout<<"time is:"<<str<<endl;
+//    value.push_back(str);
+//    sql->insert_table("temperature",name,value);
+//    t<<(time(nullptr)-65);
+//    string delsql ="time < "+ t.str();
+//    sql->delete_table("temperature",delsql);
 
 }
 
@@ -380,36 +398,39 @@ void sharedspace::resetSql()
  * @param temp，温度二维数组
  * @return 读取成功返回0,不成功返回-1
  */
-int sharedspace::getTemp(int **temp)
+int sharedspace::getTemp(float **temp)
 {
-    cout<<"gettemp"<<endl;
-    stringstream ss;
-    string ret;
-    time_t g_time = time(nullptr)-60;
-    time_t l_time = time(nullptr)-65;
-    string sqlstr = "select tempData from temperature where time < "+ common::to_string(g_time)+
-            " and time > "+common::to_string(l_time)+" order by time DESC LIMIT 1 OFFSET 0;";
- //   pthread_mutex_lock(&mutexsql);
-    ret = sql->select_table(sqlstr);
- //   pthread_mutex_unlock(&mutexsql);
-    if(!ret.empty()&&ret!="error")
-    {
-
-        //cout<<ret<<endl;
-        vector <string> res = common::split(ret,",");
-        //cout<<"res size is:"<<res.size()<<endl;
-        for(int i = 0;i<64;++i)
-        {
-            for(int j = 0;j<80;++j)
-            {
-                temp[i][j] = atoi(res[static_cast<unsigned long>(i*80+j)].c_str());
-            }
-        }
-
+    bool res = sixteen_t->getFirstTemp(temp);
+    if(res)
         return 0;
-    }
     else
         return -1;
+//    cout<<"gettemp"<<endl;
+//    stringstream ss;
+//    string ret;
+//    time_t g_time = time(nullptr)-60;
+//    time_t l_time = time(nullptr)-65;
+//    string sqlstr = "select tempData from temperature where time < "+ common::to_string(g_time)+
+//            " and time > "+common::to_string(l_time)+" order by time DESC LIMIT 1 OFFSET 0;";
+//    ret = sql->select_table(sqlstr);
+//    if(!ret.empty()&&ret!="error")
+//    {
+
+//        //cout<<ret<<endl;
+//        vector <string> res = common::split(ret,",");
+//        //cout<<"res size is:"<<res.size()<<endl;
+//        for(int i = 0;i<64;++i)
+//        {
+//            for(int j = 0;j<80;++j)
+//            {
+//                temp[i][j] = atoi(res[static_cast<unsigned long>(i*80+j)].c_str());
+//            }
+//        }
+
+//        return 0;
+//    }
+//    else
+//        return -1;
 }
 /**
  * @brief 获取红外像素在可见光中的坐标
@@ -505,6 +526,21 @@ void sharedspace::setSerialTemp(float temp)
     serial_temp = temp;
     cout<<"set serial time is:"<<temp<<endl;
 }
+
+void sharedspace::setArduinoIp(string ip)
+{
+    list<string> tname;
+    tname.push_back("ID");
+    tname.push_back("arduinoip");
+    list<string> value;
+    value.push_back("1");
+    value.push_back("\""+ip+"\"");
+    pthread_mutex_lock(&mutexsql);
+    sql->update_table("common",tname,value);
+    pthread_mutex_unlock(&mutexsql);
+    arduinoIp.clear();
+    arduinoIp.append(ip);
+}
 /**
  * @brief 获取串口读出的温度
  * @return 返回串口读出的温度
@@ -521,6 +557,7 @@ string sharedspace::getip()
 
 void sharedspace::readSN()
 {
+    SN = new char[12];
     ifstream sn;
     sn.open("/mnt/sn",ios::in);
     sn.getline(SN,12);

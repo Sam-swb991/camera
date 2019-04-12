@@ -58,7 +58,7 @@ void sqlHelper::create_table()
                   "rapidtempchangealarm integer not null,rapidtempchangevalue integer not null,"\
                   "radiance float not null,distance float not null,isset integer default 0);";
     string sql2 = "create table if not exists window(ID integer primary key,x1 float not null,x2 float not null,y1 float not null,y2 float not null);";
-    string sql3 = "create table if not exists common(ID integer primary key,serialtemp float not null);";
+    string sql3 = "create table if not exists common(ID integer primary key,serialtemp float not null,arduinoip varchar(20) not null default '192.168.0.101');";
     char *errorMsg;
     char *errorMsg1;
     char *errorMsg2;
@@ -535,6 +535,36 @@ float sqlHelper::getSerialTemp()
     sqlite3_free(errmsg);
     return serialtemp;
 }
+
+string sqlHelper::getArduinoIp()
+{
+    string strsql = "select arduinoip from common where ID = 1";
+    char * errmsg;
+    char** pResult;
+    int nCol;
+    int nRow;
+    int res = sqlite3_get_table(db,strsql.c_str(),&pResult,&nRow,&nCol,&errmsg);
+    string ip="192.168.0.101";
+    if (res != SQLITE_OK)
+    {
+        printf("sqlite3_get_table error\n");
+        fprintf(stderr,"get table error %s\n",sqlite3_errmsg(db));
+        sqlite3_free(errmsg);
+        return ip;
+    }
+    int nIndex = nCol;
+    for(int j=0;j<nCol;j++)
+    {
+         if(strcmp(pResult[j],"arduinoip")==0)
+         {
+            ip = pResult[nIndex];
+         }
+         nIndex ++;
+    }
+    sqlite3_free_table(pResult);
+    sqlite3_free(errmsg);
+    return ip;
+}
 /**
  * @brief 执行sql语句
  * @param sql，需要执行的sql语句
@@ -595,8 +625,8 @@ void sqlHelper::recovery(bool clear_window)
     value.push_back("110");
     value.push_back("0");
     value.push_back("0");
-    value.push_back("0");
-    value.push_back("0");
+    value.push_back("1");
+    value.push_back("25");
     value.push_back("1");
     insert_table("rect",tableName,value);
 

@@ -47,6 +47,7 @@ typedef struct http_url{
     std::string ip;
     std::string camera_id;
     std::string time;
+    time_t dtime;
 }HTTPURL;
 
 typedef struct warning{
@@ -58,7 +59,7 @@ typedef struct warning{
  */
 enum mode{ADD,DEL,MODIFY,SET,UNSET,GET,GETRTEMP,
           MOVE,GETWIN,IPSET,RECOVERY,REBOOT,UPDATE,
-          GETVER,SETTIME,GETSN,SETATEMP};
+          GETVER,SETTIME,GETSN,SETATEMP,SETARDUINOIP};
 enum direction{UP,DOWN,LEFT,RIGHT};
 
 #endif // TRANSPORT_H

@@ -4,6 +4,7 @@
 #include "sensorctrl.h"
 //int get_one_temp(E_M_DATA* em_data, S_M_DATA* sm_data, S_C_DATA * sc_data);
 //#define DEBUG 1
+#define DEVICEERROR -1234.0f
 class calc
 {
 public:
@@ -13,6 +14,7 @@ public:
     void get_all_temp(float **);
     void sort_temp(float **);
     int getTa();
+    bool getDeviceOk();
 private:
     double pow_vddscgrad,pow_vddscoff,pow_gradscale;
     float pixC_delta,pixCmin,PTAT_gradient,PTAT_offset;
@@ -24,6 +26,7 @@ private:
     spiCtrl *spi;
     int DeadPixAdr[8];
     int Ta,VDD_av,PTAT_av;
+    bool DeviceOk;
     void change_sort(void *, void *, size_t len);
 
 };

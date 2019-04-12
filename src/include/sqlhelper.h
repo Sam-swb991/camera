@@ -22,6 +22,7 @@ public:
     std::vector <RECTSET> getRect(int *len,bool isset);
     WINDOW getWindow();
     float getSerialTemp();
+    string getArduinoIp();
     void recovery(bool clear_window);
 private:
     sqlite3 *db;

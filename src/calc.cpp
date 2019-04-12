@@ -18,7 +18,7 @@ calc::calc()
     ectrl->printvalue();
     E_C_DATA *ec_data = ectrl->get_common_data();
     pixC_delta = (ec_data->pixCmax - ec_data->pixCmin)/65535;
-    pixC_muti = ec_data->epsilon*ec_data->GlobalGrain/1000000;
+    pixC_muti = (float)(ec_data->epsilon*ec_data->GlobalGrain)/1000000;
     pow_gradscale = pow(2,ec_data->gradscale);
     pow_vddscgrad = pow(2,ec_data->vddScGrad);
     pow_vddscoff = pow(2,ec_data->vddScOff);
@@ -29,6 +29,7 @@ calc::calc()
     PTATTH1 = ec_data->PTATTH1;
     PTAT_gradient = ec_data->PTAT_gradient;
     PTAT_offset = ec_data->PTAT_offset;
+    DeviceOk = true;
 
 
 }
@@ -70,6 +71,10 @@ void calc::get_all_temp(float **temp)
 
     }
     cout<<"end temp"<<endl;
+    if(fabs(temp[0][0]-DEVICEERROR)<0.000001&&fabs(temp[63][79]-DEVICEERROR)<0.000001)
+    {
+        DeviceOk = false;
+    }
 
     sort_temp(temp);
     //repaire bad value
@@ -211,7 +216,6 @@ float calc::get_one_temp(E_M_DATA* em_data,S_M_DATA* sm_data)
 
     float PixC_ij = (em_data->p*pixC_delta+pixCmin)*pixC_muti;
 
-
     int V_ij_pixC = static_cast<int>(V_ij_vdd_comp *pow(10,8)/static_cast<double>(PixC_ij));
 
     int x=-1,y;
@@ -226,6 +230,7 @@ float calc::get_one_temp(E_M_DATA* em_data,S_M_DATA* sm_data)
     if(x==-1)
     {
         printf("calc is error!\n");
+        return DEVICEERROR;
     }
     int val = V_ij_pixC +TABLEOFFSET;
 
@@ -242,7 +247,7 @@ float calc::get_one_temp(E_M_DATA* em_data,S_M_DATA* sm_data)
     unsigned int Tobject = (Vy-Vx)*(static_cast<unsigned int>(val)-common::YADValues[y])/ADEQUIDISTANCE+Vx;
     float K = -273.15f;
     float ret = static_cast<float>(Tobject)/10 +K;
-#ifdef DEBUG
+/*
     printf("PTAT_AV is %d\n",PTAT_av);
     printf("VDD_AV is %d\n",VDD_av);
     printf("Ta is %d\n",Ta);
@@ -261,7 +266,8 @@ float calc::get_one_temp(E_M_DATA* em_data,S_M_DATA* sm_data)
     printf("x = %d,y = %d\n",x,y);
     cout<<"1:"<<temp_y_x<<" 2:"<<temp_y_x1<<" 3:"<<temp_y1_x<<" 4:"<<temp_y1_x1<<endl;
     cout<<"vx :"<<Vx<<" vy :"<<Vy<<endl;
-#endif
+    cout<<"To is:"<<ret<<endl;
+*/
     return ret;
 
 
@@ -273,4 +279,9 @@ float calc::get_one_temp(E_M_DATA* em_data,S_M_DATA* sm_data)
 int calc::getTa()
 {
     return Ta;
+}
+
+bool calc::getDeviceOk()
+{
+    return DeviceOk;
 }

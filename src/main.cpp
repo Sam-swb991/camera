@@ -19,6 +19,7 @@
 #include "md5.h"
 #include "common.h"
 #include "sendtoarduino.h"
+#include <queue>
 #define UNUSED(var) {var++;var--;}
 using namespace Json;
 int main()
@@ -43,39 +44,44 @@ int main()
     UNUSED(id_s);
     socketclient *sc = new socketclient(shared);
     sendtoarduino * arduino = new sendtoarduino(shared);
-    string arduinoaddr = "192.168.0.102";
-
- New:while(true)
+    string addr = "127.0.0.1";
+    while(true)
     {
-        string addr = "127.0.0.1";
+
         int ret = sc->connect(addr.c_str(),10300);
-        if(ret >0)
-            break;
+        if(ret ==0)
+        {
+            sc->startclient();
+        }
+        else if (ret == -2)
+        {
+            cout<<"socket client has already started!"<<endl;
+        }
         else
         {
             cout<<"Waiting for server start!!"<<endl;
-            sleep(3);
+
         }
-    }
-    pthread_t id = sc->startclient();
-    while(true)
-    {
-        if(arduino->connect(arduinoaddr.c_str(),10001))
+        sleep(1);
+        ret = arduino->connect(shared->arduinoIp.c_str(),10001);
+        if(ret ==0)
         {
-            cout<<"connect arduino success!!"<<endl;
-            break;
+            arduino->start();
+        }
+        else if(ret == -2)
+        {
+            cout<<"arduino has already started!"<<endl;
         }
         else
         {
             cout<<"Waiting for arduino start!!"<<endl;
-            sleep(1);
-        }
-    }
-    if(!arduino->isstart)
-        arduino->start();
 
-    pthread_join(id,nullptr);
-    goto New;
+        }
+        sleep(1);
+    }
+
+ //   pthread_join(id,nullptr);
+  //  goto New;
        // pthread_join(id_s,nullptr);
 
 }

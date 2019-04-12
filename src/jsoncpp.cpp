@@ -203,7 +203,7 @@ jsoncpp::jsoncpp(std::string json)
             mode = SETTIME;
             string time = myjson["body"]["time"].asString();
             shellcmd.clear();
-            shellcmd = "/mnt/time/set.sh "+time;
+            shellcmd = "sh /mnt/time/set.sh "+time;
             cout<<"shellcmd:"<<shellcmd<<endl;
         }
         else if(function == "getsn")
@@ -218,6 +218,11 @@ jsoncpp::jsoncpp(std::string json)
             {
                 ambienttemp = myjson["body"]["atemp"].asFloat();
             }
+        }
+        else if(function == "setarduinoip")
+        {
+            mode = SETARDUINOIP;
+            arduinoip = myjson["body"]["ip"].asString();
         }
 
 
@@ -278,6 +283,11 @@ string jsoncpp::getip()
 {
     cout<<"get ip:"<<ip<<endl;
     return ip;
+}
+
+string jsoncpp::getarduinoip()
+{
+    return arduinoip;
 }
 /**
  * @brief 获取RECTSET结构体

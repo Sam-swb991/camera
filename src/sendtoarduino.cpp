@@ -3,31 +3,31 @@
 #include "myprotocol.h"
 int sendtoarduino::fd = -1;
 sharedspace * sendtoarduino::ss =nullptr;
+int sendtoarduino::sendnum = 0;
 sendtoarduino::sendtoarduino(sharedspace *ss)
 {
     this->ss =ss;
     socket = new socketHelper();
     this->isstart = false;
-
-
 }
 
-bool sendtoarduino::connect(const char *ip, int port)
+int sendtoarduino::connect(const char *ip, int port)
 {
     if(fd>0)
-        return true;
+        return -2;
+    cout<<"arduino IP:"<<ip<<endl;
     fd = socket->SocketClientBuilder(ip,port);
     if(fd<0)
-        return false;
+        return -1;
     else
-        return true;
+        return 0;
 }
 string sendtoarduino::cat_json(HTTPURL *url)
 {
     string json;
     json.clear();
     json = "{\"function\":\"alarm\",\"body\":{\"ip\":"+url->ip+",\"alarmmode\":"
-            +common::to_string(url->alarmmode)+",\"sn\":"+url->camera_id+",\"time\":"+url->time+"}}";
+            +common::to_string(url->alarmmode)+",\"sn\":"+url->camera_id+",\"time\":\""+url->time+"\"}}";
     cout<<"json:"<<json<<endl;
     return json;
 }
@@ -40,9 +40,9 @@ void * sendtoarduino::thread(void *)
         {
             cout<<"send to arduino"<<endl;
             //pthread_mutex_unlock(&ss->mutexsendalarm);
-            pthread_mutex_lock(&ss->mutexurl);
-            string sendjson =cat_json(ss->url);
-            pthread_mutex_unlock(&ss->mutexurl);
+            pthread_mutex_lock(&ss->mutexarduinoUrl);
+            string sendjson =cat_json(ss->arduinoUrl);
+            pthread_mutex_unlock(&ss->mutexarduinoUrl);
             myProtocol *pro = new myProtocol(0x01,0x04,sendjson);
             long len = send(fd,pro->GetData(),pro->Getlength(),0);
             if(len<0)
@@ -51,13 +51,29 @@ void * sendtoarduino::thread(void *)
                 cout<<"send to arduino error!"<<endl;
                 break;
             }
-            ss->needsendtoarduino = false;
+            else
+            {
+                cout<<"============send to arduino success!!==========="<<endl;
+            }
+            if(ss->arduinoUrl->alarmmode ==0)
+            {
+                if(sendnum >0)
+                {
+                    cout<<"++++++++++++++++++++++"<<ss->arduinoUrl->alarmmode<<"++++++++++++++"<<endl;
+                    cout<<"++++++++++++++++++++++"<<ss->arduinoUrl->alarmmode<<"++++++++++++++"<<endl;
+                    ss->needsendtoarduino = false;
+                    sendnum =0;
+                }
+                else
+                    sendnum++;
+            }
+
         }
-        else
-            sleep(1);
+        sleep(1);
 
     }
     close(fd);
+    fd = -1;
     return nullptr;
 }
 
