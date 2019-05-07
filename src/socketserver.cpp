@@ -203,6 +203,10 @@ void * socketServer::serverthread(void *)
 
                             ss->setArduinoIp(myjson->getarduinoip());
                         }
+                        else if(mode == SETCOEFFICIENT)
+                        {
+                            ss->setCoefficient(myjson->getcoefficient());
+                        }
                         cout<<"mode is "<<mode<<endl;
                         pthread_mutex_lock(&ss->mutex);
                         ss->SetRect(rect,rectlen,mode);
@@ -329,6 +333,10 @@ void * socketServer::serverthread(void *)
                     {
                         reset = true;
                         json->create_code(100);
+                    }
+                    else if(mode == GETCOEFFICIENT)
+                    {
+                        json->create_coefficient(ss->getCoefficient());
                     }
                     else
                         json->create_code(100);

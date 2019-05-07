@@ -8,8 +8,9 @@
  * @brief calc的构造函数，spi的初始化
  *        以及将spi EEPROM模式下读取的数据储存下来
  */
-calc::calc()
+calc::calc(sharedspace *ss)
 {
+    this->ss =ss;
     spi = new spiCtrl();
     sctrl = new sensorCtrl(spi);
     sctrl->init_sensor();
@@ -18,7 +19,7 @@ calc::calc()
     ectrl->printvalue();
     E_C_DATA *ec_data = ectrl->get_common_data();
     pixC_delta = (ec_data->pixCmax - ec_data->pixCmin)/65535;
-    pixC_muti = (float)(ec_data->epsilon*ec_data->GlobalGrain)/1000000;
+    pixC_muti = ec_data->epsilon*ec_data->GlobalGrain/1000000;
     pow_gradscale = pow(2,ec_data->gradscale);
     pow_vddscgrad = pow(2,ec_data->vddScGrad);
     pow_vddscoff = pow(2,ec_data->vddScOff);
@@ -64,12 +65,17 @@ void calc::get_all_temp(float **temp)
     {
         E_M_DATA *em_data = ectrl->get_muti_data(i);
         S_M_DATA *sm_data = sctrl->get_muti_data(i);
-
+        if(i==0)
+        {
+            cout<<"pixel 0:"<<sm_data->pixel<<endl;
+            cout<<"ele_offset 0:"<<sm_data->ele_offset<<endl;
+        }
         temp[i/80][i%80] = get_one_temp(em_data,sm_data);
         delete em_data;
         delete sm_data;
 
     }
+
     cout<<"end temp"<<endl;
     if(fabs(temp[0][0]-DEVICEERROR)<0.000001&&fabs(temp[63][79]-DEVICEERROR)<0.000001)
     {
@@ -213,8 +219,7 @@ float calc::get_one_temp(E_M_DATA* em_data,S_M_DATA* sm_data)
     V_ij_vdd_comp *=temp;
     V_ij_vdd_comp /=pow_vddscoff;
     V_ij_vdd_comp = V_ij_comp_x - V_ij_vdd_comp;
-
-    float PixC_ij = (em_data->p*pixC_delta+pixCmin)*pixC_muti;
+    float PixC_ij = (em_data->p*pixC_delta+pixCmin)*pixC_muti*ss->getCoefficient();
 
     int V_ij_pixC = static_cast<int>(V_ij_vdd_comp *pow(10,8)/static_cast<double>(PixC_ij));
 
@@ -247,7 +252,7 @@ float calc::get_one_temp(E_M_DATA* em_data,S_M_DATA* sm_data)
     unsigned int Tobject = (Vy-Vx)*(static_cast<unsigned int>(val)-common::YADValues[y])/ADEQUIDISTANCE+Vx;
     float K = -273.15f;
     float ret = static_cast<float>(Tobject)/10 +K;
-/*
+/*cout<<
     printf("PTAT_AV is %d\n",PTAT_av);
     printf("VDD_AV is %d\n",VDD_av);
     printf("Ta is %d\n",Ta);

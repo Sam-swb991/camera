@@ -49,7 +49,8 @@ jsoncpp::jsoncpp(std::string json)
                     RECTSET *rect_set = new RECTSET[1];
                     mode = ADD;
                     rect_set->id = myjson["body"]["rect"][static_cast<unsigned int>(i)]["ID"].asInt();
-                    rect_set->name = myjson["body"]["rect"][static_cast<unsigned int>(i)]["name"].asString();
+                    rect_set->name.clear();
+                    rect_set->name.append(myjson["body"]["rect"][static_cast<unsigned int>(i)]["name"].asString());
                     rect_set->rect.x1 = myjson["body"]["rect"][static_cast<unsigned int>(i)]["x1"].asFloat();
                     rect_set->rect.y1 = myjson["body"]["rect"][static_cast<unsigned int>(i)]["y1"].asFloat();
                     rect_set->rect.x2 = myjson["body"]["rect"][static_cast<unsigned int>(i)]["x2"].asFloat();
@@ -116,7 +117,8 @@ jsoncpp::jsoncpp(std::string json)
                     RECTSET *rect_set = new RECTSET[1];
                     mode = MODIFY;
                     rect_set->id = myjson["body"]["rect"][static_cast<unsigned int>(i)]["ID"].asInt();
-                    rect_set->name = myjson["body"]["rect"][static_cast<unsigned int>(i)]["name"].asString();
+                    rect_set->name.clear();
+                    rect_set->name.append(myjson["body"]["rect"][static_cast<unsigned int>(i)]["name"].asString());
                     rect_set->rect.x1 = myjson["body"]["rect"][static_cast<unsigned int>(i)]["x1"].asFloat();
                     rect_set->rect.y1 = myjson["body"]["rect"][static_cast<unsigned int>(i)]["y1"].asFloat();
                     rect_set->rect.x2 = myjson["body"]["rect"][static_cast<unsigned int>(i)]["x2"].asFloat();
@@ -224,6 +226,15 @@ jsoncpp::jsoncpp(std::string json)
             mode = SETARDUINOIP;
             arduinoip = myjson["body"]["ip"].asString();
         }
+        else if(function == "setcoefficient")
+        {
+            mode = SETCOEFFICIENT;
+            coefficient = myjson["body"]["coefficient"].asFloat();
+        }
+        else if(function =="getcoefficient")
+        {
+            mode = GETCOEFFICIENT;
+        }
 
 
     }
@@ -270,6 +281,11 @@ int jsoncpp::getMode()
 float jsoncpp::getatemp()
 {
     return ambienttemp;
+}
+
+float jsoncpp::getcoefficient()
+{
+    return coefficient;
 }
 int jsoncpp::getDirection()
 {
@@ -489,4 +505,10 @@ int jsoncpp::settime()
 void jsoncpp::create_SN(string SN)
 {
     myjson["SN"] = SN;
+}
+
+void jsoncpp::create_coefficient(float coefficient)
+{
+    myjson["function"] = "getcoefficient";
+    myjson["body"]["coefficient"] = (double)coefficient;
 }

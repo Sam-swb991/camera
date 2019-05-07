@@ -138,6 +138,10 @@ sharedspace::sharedspace()
     warningtimes = 0;
     mode = -1;
     readSN();
+    pthread_mutex_lock(&mutexsql);
+    coefficient = sql->getCoefficient();
+    cout<<"coefficient:"<<coefficient<<endl;
+    pthread_mutex_unlock(&mutexsql);
     char ipbuf[16] = {0};
     ip = ipset::getip(ipbuf);
     threadpool = new ClThreadPool();
@@ -283,6 +287,7 @@ void sharedspace::SetRect(std::vector<RECTSET> rectset,int len,int mode)
             }
             if(mode == ADD)
             {
+                cout<<"add"<<endl;
                 pthread_mutex_lock(&mutexsql);
                 sql->insert_table("rect",tableName,value);
                 pthread_mutex_unlock(&mutexsql);
@@ -572,4 +577,24 @@ void sharedspace::readSN()
 string sharedspace::getSN()
 {
     return SN;
+}
+
+void sharedspace::setCoefficient(float coefficient)
+{
+    list<string> tname;
+    tname.push_back("ID");
+    tname.push_back("coefficient");
+    list<string> value;
+    value.push_back("1");
+    value.push_back(common::to_string(coefficient));
+    pthread_mutex_lock(&mutexsql);
+    sql->update_table("common",tname,value);
+    pthread_mutex_unlock(&mutexsql);
+    this->coefficient = coefficient;
+}
+
+float sharedspace::getCoefficient()
+{
+
+    return coefficient;
 }

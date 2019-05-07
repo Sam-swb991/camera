@@ -61,7 +61,7 @@ void *socketclient::clientthread(void *)
 {
     WINDOW window;
     // 6 mm camera
-    c= new calc();
+    c= new calc(ss);
     //    POINT point[5120];
     std::vector<RECT> rect;
     int len;

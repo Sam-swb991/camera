@@ -23,6 +23,7 @@ public:
     WINDOW getWindow();
     float getSerialTemp();
     string getArduinoIp();
+    float getCoefficient();
     void recovery(bool clear_window);
 private:
     sqlite3 *db;

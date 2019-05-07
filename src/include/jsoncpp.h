@@ -15,6 +15,7 @@ public:
     int getDirection();
     int getatempmode();
     float getatemp();
+    float getcoefficient();
     std::string getip();
     std::string getarduinoip();
     void create_code(int code);
@@ -28,6 +29,7 @@ public:
     void create_SN(std::string SN);
 //    void create_alarm(HTTPURL *url);
     void create_atemp(bool havemodel);
+    void create_coefficient(float coefficient);
     int execshellcmd();
     int settime();
 private:
@@ -43,6 +45,7 @@ private:
     int code;
     int atempmode;
     float ambienttemp;
+    float coefficient;
 };
 
 #endif // JSONCPP_H

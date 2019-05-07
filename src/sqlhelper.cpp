@@ -58,7 +58,7 @@ void sqlHelper::create_table()
                   "rapidtempchangealarm integer not null,rapidtempchangevalue integer not null,"\
                   "radiance float not null,distance float not null,isset integer default 0);";
     string sql2 = "create table if not exists window(ID integer primary key,x1 float not null,x2 float not null,y1 float not null,y2 float not null);";
-    string sql3 = "create table if not exists common(ID integer primary key,serialtemp float not null,arduinoip varchar(20) not null default '192.168.0.101');";
+    string sql3 = "create table if not exists common(ID integer primary key,serialtemp float not null,arduinoip varchar(20) not null default '192.168.0.101',coefficient float not null default 1.0);";
     char *errorMsg;
     char *errorMsg1;
     char *errorMsg2;
@@ -156,7 +156,7 @@ void sqlHelper::insert_table(string table,list<string> name,list<string> value)
 
     }
     sql+=");";
-    //cout<<sql<<endl;
+    cout<<sql<<endl;
     int res = sqlite3_exec(db,sql.c_str(),nullptr,nullptr,&errorMsg);
     if(res != SQLITE_OK)
     {
@@ -564,6 +564,36 @@ string sqlHelper::getArduinoIp()
     sqlite3_free_table(pResult);
     sqlite3_free(errmsg);
     return ip;
+}
+
+float sqlHelper::getCoefficient()
+{
+    string strsql = "select arduinoip from common where ID = 1";
+    char * errmsg;
+    char** pResult;
+    int nCol;
+    int nRow;
+    int res = sqlite3_get_table(db,strsql.c_str(),&pResult,&nRow,&nCol,&errmsg);
+    float coefficient=1.0;
+    if (res != SQLITE_OK)
+    {
+        printf("sqlite3_get_table error\n");
+        fprintf(stderr,"get table error %s\n",sqlite3_errmsg(db));
+        sqlite3_free(errmsg);
+        return coefficient;
+    }
+    int nIndex = nCol;
+    for(int j=0;j<nCol;j++)
+    {
+         if(strcmp(pResult[j],"coefficient")==0)
+         {
+            coefficient = (float)atof(pResult[nIndex]);
+         }
+         nIndex ++;
+    }
+    sqlite3_free_table(pResult);
+    sqlite3_free(errmsg);
+    return coefficient;
 }
 /**
  * @brief 执行sql语句

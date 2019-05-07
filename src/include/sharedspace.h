@@ -19,8 +19,10 @@ public:
     void resetSql();
     void getMode();
     float getSerialTemp();
+    float getCoefficient();
     void setSerialTemp(float temp);
     void setArduinoIp(string ip);
+    void setCoefficient(float);
     list<int >getHighAlarm();
     list<int> getPreAlarm();
     list<int> getLinkageAlarm();
@@ -48,6 +50,7 @@ private:
 	list<string> tableName;
     WINDOW window;
     bool set,setwindow;
+    float coefficient;
     int ID;
     int mode;
     char *SN;
