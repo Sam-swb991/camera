@@ -68,6 +68,13 @@ sharedspace::sharedspace()
             window.x2 = 0.96f;
             window.y2 = 1.23f;
         }
+        else if(TABLENUMBER == 122)
+        {
+            window.x1 = 0;
+            window.y1 = -0.15f;
+            window.x2 = 0.94f;
+            window.y2 = 1.2f;
+        }
         list<string> tname;
         tname.push_back("ID");
         tname.push_back("x1");
@@ -165,7 +172,7 @@ sharedspace::sharedspace()
  * @param Ta，Ta值
  * @return 返回RECT对象
  */
-std::vector<RECT>  sharedspace::GetRect(float **temp,WINDOW windows,int Ta)
+std::vector<RECT>  sharedspace::GetRect(float **temp,WINDOW windows,int Ta,bool writetemp)
 {
     cout<<"start get rect!"<<endl;
     if(set)
@@ -192,7 +199,7 @@ std::vector<RECT>  sharedspace::GetRect(float **temp,WINDOW windows,int Ta)
         TEMP_C *tempc = new TEMP_C[rectsetlen];
         int *alarmmode = new int[rectsetlen];
 
-        trule = new temprule(rectset,rectsetlen,windows,temp,this,tempc,alarmmode,Ta);
+        trule = new temprule(rectset,rectsetlen,windows,temp,this,tempc,alarmmode,Ta,writetemp);
         highalarm = trule->getHighAlarm();
         prealarm = trule->getPreAlarm();
         linkagealarm = trule->getLinkageAlarm();

@@ -14,7 +14,7 @@ public:
     bool storeTemp(float **temp);
     int getTemp(float **);
     void SetRect(std::vector<RECTSET> rectset, int len, int mode);
-    std::vector<RECT> GetRect(float **temp,WINDOW windows, int Ta);
+    std::vector<RECT> GetRect(float **temp, WINDOW windows, int Ta, bool writetemp);
     int getRectlen();
     void resetSql();
     void getMode();

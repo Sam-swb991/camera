@@ -181,6 +181,31 @@ string common::getsystime()
     cout<<"=======================time======================="<<endl;
     cout<<"                      "<<time<<"                     "<<endl;
     cout<<"===================================================="<<endl;
-    delete p;
     return time;
+}
+
+string common::getsystimebyzone()
+{
+    time_t timep;
+    struct tm *p;
+    time(&timep);
+    p=localtime(&timep);
+    char time[50]={0};
+    strftime(time,sizeof(time),"%Y-%m-%d %H:%M:%S",p);
+    return time;
+}
+
+string common::GetDate()
+{
+    time_t nSeconds;
+    struct tm * pTM;
+    char psDate[32];
+    time(&nSeconds); // 同 nSeconds = time(NULL);
+    pTM = localtime(&nSeconds);
+
+    /* 系统日期,格式:YYYMMDD */
+    sprintf(psDate,"%04d-%02d-%02d",
+            pTM->tm_year + 1900, pTM->tm_mon + 1, pTM->tm_mday);
+
+    return psDate;
 }

@@ -235,6 +235,10 @@ jsoncpp::jsoncpp(std::string json)
         {
             mode = GETCOEFFICIENT;
         }
+        else if(function == "checksd")
+        {
+            mode = CHECKSD;
+        }
 
 
     }

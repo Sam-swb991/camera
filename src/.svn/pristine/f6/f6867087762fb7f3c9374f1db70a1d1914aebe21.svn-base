@@ -1,0 +1,14 @@
+#ifndef TEMPWRITER_H
+#define TEMPWRITER_H
+
+#include <fstream>
+using namespace std;
+class tempwriter
+{
+public:
+    tempwriter();
+private:
+    ofstream file;
+};
+
+#endif // TEMPWRITER_H

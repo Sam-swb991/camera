@@ -338,6 +338,15 @@ void * socketServer::serverthread(void *)
                     {
                         json->create_coefficient(ss->getCoefficient());
                     }
+                    else if(mode == CHECKSD)
+                    {
+                        if(access("/mnt/sd_card/check",F_OK)!= -1)
+                        {
+                            json->create_code(600);
+                        }
+                        else
+                            json->create_code(610);
+                    }
                     else
                         json->create_code(100);
                 }

@@ -1,0 +1,19 @@
+#ifndef TEMPWRITER_H
+#define TEMPWRITER_H
+
+#include <fstream>
+#include "transport.h"
+using namespace std;
+class tempwriter
+{
+public:
+    tempwriter();
+    void write(TEMP_C temp_c, string rectname, int ptat);
+private:
+    ofstream file;
+    bool is_open;
+    string fpath = "/root/temp.txt";
+    string sd_path = "/mnt/sd_card/temp.txt";
+};
+
+#endif // TEMPWRITER_H

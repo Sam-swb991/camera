@@ -5,6 +5,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include "httprequest.h"
+#include "tempwriter.h"
 /**
  * @brief 构造函数，温度策略
  * @param rectset，RECTSET对象，区域信息
@@ -15,7 +16,7 @@
  * @param alarmmode，需要传出的alarmmode数组
  * @param Ta，Ta值传入
  */
-temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float **temp, sharedspace *ss, TEMP_C * tempc, int *alarmmode, int Ta)
+temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float **temp, sharedspace *ss, TEMP_C * tempc, int *alarmmode, int Ta, bool writetemp)
 {
     cout<<"temprule"<<endl;
     memset(alarmmode,0,sizeof(int)*static_cast<size_t>(len));
@@ -147,6 +148,11 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
             }
             tempc[k].avgTemp /=num;
             cout<<"avg :"<<tempc[k].avgTemp<<"low :"<<tempc[k].lowTemp<<"high :"<<tempc[k].highTemp<<endl;
+            if(writetemp)
+            {
+                tempwriter *writer = new tempwriter();
+                writer->write(tempc[k],rectset[k].name,Ta);
+            }
 
             unsigned long wnum = findidinwitch(rectset[k].id,ss->regionwarning);
             if(alarmmode[k] !=0)
@@ -251,6 +257,11 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
         }
         cout<<"whole alarm 1"<<endl;
         tempc[whole_id].avgTemp /=num;
+        if(writetemp)
+        {
+            tempwriter * writer = new tempwriter();
+            writer->write(tempc[whole_id],rectset[(size_t)whole_id].name,Ta);
+        }
         if(alarmmode[whole_id] !=0)
         {
             if(ss->warningtimes == 0)

@@ -1,0 +1,14 @@
+#include "tempwriter.h"
+#include "common.h"
+tempwriter::tempwriter()
+{
+    file.open(sd_path);
+}
+
+void tempwriter::write(TEMP_C temp_c,string rectname,int ptat)
+{
+    string time = common::getsystime();
+    float PTAT =ptat/10-273.15f;
+    file<<time<<" "<<rectname<<" "<<temp_c.highTemp<<" "<<temp_c.lowTemp<<" "<<PTAT<<endl;
+    file.close();
+}

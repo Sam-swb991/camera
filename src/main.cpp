@@ -20,6 +20,8 @@
 #include "common.h"
 #include "sendtoarduino.h"
 #include <queue>
+#include <fcntl.h>
+#include <unistd.h>
 #define UNUSED(var) {var++;var--;}
 using namespace Json;
 int main()

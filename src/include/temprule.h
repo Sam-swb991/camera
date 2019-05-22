@@ -7,7 +7,7 @@
 class temprule
 {
 public:
-    temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float **temp, sharedspace *ss, TEMP_C *tempc, int *alarmmode, int Ta);
+    temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float **temp, sharedspace *ss, TEMP_C *tempc, int *alarmmode, int Ta, bool writetemp);
     list<int> getHighAlarm();
     list<int> getPreAlarm();
     list<int> getLinkageAlarm();
