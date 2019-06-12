@@ -30,7 +30,8 @@ SOURCES += \
     sendtoarduino.cpp \
     mytemp.cpp \
     tempmanager.cpp \
-    tempwriter.cpp
+    tempwriter.cpp \
+    rs485.cpp
 
 HEADERS += \
     ./include/spi.h \
@@ -73,7 +74,8 @@ HEADERS += \
     include/sendtoarduino.h \
     include/mytemp.h \
     include/tempmanager.h \
-    include/tempwriter.h
+    include/tempwriter.h \
+    include/rs485.h
 
 INCLUDEPATH = ./include
 LIBS += -lsqlite -lpthread

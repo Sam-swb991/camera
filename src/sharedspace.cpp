@@ -142,6 +142,7 @@ sharedspace::sharedspace()
     needsendtoarduino = false;
     useserialtemp = false;
     haveserialmodel = false;
+    yuntai_auto = true;
     warningtimes = 0;
     mode = -1;
     readSN();

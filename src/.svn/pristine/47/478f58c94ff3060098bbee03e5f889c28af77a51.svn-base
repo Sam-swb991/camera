@@ -158,7 +158,6 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
             unsigned long wnum = findidinwitch(rectset[k].id,ss->regionwarning);
             if(alarmmode[k] !=0)
             {
-                ss->yuntai_auto = false;
                 if(ss->regionwarning[wnum].times == 0)
                 {
                     ss->regionwarning[wnum].times ++;
@@ -270,7 +269,6 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
         }
         if(alarmmode[whole_id] !=0)
         {
-            ss->yuntai_auto = false;
             if(ss->warningtimes == 0)
             {
                 ss->warningtimes ++;

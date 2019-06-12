@@ -16,18 +16,17 @@ extern "C" {
 /**
  * @brief 控制gpio的结构体，静态变量
  */
-static GPIO_CMD_DATA cmd_data,cmd_data_rs485;
+static GPIO_CMD_DATA cmd_data;
 /**
  * @brief gpio文件描述符，静态变量
  */
 static int G_fd;
-
 /**
  * @brief gpio的初始化
  * @param cmd_data，设置gpio需要传入的结构体
  * @return 初始化成功返回文件描述符fd,不成功返回-1
  */
-int gpio_init(GPIO_CMD_DATA *cmd_data,GPIO_CMD_DATA *cmd_data_rs485)
+int gpio_init(GPIO_CMD_DATA *cmd_data)
 {
     int ret;
     int fd = open(GPIO_PATH,0);
@@ -37,23 +36,23 @@ int gpio_init(GPIO_CMD_DATA *cmd_data,GPIO_CMD_DATA *cmd_data_rs485)
         return -1;
     }
     //**********************Rs485****************************
-    cmd_data_rs485->gpio_num = 12;
-    cmd_data_rs485->pin_num = 5;
-    cmd_data_rs485->pin_dir = PIN_OUTPUT;
-    cmd_data_rs485->val = 1;
-    ret = ioctl(fd, GPIO_SET_MUX_AS_GPIO, cmd_data_rs485);
+    cmd_data->gpio_num = 12;
+    cmd_data->pin_num = 5;
+    cmd_data->pin_dir = PIN_OUTPUT;
+    cmd_data->val = 1;
+    ret = ioctl(fd, GPIO_SET_MUX_AS_GPIO, cmd_data);
     if(-1 == ret)
     {
         printf("set mux failed!\n");
         return -1;
     }
-    ret = ioctl(fd, GPIO_SET_DIR, cmd_data_rs485);
+    ret = ioctl(fd, GPIO_SET_DIR, cmd_data);
     if(-1 == ret)
     {
         printf("set dir failed!\n");
         return -1;
     }
-    ret = ioctl(fd, GPIO_SET_VAL, cmd_data_rs485);
+    ret = ioctl(fd, GPIO_SET_VAL, cmd_data);
     if(-1 == ret)
     {
         printf("set high failed!");
@@ -108,16 +107,6 @@ void setGPIOL(int fd,GPIO_CMD_DATA *cmd_data)
     int ret = ioctl(fd, GPIO_SET_VAL, cmd_data);
     if(-1 == ret)
         printf("set low failed!");
-}
-
-void prepare_write_rs485()
-{
-    setGPIOH(G_fd,&cmd_data_rs485);
-}
-
-void prepare_read_rs485()
-{
-    setGPIOL(G_fd,&cmd_data_rs485);
 }
 /**
  * @brief 强制把gpio拉低，为了读取红外传感器的数据
@@ -243,7 +232,7 @@ void spi_transfer(int fd,int num,int type,uint8_t const *tx,
 int spi_init()
 {
     int ret;
-    G_fd = gpio_init(&cmd_data,&cmd_data_rs485);
+    G_fd = gpio_init(&cmd_data);
     if(G_fd<0)
         pabort("gpio init failed");
     static uint32_t mode = 0;

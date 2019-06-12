@@ -22,6 +22,7 @@
 #include <queue>
 #include <fcntl.h>
 #include <unistd.h>
+#include "rs485.h"
 #define UNUSED(var) {var++;var--;}
 using namespace Json;
 int main()
@@ -37,6 +38,10 @@ int main()
     signal(SIGABRT,SIG_IGN);
     printf("VERSION:%s\n",VER);
     sharedspace *shared = new sharedspace();
+    Rs485 * yuntai = new Rs485(shared);
+    int ret =yuntai->open_485("/dev/ttyAMA1");
+    cout<<"ret yuntai :"<<ret<<endl;
+    yuntai->control(Rs485::YUNTAI_AUTO);
     serialPort *serial = new serialPort(shared);
     if(serial->getIsHave())
         serial->startRead();
@@ -84,7 +89,7 @@ int main()
 
  //   pthread_join(id,nullptr);
   //  goto New;
-       // pthread_join(id_s,nullptr);
+    //    pthread_join(id_s,nullptr);
 
 }
 

@@ -39,6 +39,7 @@ public:
     bool useserialtemp;
     bool haveserialmodel;
     string arduinoIp;
+    bool yuntai_auto;
     std::vector<WARN> regionwarning;
 private:
     //RECT *rect =nullptr;

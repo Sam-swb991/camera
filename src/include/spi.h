@@ -39,6 +39,8 @@ typedef struct
 int spi_init();
 void cs_change_Sensor();
 void cs_change_Eeprom();
+void prepare_write_rs485();
+void prepare_read_rs485();
 void transfer_Sensor_Write(int fd,uint8_t const *tx,size_t tx_len);
 void transfer_Sensor_Read(int fd,uint8_t const *tx,uint8_t const *rx,
 size_t rx_len);

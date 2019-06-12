@@ -11,7 +11,7 @@ tempwriter::tempwriter(int mode)
         struct stat stat_buf;
         stat(sd_path.c_str(),&stat_buf);
         cout<<"file size(K):"<<stat_buf.st_size/1024<<endl;
-        if(stat_buf.st_size>=1024*1024)
+        if(stat_buf.st_size>=128*1024)
         {
             string date = common::GetDate();
             string new_name = "/mnt/sd_card/temp-"+date+".txt";
@@ -25,9 +25,9 @@ tempwriter::tempwriter(int mode)
         struct stat stat_buf;
         stat(alarm_path.c_str(),&stat_buf);
         cout<<"file size(K):"<<stat_buf.st_size/1024<<endl;
-        if(stat_buf.st_size>=1024*1024)
+        if(stat_buf.st_size>=128*1024)
         {
-            string date = common::getsystimebyzone();
+            string date = common::GetDate();
             string new_name = "/mnt/sd_card/alarm-"+date+".txt";
             rename(alarm_path.c_str(),new_name.c_str());
         }

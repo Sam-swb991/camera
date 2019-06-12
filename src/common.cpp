@@ -191,7 +191,7 @@ string common::getsystimebyzone()
     time(&timep);
     p=localtime(&timep);
     char time[50]={0};
-    strftime(time,sizeof(time),"%Y-%m-%d %H:%M:%S",p);
+    strftime(time,sizeof(time),"%Y-%m-%d_%H:%M:%S",p);
     return time;
 }
 
