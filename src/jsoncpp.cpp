@@ -239,6 +239,20 @@ jsoncpp::jsoncpp(std::string json)
         {
             mode = CHECKSD;
         }
+        else if(function == "yuntaicontrl")
+        {
+            mode = YUNTAICONTRL;
+            yuntaimode = myjson["body"]["mode"].asInt();
+            if(yuntaimode == 3)
+            {
+                angle = myjson["body"]["angle"].asInt();
+            }
+
+        }
+        else if(function == "yuntaistate")
+        {
+            mode = YUNTAISTATE;
+        }
 
 
     }
@@ -299,6 +313,11 @@ int jsoncpp::getatempmode()
 {
     return atempmode;
 }
+
+int jsoncpp::getyuntaimode()
+{
+    return yuntaimode;
+}
 string jsoncpp::getip()
 {
     cout<<"get ip:"<<ip<<endl;
@@ -308,6 +327,11 @@ string jsoncpp::getip()
 string jsoncpp::getarduinoip()
 {
     return arduinoip;
+}
+
+int jsoncpp::getyuntaiangle()
+{
+    return angle;
 }
 /**
  * @brief 获取RECTSET结构体

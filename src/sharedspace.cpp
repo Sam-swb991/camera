@@ -12,6 +12,7 @@
 #include <fstream>
 #include <vector>
 #include "ipset.h"
+#include "rs485.h"
 using namespace std;
 
 /**
@@ -142,7 +143,20 @@ sharedspace::sharedspace()
     needsendtoarduino = false;
     useserialtemp = false;
     haveserialmodel = false;
-    yuntai_auto = true;
+    pthread_mutex_lock(&mutexsql);
+    yuntai_auto = sql->getyuntaiauto();
+    cout<<"yuntaiauto:"<<yuntai_auto<<endl;
+    pthread_mutex_unlock(&mutexsql);
+    if(yuntai_auto)
+    {
+        pthread_mutex_lock(&mutexsql);
+        int angle = sql->getyuntaiangle();
+        cout<<"yuntaiangle:"<<angle<<endl;
+        pthread_mutex_unlock(&mutexsql);
+        Rs485 *yuntai = new Rs485(this);
+        yuntai->open_485("/dev/ttyAMA1");
+        yuntai->control(Rs485::YUNTAI_AUTO,&angle);
+    }
     warningtimes = 0;
     mode = -1;
     readSN();
@@ -600,7 +614,27 @@ void sharedspace::setCoefficient(float coefficient)
     pthread_mutex_unlock(&mutexsql);
     this->coefficient = coefficient;
 }
-
+void sharedspace::setyuntai(bool yuntaiauto, int angle)
+{
+    int isAuto;
+    if(yuntaiauto)
+        isAuto = 1;
+    else
+        isAuto = 0;
+    list<string> tname;
+    tname.push_back("ID");
+    tname.push_back("yuntaiauto");
+    tname.push_back("yuntaiangle");
+    list<string> value;
+    value.push_back("1");
+    value.push_back(common::to_string(isAuto));
+    value.push_back(common::to_string(angle));
+    pthread_mutex_lock(&mutexsql);
+    sql->update_table("common",tname,value);
+    pthread_mutex_unlock(&mutexsql);
+    this->yuntaiangle = angle;
+    this->yuntai_auto = yuntaiauto;
+}
 float sharedspace::getCoefficient()
 {
 

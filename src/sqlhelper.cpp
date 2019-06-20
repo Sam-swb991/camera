@@ -58,7 +58,8 @@ void sqlHelper::create_table()
                   "rapidtempchangealarm integer not null,rapidtempchangevalue integer not null,"\
                   "radiance float not null,distance float not null,isset integer default 0);";
     string sql2 = "create table if not exists window(ID integer primary key,x1 float not null,x2 float not null,y1 float not null,y2 float not null);";
-    string sql3 = "create table if not exists common(ID integer primary key,serialtemp float not null,arduinoip varchar(20) not null default '192.168.0.101',coefficient float not null default 1.0);";
+    string sql3 = "create table if not exists common(ID integer primary key,serialtemp float not null,arduinoip varchar(20) not null default '192.168.0.101',"\
+                  "coefficient float not null default 1.0,yuntaiauto integer default 0,yuntaiangle integer default 1);";
     char *errorMsg;
     char *errorMsg1;
     char *errorMsg2;
@@ -594,6 +595,66 @@ float sqlHelper::getCoefficient()
     sqlite3_free_table(pResult);
     sqlite3_free(errmsg);
     return coefficient;
+}
+
+bool sqlHelper::getyuntaiauto()
+{
+    string strsql = "select yuntaiauto from common where ID = 1";
+    char * errmsg;
+    char** pResult;
+    int nCol;
+    int nRow;
+    int res = sqlite3_get_table(db,strsql.c_str(),&pResult,&nRow,&nCol,&errmsg);
+    int yuntaiauto=0;
+    if (res != SQLITE_OK)
+    {
+        printf("sqlite3_get_table error\n");
+        fprintf(stderr,"get table error %s\n",sqlite3_errmsg(db));
+        sqlite3_free(errmsg);
+        return false;
+    }
+    int nIndex = nCol;
+    for(int j=0;j<nCol;j++)
+    {
+         if(strcmp(pResult[j],"yuntaiauto")==0)
+         {
+            yuntaiauto = atoi(pResult[nIndex]);
+         }
+         nIndex ++;
+    }
+    sqlite3_free_table(pResult);
+    sqlite3_free(errmsg);
+    return yuntaiauto;
+}
+
+int sqlHelper::getyuntaiangle()
+{
+    string strsql = "select yuntaiangle from common where ID = 1";
+    char * errmsg;
+    char** pResult;
+    int nCol;
+    int nRow;
+    int res = sqlite3_get_table(db,strsql.c_str(),&pResult,&nRow,&nCol,&errmsg);
+    int angle=1;
+    if (res != SQLITE_OK)
+    {
+        printf("sqlite3_get_table error\n");
+        fprintf(stderr,"get table error %s\n",sqlite3_errmsg(db));
+        sqlite3_free(errmsg);
+        return angle;
+    }
+    int nIndex = nCol;
+    for(int j=0;j<nCol;j++)
+    {
+         if(strcmp(pResult[j],"yuntaiangle")==0)
+         {
+            angle = atoi(pResult[nIndex]);
+         }
+         nIndex ++;
+    }
+    sqlite3_free_table(pResult);
+    sqlite3_free(errmsg);
+    return angle;
 }
 /**
  * @brief 执行sql语句

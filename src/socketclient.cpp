@@ -152,6 +152,7 @@ void *socketclient::clientthread(void *)
                 delete json;
                 delete pro;
                 //delete rect;
+               // c->close_fd();
                 break;
             }
             if(!c->getDeviceOk())
@@ -160,6 +161,7 @@ void *socketclient::clientthread(void *)
                 start = false;
                 delete json;
                 delete pro;
+                //c->close_fd();
                 //delete rect;
                 break;
             }

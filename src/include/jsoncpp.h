@@ -3,6 +3,7 @@
 #include "transport.h"
 #include "json/json.h"
 #include <list>
+#include "rs485.h"
 class jsoncpp
 {
 public:
@@ -14,8 +15,10 @@ public:
     int getCode();
     int getDirection();
     int getatempmode();
+    int getyuntaimode();
     float getatemp();
     float getcoefficient();
+    int getyuntaiangle();
     std::string getip();
     std::string getarduinoip();
     void create_code(int code);
@@ -41,9 +44,11 @@ private:
     std::string ip,arduinoip;
     std::string shellcmd;
     std::vector<RECTSET> rectset;
+    int angle;
     int mode;
     int code;
     int atempmode;
+    int yuntaimode;
     float ambienttemp;
     float coefficient;
 };

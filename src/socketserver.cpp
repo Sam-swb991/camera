@@ -13,6 +13,7 @@
 #include "ipset.h"
 #include <stdlib.h>
 #include <recovery.h>
+#include "rs485.h"
 /**
  * @brief 初始化静态数据
  */
@@ -90,9 +91,13 @@ void * socketServer::serverthread(void *)
     bool check = true;
     int mode =-1;
     int direction=-1;
+    int yuntaimode = -1;
+    Rs485 *yuntai = new Rs485(ss);
+    int yuntairet = yuntai->open_485("/dev/ttyAMA1");
     bool reset = false;
     string new_ip ="";
     int cmdret = 0;
+    int angle=0;
     for(;;)
     {
         if(closeThread)
@@ -206,6 +211,12 @@ void * socketServer::serverthread(void *)
                         else if(mode == SETCOEFFICIENT)
                         {
                             ss->setCoefficient(myjson->getcoefficient());
+                        }
+                        else if(mode == YUNTAICONTRL)
+                        {
+                            yuntaimode = myjson->getyuntaimode();
+                            if(yuntaimode == 3)
+                                angle = myjson->getyuntaiangle();
                         }
                         cout<<"mode is "<<mode<<endl;
                         pthread_mutex_lock(&ss->mutex);
@@ -346,6 +357,57 @@ void * socketServer::serverthread(void *)
                         }
                         else
                             json->create_code(610);
+                    }
+                    else if(mode ==YUNTAICONTRL)
+                    {
+
+                        if(yuntairet <0)
+                        {
+                            json->create_code(710);
+                            yuntairet = yuntai->open_485("/dev/ttyAMA1");
+                        }
+                        else{
+
+                            switch (yuntaimode) {
+                            case Rs485::YUNTAI_LEFT:
+                            case Rs485::YUNTAI_RIGHT:
+                            case Rs485::YUNTAI_STOP:{
+                                if(ss->yuntai_auto)
+                                    json->create_code(730);
+                                else
+                                {
+                                    yuntai->control(yuntaimode,nullptr);
+                                    json->create_code(700);
+                                }
+                            };break;
+                            case Rs485::YUNTAI_AUTO:{
+                                if(ss->yuntai_auto)
+                                    json->create_code(730);
+                                else
+                                {
+                                    ss->setyuntai(true,angle);
+                                    yuntai->control(yuntaimode,&angle);
+                                    json->create_code(700);
+                                }
+                            };break;
+                            case Rs485::YUNTAI_AUTO_STOP:{
+                                ss->yuntai_auto = false;
+                                json->create_code(700);
+                            };break;
+                            default:{
+                                json->create_code(790);
+                            };break;
+                            }
+
+                        }
+
+                    }
+                    else if(mode == YUNTAISTATE)
+                    {
+                        if(ss->yuntai_auto)
+                            json->create_code(730);
+                        else
+                            json->create_code(740);
                     }
                     else
                         json->create_code(100);

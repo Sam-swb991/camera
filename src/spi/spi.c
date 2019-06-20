@@ -21,7 +21,7 @@ static GPIO_CMD_DATA cmd_data,cmd_data_rs485;
  * @brief gpio文件描述符，静态变量
  */
 static int G_fd;
-
+static int Rs_fd;
 /**
  * @brief gpio的初始化
  * @param cmd_data，设置gpio需要传入的结构体
@@ -30,36 +30,46 @@ static int G_fd;
 int gpio_init(GPIO_CMD_DATA *cmd_data,GPIO_CMD_DATA *cmd_data_rs485)
 {
     int ret;
-    int fd = open(GPIO_PATH,0);
-    if (fd<0)
+    Rs_fd = open(GPIO_PATH,0);
+    if (Rs_fd<0)
     {
         printf("Open htxjgpio dev error!\n");
         return -1;
     }
+    else
+        printf("open Rs485 fd:%d",Rs_fd);
     //**********************Rs485****************************
     cmd_data_rs485->gpio_num = 12;
     cmd_data_rs485->pin_num = 5;
     cmd_data_rs485->pin_dir = PIN_OUTPUT;
     cmd_data_rs485->val = 1;
-    ret = ioctl(fd, GPIO_SET_MUX_AS_GPIO, cmd_data_rs485);
+    ret = ioctl(Rs_fd, GPIO_SET_MUX_AS_GPIO, cmd_data_rs485);
     if(-1 == ret)
     {
         printf("set mux failed!\n");
         return -1;
     }
-    ret = ioctl(fd, GPIO_SET_DIR, cmd_data_rs485);
+    ret = ioctl(Rs_fd, GPIO_SET_DIR, cmd_data_rs485);
     if(-1 == ret)
     {
         printf("set dir failed!\n");
         return -1;
     }
-    ret = ioctl(fd, GPIO_SET_VAL, cmd_data_rs485);
+    ret = ioctl(Rs_fd, GPIO_SET_VAL, cmd_data_rs485);
     if(-1 == ret)
     {
         printf("set high failed!");
         return -1;
     }
     //************************spi******************************
+    int fd = open(GPIO_PATH,0);
+    if (fd<0)
+    {
+        printf("Open htxjgpio dev error!\n");
+        return -1;
+    }
+    else
+        printf("open spi_cs fd:%d",fd);
     cmd_data->gpio_num = 1;
     cmd_data->pin_num = 5;
     cmd_data->pin_dir = PIN_OUTPUT;
@@ -342,6 +352,7 @@ uint8_t transfer_Eeprom_Read(int fd,uint8_t addr_H,uint8_t addr_L)
 void close_spi(int fd)
 {
     close(G_fd);
+    close(Rs_fd);
     close(fd);
 }
 #ifdef __cplusplus

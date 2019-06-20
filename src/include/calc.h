@@ -14,6 +14,7 @@ public:
     float get_one_temp(E_M_DATA* em_data, S_M_DATA* sm_data);
     void get_all_temp(float **);
     void sort_temp(float **);
+    void close_fd();
     int getTa();
     bool getDeviceOk();
 private:

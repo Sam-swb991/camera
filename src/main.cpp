@@ -38,10 +38,11 @@ int main()
     signal(SIGABRT,SIG_IGN);
     printf("VERSION:%s\n",VER);
     sharedspace *shared = new sharedspace();
-    Rs485 * yuntai = new Rs485(shared);
-    int ret =yuntai->open_485("/dev/ttyAMA1");
-    cout<<"ret yuntai :"<<ret<<endl;
-    yuntai->control(Rs485::YUNTAI_AUTO);
+//    Rs485 * yuntai = new Rs485(shared);
+//    int ret =yuntai->open_485("/dev/ttyAMA1");
+//    cout<<"ret yuntai :"<<ret<<endl;
+//    shared->yuntai_auto = true;
+//    yuntai->control(Rs485::YUNTAI_AUTO,nullptr);
     serialPort *serial = new serialPort(shared);
     if(serial->getIsHave())
         serial->startRead();
@@ -89,7 +90,7 @@ int main()
 
  //   pthread_join(id,nullptr);
   //  goto New;
-    //    pthread_join(id_s,nullptr);
+       // pthread_join(id_s,nullptr);
 
 }
 

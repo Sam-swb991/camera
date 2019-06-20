@@ -23,11 +23,13 @@ public:
     void setSerialTemp(float temp);
     void setArduinoIp(string ip);
     void setCoefficient(float);
+    void setyuntai(bool yuntaiauto,int angle);
     list<int >getHighAlarm();
     list<int> getPreAlarm();
     list<int> getLinkageAlarm();
     void setWindow(int direction);
     WINDOW getWindow();
+    int getyuntaiangle();
     pthread_mutex_t mutex,mutexsql,mutexSerial,mutexurl,mutexarduinoUrl,mutexsendalarm;
     sqlHelper *sql;
     ClThreadPool *threadpool;
@@ -54,6 +56,7 @@ private:
     float coefficient;
     int ID;
     int mode;
+    int yuntaiangle;
     char *SN;
     list <int >highalarm;
     list <int> prealarm;

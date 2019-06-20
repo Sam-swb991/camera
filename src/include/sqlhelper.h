@@ -24,6 +24,8 @@ public:
     float getSerialTemp();
     string getArduinoIp();
     float getCoefficient();
+    bool getyuntaiauto();
+    int getyuntaiangle();
     void recovery(bool clear_window);
 private:
     sqlite3 *db;

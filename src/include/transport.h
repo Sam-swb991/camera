@@ -54,13 +54,18 @@ typedef struct warning{
     int id;
     int times;
 }WARN;
+//typedef struct yuntaiauto{
+//    int angle;
+//    int move_times;
+//    unsigned int move_time;
+//}YUNTAI_AUTO;
 /**
  * @brief 模式enum
  */
 enum mode{ADD,DEL,MODIFY,SET,UNSET,GET,GETRTEMP,
           MOVE,GETWIN,IPSET,RECOVERY,REBOOT,UPDATE,
           GETVER,SETTIME,GETSN,SETATEMP,SETARDUINOIP,SETCOEFFICIENT,
-          GETCOEFFICIENT,CHECKSD};
+          GETCOEFFICIENT,CHECKSD,YUNTAICONTRL,YUNTAISTATE};
 enum direction{UP,DOWN,LEFT,RIGHT};
 
 #endif // TRANSPORT_H

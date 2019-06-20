@@ -41,6 +41,10 @@ calc::~calc()
 {
     spi->close();
 }
+void calc::close_fd()
+{
+    spi->close();
+}
 /**
  * @brief 获取所有像素点的温度
  * @param temp,温度的二维数组
