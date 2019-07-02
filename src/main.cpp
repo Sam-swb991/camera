@@ -46,11 +46,11 @@ int main()
     serialPort *serial = new serialPort(shared);
     if(serial->getIsHave())
         serial->startRead();
-
+    socketclient *sc = new socketclient(shared);
     socketServer *ss = new socketServer(12345,shared);
     pthread_t id_s = ss->startServer();
     UNUSED(id_s);
-    socketclient *sc = new socketclient(shared);
+
     sendtoarduino * arduino = new sendtoarduino(shared);
     string addr = "127.0.0.1";
     while(true)

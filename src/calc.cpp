@@ -24,7 +24,14 @@ calc::calc(sharedspace *ss)
     pow_vddscgrad = pow(2,ec_data->vddScGrad);
     pow_vddscoff = pow(2,ec_data->vddScOff);
     VDD_delta = ec_data->VDDTH2-ec_data->VDDTH1;
+    cout<<"VDD_delta:"<<VDD_delta<<endl;
     PTAT_delta = ec_data->PTATTH2 - ec_data->PTATTH1;
+    cout<<"PTAT_delta:"<<PTAT_delta<<endl;
+    if(VDD_delta == 0||PTAT_delta == 0)
+    {
+        DeviceOk = false;
+        return;
+    }
     pixCmin = ec_data->pixCmin;
     VDDTH1 = ec_data->VDDTH1;
     PTATTH1 = ec_data->PTATTH1;
@@ -51,6 +58,7 @@ void calc::close_fd()
  */
 void calc::get_all_temp(float **temp)
 {
+
     cout<<"start calc"<<endl;
     sctrl->read_all();
     sctrl->printvalue();
@@ -207,7 +215,8 @@ float calc::get_one_temp(E_M_DATA* em_data,S_M_DATA* sm_data)
 {
  //   printf("start!\n");
 
-
+    if(!DeviceOk)
+        return -1234.0f;
     int temp = static_cast<int>(em_data->thGrad);
 
     temp *=PTAT_av;

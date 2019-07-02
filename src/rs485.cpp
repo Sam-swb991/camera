@@ -94,6 +94,21 @@ int Rs485::control(int mode, int *angle)
             std::cout << "Create yuntai auto pthread error!" << std::endl;
         }
     }break;
+    case YUNTAI_MOVE_PRESET:{
+        prepare_write_rs485();
+//        int temp = control(YUNTAI_STOP,nullptr);
+//        if(temp==0)
+//            ret +=1;
+        unsigned char buf[7] ={0xff,0x01,0x00,0x07,0x00,0x01,0x09};
+        ssize_t res = write(fd,buf,7);
+        if(res == 7)
+        {
+            ret += 0;
+            printf("write move to preset OK!\n");
+        }
+        else
+            ret += 1;
+    }break;
     default:break;
     }
     return ret;
@@ -116,7 +131,7 @@ void * Rs485::yuntaiautothread(void *angle)
     }
     else if(TABLENUMBER == 124)
     {
-        yuntai_move_time = 5;
+        yuntai_move_time = 6;
         switch (yuntaiangle) {
         case 1:{
             yuntai_move_times = 3;
@@ -141,6 +156,21 @@ void * Rs485::yuntaiautothread(void *angle)
         }break;
         }
 
+    }
+    control(YUNTAI_MOVE_PRESET,nullptr);
+    usleep(1000000*yuntai_move_time*(unsigned int)yuntai_move_times/2);
+    for(int i =0;i<(yuntai_move_times+1)/2;++i)
+    {
+        if(ss->yuntai_auto == false)
+            break;
+        int temp = control(YUNTAI_RIGHT,nullptr);
+        if(temp>0)
+            printf("at least one command send error!");
+        usleep(yuntai_move_time*1000000);
+        control(YUNTAI_STOP,nullptr);
+        if(ss->yuntai_auto == false)
+            break;
+        usleep(yuntai_stop_time*1000000);
     }
     while(ss->yuntai_auto)
     {

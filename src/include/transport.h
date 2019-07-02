@@ -28,6 +28,8 @@ typedef struct inner_rect{
     int linkagevalue;
     int rapidtempchangealarm;
     int rapidtempchangevalue;
+    int lowtempalarm;
+    int lowtempvalue;
     float radiance;
     float distance;
 	int isset;

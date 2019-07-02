@@ -6,6 +6,7 @@
 #include <vector>
 #include "threadPool.h"
 #include "tempmanager.h"
+
 class temprule;
 class sharedspace
 {

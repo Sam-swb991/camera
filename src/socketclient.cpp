@@ -29,7 +29,7 @@ socketclient::socketclient(sharedspace *ss)
 
         memset(temp[i],0,80*sizeof(int));
     }
-
+    c= new calc(ss);
 
 
 }
@@ -59,9 +59,10 @@ int socketclient::connect(const char *addr, int port)
  */
 void *socketclient::clientthread(void *)
 {
+
     WINDOW window;
     // 6 mm camera
-    c= new calc(ss);
+
     //    POINT point[5120];
     std::vector<RECT> rect;
     int len;
@@ -75,6 +76,8 @@ void *socketclient::clientthread(void *)
     start_t =time(nullptr);
     while(start)
     {
+        if(!c->getDeviceOk())
+            break;
 
         window=ss->getWindow();
 

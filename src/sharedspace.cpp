@@ -13,6 +13,7 @@
 #include <vector>
 #include "ipset.h"
 #include "rs485.h"
+
 using namespace std;
 
 /**
@@ -143,20 +144,7 @@ sharedspace::sharedspace()
     needsendtoarduino = false;
     useserialtemp = false;
     haveserialmodel = false;
-    pthread_mutex_lock(&mutexsql);
-    yuntai_auto = sql->getyuntaiauto();
-    cout<<"yuntaiauto:"<<yuntai_auto<<endl;
-    pthread_mutex_unlock(&mutexsql);
-    if(yuntai_auto)
-    {
-        pthread_mutex_lock(&mutexsql);
-        int angle = sql->getyuntaiangle();
-        cout<<"yuntaiangle:"<<angle<<endl;
-        pthread_mutex_unlock(&mutexsql);
-        Rs485 *yuntai = new Rs485(this);
-        yuntai->open_485("/dev/ttyAMA1");
-        yuntai->control(Rs485::YUNTAI_AUTO,&angle);
-    }
+
     warningtimes = 0;
     mode = -1;
     readSN();

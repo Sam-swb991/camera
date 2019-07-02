@@ -7,7 +7,7 @@
 class Rs485
 {
 public:
-    enum mode{YUNTAI_LEFT,YUNTAI_RIGHT,YUNTAI_STOP,YUNTAI_AUTO,YUNTAI_AUTO_STOP};
+    enum mode{YUNTAI_LEFT,YUNTAI_RIGHT,YUNTAI_STOP,YUNTAI_AUTO,YUNTAI_AUTO_STOP,YUNTAI_MOVE_PRESET};
     Rs485(sharedspace *ss);
     static int control(int mode,int * angle);
     int open_485(const char * );

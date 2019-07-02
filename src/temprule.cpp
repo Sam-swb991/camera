@@ -147,7 +147,24 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
                 }
             }
             tempc[k].avgTemp /=num;
+
             cout<<"avg :"<<tempc[k].avgTemp<<"low :"<<tempc[k].lowTemp<<"high :"<<tempc[k].highTemp<<endl;
+            int lowtempnum=0;
+            if(rectset[k].lowtempalarm == 1)
+            {
+                for(int i=start_y;i<end_y;++i)
+                {
+                    for(int j=start_x;j<end_x;++j)
+                    {
+                        if(temp[i][j]-tempc[k].avgTemp<rectset[k].lowtempvalue)
+                        {
+                            lowtempnum++;
+                        }
+                    }
+                }
+            }
+            if(lowtempnum>LOWTEMPMAX)
+                alarmmode[k] |=0x10;
             if(writetemp)
             {
                 tempwriter *writer = new tempwriter(tempwriter::common);
@@ -262,6 +279,24 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
         }
         cout<<"whole alarm 1"<<endl;
         tempc[whole_id].avgTemp /=num;
+        int lowtempnum=0;
+        if(rectset[(size_t)whole_id].lowtempalarm == 1)
+        {
+            for(int i=0;i<64;++i)
+            {
+                for(int j=0;j<80;++j)
+                {
+                    int num_whole = i*80+j;
+                    if(point[num_whole].whole)
+                        if(temp[i][j]-tempc[whole_id].avgTemp<rectset[(size_t)whole_id].lowtempvalue)
+                        {
+                            lowtempnum++;
+                        }
+                }
+            }
+        }
+        if(lowtempnum>LOWTEMPMAX)
+            alarmmode[whole_id] |=0x10;
         if(writetemp)
         {
             tempwriter * writer = new tempwriter(tempwriter::common);
