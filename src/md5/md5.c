@@ -187,7 +187,13 @@ void MD5Transform(unsigned int state[4], unsigned char block[64])
 #include <fcntl.h>
 #include <stdio.h>
 #include <unistd.h>
-
+void string_md5(unsigned char * str ,int len, unsigned char md5_value[16])
+{
+	MD5_CTX md5;
+	MD5Init(&md5);
+	MD5Update(&md5, str, len);
+	MD5Final(&md5, md5_value);
+}
 int Compute_file_md5(const char *file_path, unsigned char md5_value[16])
 {
     //int i;

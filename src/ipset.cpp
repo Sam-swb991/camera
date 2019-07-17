@@ -42,7 +42,7 @@ char *ipset::getip(char *ip_buf)
     {
         return nullptr;
     }
-    ret = ioctl(fd, SIOCGIFADDR, &temp);
+    ret = ioctl(fd, SIOCGIFADDR, &temp);//SIOCGIFBRDADDR
     close(fd);
     if(ret < 0)
         return nullptr;
@@ -51,6 +51,25 @@ char *ipset::getip(char *ip_buf)
     return ip_buf;
 }
 
+char * ipset::getbroadcast(char * buf)
+{
+    struct ifreq temp;
+    struct sockaddr_in *myaddr;
+    int fd = 0;
+    int ret = -1;
+    strcpy(temp.ifr_name, "eth0");
+    if((fd=socket(AF_INET, SOCK_STREAM, 0))<0)
+    {
+        return nullptr;
+    }
+    ret = ioctl(fd, SIOCGIFBRDADDR, &temp);//
+    close(fd);
+    if(ret < 0)
+        return nullptr;
+    myaddr = (struct sockaddr_in *)&(temp.ifr_addr);
+    strcpy(buf, inet_ntoa(myaddr->sin_addr));
+    return buf;
+}
 int ipset::sed(std::string origin_ip, std::string new_ip)
 {
     std::cout<<origin_ip<<std::endl;

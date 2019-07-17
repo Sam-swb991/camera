@@ -5,7 +5,7 @@
 #include <pthread.h>
 #include <netinet/in.h>
 #include "sharedspace.h"
-
+#include "udpserver.h"
 #define MAXLINE 4096
 
 class socketServer
@@ -18,8 +18,8 @@ public:
 private:
     static int setnonblocking(int fd);
     static void * serverthread(void *);
-    static int serverfd ,epfd;
-
+    static int serverfd ,epfd,udpfd;
+    static udpserver * udp;
     static bool closeThread;
     socketHelper *server;
     struct epoll_event ev;

@@ -14,12 +14,14 @@
 #include <stdlib.h>
 #include <recovery.h>
 #include "rs485.h"
+
 /**
  * @brief 初始化静态数据
  */
 sharedspace *socketServer::ss = nullptr;
-int socketServer::serverfd = -1,socketServer::epfd=-1;
+int socketServer::serverfd = -1,socketServer::epfd=-1,socketServer::udpfd = -1;
 bool socketServer::closeThread = false;
+udpserver *socketServer::udp = nullptr;
 /**
  * @brief 构造函数，创建socket服务端，epoll模型初始化
  * @param port，服务端端口
@@ -38,6 +40,11 @@ socketServer::socketServer(int port,sharedspace *ss)
     ev.data.fd = serverfd;
     ev.events = EPOLLIN;
     epoll_ctl(epfd,EPOLL_CTL_ADD,serverfd,&ev);
+    udp = new udpserver(ss);
+    udpfd = udp->getudpfd();
+    ev.data.fd = udpfd;
+    ev.events = EPOLLIN;
+    epoll_ctl(epfd,EPOLL_CTL_ADD,udpfd,&ev);
     this->ss = ss;
 
 }
@@ -95,10 +102,6 @@ void * socketServer::serverthread(void *)
     int yuntairet = -1;
     Rs485 *yuntai = new Rs485(ss);
     yuntairet = yuntai->open_485("/dev/ttyAMA1");
-    pthread_mutex_lock(&ss->mutexsql);
-    ss->yuntai_auto = ss->sql->getyuntaiauto();
-    cout<<"yuntaiauto:"<<ss->yuntai_auto<<endl;
-    pthread_mutex_unlock(&ss->mutexsql);
     if(ss->yuntai_auto)
     {
         pthread_mutex_lock(&ss->mutexsql);
@@ -107,6 +110,7 @@ void * socketServer::serverthread(void *)
         pthread_mutex_unlock(&ss->mutexsql);
         yuntai->control(Rs485::YUNTAI_AUTO,&angle);
     }
+
     bool reset = false;
     string new_ip ="";
     int cmdret = 0;
@@ -134,6 +138,19 @@ void * socketServer::serverthread(void *)
                     ev.events = EPOLLIN|EPOLLET;
                     epoll_ctl(epfd,EPOLL_CTL_ADD,clientfd,&ev);
                 }
+            }
+            else if (events[i].data.fd == udpfd)
+            {
+                unsigned char buf[1024];
+                memset(buf,0,1024);
+                int len = (int)udp->udprecv(buf,sizeof(buf));
+                cout<<"recv udp data:";
+                common::print_V(buf,len,1);
+                myProtocol * pro = new myProtocol((char *)buf);
+                blockchainData * data = new blockchainData();
+                myjson = new jsoncpp(pro->GetJsondata(),data);
+                ss->preHash = myjson->getpreHash();
+                ss->sqlbc->insert_block_chain(data);
             }
             else if(events[i].events&EPOLLIN)
             {

@@ -102,6 +102,11 @@ jsoncpp *myProtocol::GetJson()
     jsonc = new jsoncpp(str);
     return jsonc;
 }
+
+char * myProtocol::GetJsondata()
+{
+    return json_data;
+}
 /**
  * @brief 获取协议是不是通过校验
  * @return 返回ture为通过，false为不通过

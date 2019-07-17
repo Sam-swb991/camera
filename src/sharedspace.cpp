@@ -152,8 +152,14 @@ sharedspace::sharedspace()
     coefficient = sql->getCoefficient();
     cout<<"coefficient:"<<coefficient<<endl;
     pthread_mutex_unlock(&mutexsql);
+    pthread_mutex_lock(&mutexsql);
+    yuntai_auto = sql->getyuntaiauto();
+    cout<<"yuntaiauto:"<<yuntai_auto<<endl;
+    pthread_mutex_unlock(&mutexsql);
     char ipbuf[16] = {0};
+    char broadcast_buf[16] = {0};
     ip = ipset::getip(ipbuf);
+    broadcast = ipset::getbroadcast(broadcast_buf);
     threadpool = new ClThreadPool();
     threadpool->Create(10);
     url = new HTTPURL[1];
@@ -167,6 +173,8 @@ sharedspace::sharedspace()
     arduinoUrl->ip.clear();
     arduinoUrl->ip.append(ip);
     sixteen_t = new tempManager(60);
+    sqlbc = new sqlblockchain();
+    preHash = sqlbc->getLastHash();
 
 }
 /**
@@ -570,6 +578,10 @@ string sharedspace::getip()
     return  ip;
 }
 
+string sharedspace::getbroadcast()
+{
+    return broadcast;
+}
 void sharedspace::readSN()
 {
     SN = new char[12];

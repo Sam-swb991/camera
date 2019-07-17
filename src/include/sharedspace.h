@@ -6,7 +6,7 @@
 #include <vector>
 #include "threadPool.h"
 #include "tempmanager.h"
-
+#include "sqlblockchain.h"
 class temprule;
 class sharedspace
 {
@@ -33,8 +33,10 @@ public:
     int getyuntaiangle();
     pthread_mutex_t mutex,mutexsql,mutexSerial,mutexurl,mutexarduinoUrl,mutexsendalarm;
     sqlHelper *sql;
+    sqlblockchain *sqlbc;
     ClThreadPool *threadpool;
     string getip();
+    string getbroadcast();
     HTTPURL * url,*arduinoUrl;
     string getSN();
     int warningtimes;
@@ -43,6 +45,7 @@ public:
     bool haveserialmodel;
     string arduinoIp;
     bool yuntai_auto;
+    string preHash;
     std::vector<WARN> regionwarning;
 private:
     //RECT *rect =nullptr;
@@ -64,7 +67,7 @@ private:
     list <int> linkagealarm;
     float serial_temp;
     void readSN();
-    string ip;
+    string ip,broadcast;
     tempManager *sixteen_t;
 
 

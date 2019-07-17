@@ -8,7 +8,7 @@ INCLUDES=$(SRC)/include/
 SRC_C=$(SRC)/*.c
 SRC_P=$(SRC)/*.cpp
 LIB_PATH=$(CUR)/lib/
-LIBS=-lspi -lCJsonObject -lpthread -lsqlite -ljsoncpp -lcurl 
+LIBS=-lspi -lCJsonObject -lpthread -lsqlite -ljsoncpp -lcurl -lcmd5
 TARGET=$(CUR)/bin/camera
 .PHONY:$(TARGET)
 all:$(TARGET)

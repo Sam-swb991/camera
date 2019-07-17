@@ -108,7 +108,7 @@ void sqlHelper::create_table()
     }
     else
     {
-        cout<<"create window OK!"<<endl;
+        cout<<"create common OK!"<<endl;
         sqlite3_free(errorMsg3);
         delete errorMsg3;
     }
@@ -569,7 +569,7 @@ string sqlHelper::getArduinoIp()
 
 float sqlHelper::getCoefficient()
 {
-    string strsql = "select arduinoip from common where ID = 1";
+    string strsql = "select coefficient from common where ID = 1";
     char * errmsg;
     char** pResult;
     int nCol;

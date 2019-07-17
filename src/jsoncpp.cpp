@@ -2,6 +2,7 @@
 #include "common.h"
 #include <memory>
 #include <stdio.h>
+#include "md5.h"
 /**
  * @brief 默认构造函数
  */
@@ -272,6 +273,32 @@ jsoncpp::jsoncpp(std::string json)
  * @brief 获取格式化的json数据
  * @return 返回json的string字符串
  */
+jsoncpp::jsoncpp(string json,blockchainData *data)
+{
+    std::unique_ptr<Json::CharReader> const reader(readbuilder.newCharReader());
+    const char * cjson = json.c_str();
+    std::string error;
+    if(!reader->parse(cjson,cjson+json.size(),&myjson,&error))
+    {
+        std::cout<<"parse error"<<endl;
+        return;
+    }
+    else
+        cout<<"right"<<endl;
+    //preHash,SN,devName,IP,data,Alarm,SensorStatus,Status,time,Hash
+
+    data->setPrehash(myjson["preHash"].asString());
+    data->setSN(myjson["SN"].asString());
+    data->setDevName(myjson["devName"].asString());
+    data->setIP(myjson["IP"].asString());
+    data->setData(myjson["Data"].asString());
+    data->setAlarm(myjson["Alarm"].asInt());
+    data->setSensorStatus(myjson["Sensorstatus"].asInt());
+    data->setStatus(myjson["Status"].asInt());
+    data->setTime(myjson["Time"].asString());
+    preHash = myjson["Hash"].asString();
+    data->setHash(preHash);
+}
 std::string jsoncpp::toStyledString()
 {
     return myjson.toStyledString();
@@ -332,6 +359,11 @@ string jsoncpp::getarduinoip()
 int jsoncpp::getyuntaiangle()
 {
     return angle;
+}
+
+string jsoncpp::getpreHash()
+{
+    return preHash;
 }
 /**
  * @brief 获取RECTSET结构体
@@ -453,6 +485,23 @@ void jsoncpp::create_rect(std::vector<RECTSET> rectset ,int len)
  * @brief 通过串口读出的问题数据，封装成需要发送的json对象
  * @param realtemp,串口读出的温度
  */
+void jsoncpp::create_udp_data(HTTPURL * url,string prehash)
+{
+    myjson["preHash"] = prehash;
+    myjson["SN"] = url->camera_id;
+    myjson["devName"] = "TempSensor";
+    myjson["IP"] = url->ip;
+    myjson["Data"] = common::to_string(url->com_temp.highTemp);
+    myjson["Alarm"] = url->alarmmode;
+    myjson["Sensor_status"] = 0;
+    myjson["Status"] = 1;
+    myjson["Time"] = url->time;
+    string jsonstr = this->getJsonString();
+    unsigned char hash_str[16]={0};
+    string_md5((unsigned char *)jsonstr.c_str(),(int)jsonstr.length(),hash_str);
+    myjson["Hash"] = common::charToHexString((const char *)hash_str,16);
+
+}
 void jsoncpp::create_real_temp(float realtemp)
 {
     myjson["function"] = "realtemp";

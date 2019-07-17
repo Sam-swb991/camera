@@ -140,16 +140,16 @@ void * Rs485::yuntaiautothread(void *angle)
             yuntai_move_times =5;
         };break;
         case 3:{
-            yuntai_move_times = 8;
+            yuntai_move_times = 7;
         };break;
         case 4:{
-            yuntai_move_times = 11;
+            yuntai_move_times = 9;
         };break;
         case 5:{
-            yuntai_move_times = 13;
+            yuntai_move_times = 11;
         };break;
         case 6:{
-            yuntai_move_times = 16;
+            yuntai_move_times = 12;
         };break;
         default:{
             yuntai_move_times = 5;

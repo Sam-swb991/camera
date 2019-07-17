@@ -7,6 +7,7 @@ namespace  ipset{
 
     int setip(const char *ip);
     char * getip(char *buf);
+    char * getbroadcast(char * buf);
     int sed(std::string origin_ip,std::string new_ip);
 
 

@@ -31,7 +31,11 @@ SOURCES += \
     mytemp.cpp \
     tempmanager.cpp \
     tempwriter.cpp \
-    rs485.cpp
+    rs485.cpp \
+    udpserver.cpp \
+    sqlblockchain.cpp \
+    blockchaindata.cpp \
+    udpclient.cpp
 
 HEADERS += \
     ./include/spi.h \
@@ -75,7 +79,11 @@ HEADERS += \
     include/mytemp.h \
     include/tempmanager.h \
     include/tempwriter.h \
-    include/rs485.h
+    include/rs485.h \
+    include/udpserver.h \
+    include/sqlblockchain.h \
+    include/blockchaindata.h \
+    include/udpclient.h
 
 INCLUDEPATH = ./include
 LIBS += -lsqlite -lpthread

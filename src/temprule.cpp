@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include "httprequest.h"
 #include "tempwriter.h"
+#include "udpclient.h"
 /**
  * @brief 构造函数，温度策略
  * @param rectset，RECTSET对象，区域信息
@@ -41,6 +42,7 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
     float serial_temp = ss->getSerialTemp();
     cout<<"serial temp"<<serial_temp<<endl;
     pthread_mutex_unlock(&ss->mutexSerial);
+    udpclient * udpc = new udpclient(ss);
     // all_temp_selector(temp,serial_temp,Ta);
     int whole_id =-1;
 //    ss->url->camera_id.clear();
@@ -188,7 +190,7 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
                     ss->url->com_temp = tempc[k];
                     ss->url->rectname = rectset[k].name;
                     ss->url->time.clear();
-                    ss->url->time.append(common::getsystime());
+                    ss->url->time.append(common::getsystimebyzone());
                     ss->url->dtime = time(nullptr);
                     httpRequest * http = new httpRequest(ss->threadpool);
                     http->start(ss->url);
@@ -196,6 +198,7 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
                     tempwriter * writer = new tempwriter(tempwriter::alarm);
                     writer->write(tempc[k],rectset[k].name,Ta,alarmmode[k]);
                     writer->close();
+                    udpc->udpsend(ss->url,ss->preHash);
 
                 }
             }
@@ -255,7 +258,7 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
                     {
 
                         if(delta_temp>rectset[(size_t)whole_id].prevalue)
-                        {
+                        string preHash;{
                             alarmmode[whole_id] |=0x01;
                         }
                         if(delta_temp>rectset[(size_t)whole_id].prevalue&&delta_temp<=rectset[(size_t)whole_id].highvalue)
@@ -317,7 +320,7 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
                 ss->url->com_temp = tempc[whole_id];
                 ss->url->rectname = rectset[(size_t)whole_id].name;
                 ss->url->time.clear();
-                ss->url->time.append(common::getsystime().c_str());
+                ss->url->time.append(common::getsystimebyzone());
                 ss->url->dtime = time(nullptr);
                 cout<<"http ------time ------"<<ss->url->time<<endl;
                 httpRequest * http = new httpRequest(ss->threadpool);
@@ -326,7 +329,7 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
                 tempwriter * writer = new tempwriter(tempwriter::alarm);
                 writer->write(tempc[whole_id],rectset[(size_t)whole_id].name,Ta,alarmmode[whole_id]);
                 writer->close();
-
+                udpc->udpsend(ss->url,ss->preHash);
             }
         }
         else

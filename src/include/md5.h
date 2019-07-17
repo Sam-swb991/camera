@@ -56,6 +56,7 @@ void MD5Decode(unsigned int *output, unsigned char *input, unsigned int len);
  * md5_value 校验码存放地址
  */
 int Compute_file_md5(const char *file_path, unsigned char md5_value[16]);
+void string_md5(unsigned char * str ,int len, unsigned char md5_value[16]);
 #ifdef  __cplusplus
 }
 #endif

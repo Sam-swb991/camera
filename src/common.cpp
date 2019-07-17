@@ -177,7 +177,7 @@ string common::getsystime()
 //    time+="_"+to_string(p->tm_hour);
 //    time+=":"+to_string(p->tm_min);
 //    time+=":"+to_string(p->tm_sec);
-    sprintf(time,"%d-%d-%d_%d:%d:%d",(1900+p->tm_year), (1+p->tm_mon),p->tm_mday,p->tm_hour, p->tm_min, p->tm_sec);
+    sprintf(time,"%d-%d-%d %d:%d:%d",(1900+p->tm_year), (1+p->tm_mon),p->tm_mday,p->tm_hour, p->tm_min, p->tm_sec);
     cout<<"=======================time======================="<<endl;
     cout<<"                      "<<time<<"                     "<<endl;
     cout<<"===================================================="<<endl;
@@ -191,7 +191,7 @@ string common::getsystimebyzone()
     time(&timep);
     p=localtime(&timep);
     char time[50]={0};
-    strftime(time,sizeof(time),"%Y-%m-%d_%H:%M:%S",p);
+    strftime(time,sizeof(time),"%Y-%m-%d %H:%M:%S",p);
     return time;
 }
 

@@ -88,9 +88,9 @@ int main()
         sleep(1);
     }
 
- //   pthread_join(id,nullptr);
+ //  pthread_join(id,nullptr);
   //  goto New;
-       // pthread_join(id_s,nullptr);
+      // pthread_join(id_s,nullptr);
 
 }
 

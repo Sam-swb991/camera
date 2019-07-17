@@ -61,6 +61,7 @@ typedef struct warning{
 //    int move_times;
 //    unsigned int move_time;
 //}YUNTAI_AUTO;
+
 /**
  * @brief 模式enum
  */

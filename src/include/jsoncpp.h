@@ -4,18 +4,21 @@
 #include "json/json.h"
 #include <list>
 #include "rs485.h"
+#include "blockchaindata.h"
 class jsoncpp
 {
 public:
     jsoncpp();
     jsoncpp(Json::Value json);
     jsoncpp(std::string json);
+    jsoncpp(std::string json,blockchainData *data);
     std::string getJsonString();
     int getMode();
     int getCode();
     int getDirection();
     int getatempmode();
     int getyuntaimode();
+    string getpreHash();
     float getatemp();
     float getcoefficient();
     int getyuntaiangle();
@@ -33,6 +36,7 @@ public:
 //    void create_alarm(HTTPURL *url);
     void create_atemp(bool havemodel);
     void create_coefficient(float coefficient);
+    void create_udp_data(HTTPURL *,string prehash);
     int execshellcmd();
     int settime();
 private:
@@ -44,6 +48,7 @@ private:
     std::string ip,arduinoip;
     std::string shellcmd;
     std::vector<RECTSET> rectset;
+    std::string preHash;
     int angle;
     int mode;
     int code;

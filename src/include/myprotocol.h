@@ -13,6 +13,7 @@ public:
     ~myProtocol();
     unsigned char GetSync();
     jsoncpp *GetJson();
+    char * GetJsondata();
     unsigned char *GetData();
     unsigned long Getlength();
     unsigned char GetPlatform();
