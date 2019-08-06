@@ -102,14 +102,14 @@ void * socketServer::serverthread(void *)
     int yuntairet = -1;
     Rs485 *yuntai = new Rs485(ss);
     yuntairet = yuntai->open_485("/dev/ttyAMA1");
-    if(ss->yuntai_auto)
-    {
-        pthread_mutex_lock(&ss->mutexsql);
-        int angle = ss->sql->getyuntaiangle();
-        cout<<"yuntaiangle:"<<angle<<endl;
-        pthread_mutex_unlock(&ss->mutexsql);
-        yuntai->control(Rs485::YUNTAI_AUTO,&angle);
-    }
+//    if(ss->yuntai_auto)
+//    {
+//        //pthread_mutex_lock(&ss->mutexsql);
+//        int angle = ss->sql->getyuntaiangle();
+//        cout<<"yuntaiangle:"<<angle<<endl;
+//        //pthread_mutex_unlock(&ss->mutexsql);
+//        yuntai->control(Rs485::YUNTAI_AUTO,&angle);
+//    }
 
     bool reset = false;
     string new_ip ="";
@@ -386,7 +386,9 @@ void * socketServer::serverthread(void *)
                             json->create_code(600);
                         }
                         else
+                        {
                             json->create_code(610);
+                        }
                     }
                     else if(mode ==YUNTAICONTRL)
                     {

@@ -1,6 +1,6 @@
 CC=/opt/hisi-linux/x86-arm/arm-hisiv500-linux/bin/arm-hisiv500-linux-uclibcgnueabi-gcc
 CPP=/opt/hisi-linux/x86-arm/arm-hisiv500-linux/bin/arm-hisiv500-linux-uclibcgnueabi-g++
-CFLAGS=  -o
+CFLAGS= -o
 PARAM=-Wall -std=c++11 
 CUR=$(shell pwd)
 SRC=$(CUR)/src

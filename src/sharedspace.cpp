@@ -45,6 +45,7 @@ sharedspace::sharedspace()
     {
         perror("mutexarduinoUrl init error!");
     }
+    sem_init(&mutex_udp,0,0);
     rectsetlen = 0;
     sql = new sqlHelper();
     pthread_mutex_lock(&mutexsql);
@@ -93,12 +94,10 @@ sharedspace::sharedspace()
         sql->insert_table("window",tname,value);
         pthread_mutex_unlock(&mutexsql);
     }
-    else
-    {
-        pthread_mutex_lock(&mutexsql);
-        window = sql->getWindow();
-        pthread_mutex_unlock(&mutexsql);
-    }
+
+    pthread_mutex_lock(&mutexsql);
+    window = sql->getWindow();
+    pthread_mutex_unlock(&mutexsql);
     if(atoi(num1.c_str()) == 0)
     {
         list<string> tname;
@@ -111,16 +110,20 @@ sharedspace::sharedspace()
         sql->insert_table("common",tname,value);
         pthread_mutex_unlock(&mutexsql);
     }
-    else
-    {
-        pthread_mutex_lock(&mutexsql);
-        serial_temp = sql->getSerialTemp();
-        pthread_mutex_unlock(&mutexsql);
-    }
+
+    pthread_mutex_lock(&mutexsql);
+    serial_temp = sql->getSerialTemp();
+    pthread_mutex_unlock(&mutexsql);
+
 
     pthread_mutex_lock(&mutexsql);
     arduinoIp = sql->getArduinoIp();
     cout<<"arduinoIp:"<<arduinoIp<<endl;
+    pthread_mutex_unlock(&mutexsql);
+
+    pthread_mutex_lock(&mutexsql);
+    coefficient = sql->getCoefficient();
+    cout<<"coefficient:"<<coefficient<<endl;
     pthread_mutex_unlock(&mutexsql);
 
     tableName.push_back("ID");
@@ -137,6 +140,8 @@ sharedspace::sharedspace()
     tableName.push_back("linkagevalue");
     tableName.push_back("rapidtempchangealarm");
     tableName.push_back("rapidtempchangevalue");
+    tableName.push_back("lowtempalarm");
+    tableName.push_back("lowtempvalue");
     tableName.push_back("radiance");
     tableName.push_back("distance");
     set = true;
@@ -148,14 +153,11 @@ sharedspace::sharedspace()
     warningtimes = 0;
     mode = -1;
     readSN();
-    pthread_mutex_lock(&mutexsql);
-    coefficient = sql->getCoefficient();
-    cout<<"coefficient:"<<coefficient<<endl;
-    pthread_mutex_unlock(&mutexsql);
-    pthread_mutex_lock(&mutexsql);
-    yuntai_auto = sql->getyuntaiauto();
-    cout<<"yuntaiauto:"<<yuntai_auto<<endl;
-    pthread_mutex_unlock(&mutexsql);
+
+    //    pthread_mutex_lock(&mutexsql);
+    //    yuntai_auto = sql->getyuntaiauto();
+    //    cout<<"yuntaiauto:"<<yuntai_auto<<endl;
+    //    pthread_mutex_unlock(&mutexsql);
     char ipbuf[16] = {0};
     char broadcast_buf[16] = {0};
     ip = ipset::getip(ipbuf);
@@ -175,6 +177,17 @@ sharedspace::sharedspace()
     sixteen_t = new tempManager(60);
     sqlbc = new sqlblockchain();
     preHash = sqlbc->getLastHash();
+    isudpsend.ack = false;
+    isudpsend.ctrl = false;
+    isudpsend.alarmmode = 0;
+    isudpsend.time = time(nullptr);
+    udpsend = new issend(isudpsend.time);
+    if(access("/mnt/sd_card/check",F_OK)!= -1)
+    {
+        sdCardDevice = true;
+    }
+    else
+        sdCardDevice = false;
 
 }
 /**
@@ -194,22 +207,23 @@ std::vector<RECT>  sharedspace::GetRect(float **temp,WINDOW windows,int Ta,bool 
         pthread_mutex_unlock(&this->mutexsql);
         set = false;
     }
-//    cout<<"rect :"<<rectset[0].id<<" ";
-//    cout<<rectset[0].name<<" ";
-//    cout<<rectset[0].rect.x1;
-//    cout<<" ";
-//    cout<<rectset[0].rect.y1;
-//    cout<<" ";
-//    cout<<rectset[0].rect.x2;
-//    cout<<" ";
-//    cout<<rectset[0].rect.y2;
-//    cout<<" ";
-//    cout<<rectset[0].highalarm<<" "<<rectset[0].highvalue<<endl;
+    //    cout<<"rect :"<<rectset[0].id<<" ";
+    //    cout<<rectset[0].name<<" ";
+    //    cout<<rectset[0].rect.x1;
+    //    cout<<" ";
+    //    cout<<rectset[0].rect.y1;
+    //    cout<<" ";
+    //    cout<<rectset[0].rect.x2;
+    //    cout<<" ";
+    //    cout<<rectset[0].rect.y2;
+    //    cout<<" ";
+    //    cout<<rectset[0].highalarm<<" "<<rectset[0].highvalue<<endl;
     if(rectsetlen != 0)
     {
+        cout<<"1"<<endl;
         TEMP_C *tempc = new TEMP_C[rectsetlen];
         int *alarmmode = new int[rectsetlen];
-
+        cout<<rectset.at(0).name<<" "<<rectsetlen<<endl;
         trule = new temprule(rectset,rectsetlen,windows,temp,this,tempc,alarmmode,Ta,writetemp);
         highalarm = trule->getHighAlarm();
         prealarm = trule->getPreAlarm();
@@ -299,6 +313,8 @@ void sharedspace::SetRect(std::vector<RECTSET> rectset,int len,int mode)
                 value.push_back(common::to_string(rectset[i].linkagevalue));
                 value.push_back(common::to_string(rectset[i].rapidtempchangealarm));
                 value.push_back(common::to_string(rectset[i].rapidtempchangevalue));
+                value.push_back(common::to_string(rectset[i].lowtempalarm));
+                value.push_back(common::to_string(rectset[i].lowtempvalue));
                 value.push_back(common::to_string(rectset[i].radiance));
                 value.push_back(common::to_string(rectset[i].distance));
 
@@ -372,38 +388,38 @@ int sharedspace::getRectlen()
 bool sharedspace::storeTemp(float **temp)
 {
     return sixteen_t->addTemp(temp);
-//    stringstream ss;
-//    stringstream t;
-//    char str[256] = { 0 };
-//    ss<<"'";
-//    for(int i = 0;i<HEIGHT;++i)
-//    {
-//        for(int j=0;j<WIDTH;++j)
-//        {
-//            ss<<static_cast<int>(temp[i][j]);
-//            //cout<<static_cast<int>(temp[i][j])<<" ";
-//            if(i == HEIGHT-1 && j ==WIDTH-1)
-//            {
-//                ss<<"'";
-//            }
-//            else
-//                ss<<",";
-//        }
-//         //cout<<endl;
-//    }
-//    cout<<"temp get end"<<endl;
-//    list<string> name,value;
-//    name.push_back("tempData");
-//    name.push_back("time");
-//    value.push_back(ss.str());
+    //    stringstream ss;
+    //    stringstream t;
+    //    char str[256] = { 0 };
+    //    ss<<"'";
+    //    for(int i = 0;i<HEIGHT;++i)
+    //    {
+    //        for(int j=0;j<WIDTH;++j)
+    //        {
+    //            ss<<static_cast<int>(temp[i][j]);
+    //            //cout<<static_cast<int>(temp[i][j])<<" ";
+    //            if(i == HEIGHT-1 && j ==WIDTH-1)
+    //            {
+    //                ss<<"'";
+    //            }
+    //            else
+    //                ss<<",";
+    //        }
+    //         //cout<<endl;
+    //    }
+    //    cout<<"temp get end"<<endl;
+    //    list<string> name,value;
+    //    name.push_back("tempData");
+    //    name.push_back("time");
+    //    value.push_back(ss.str());
 
-//    sprintf(str,"%ld",time(nullptr));
-//    cout<<"time is:"<<str<<endl;
-//    value.push_back(str);
-//    sql->insert_table("temperature",name,value);
-//    t<<(time(nullptr)-65);
-//    string delsql ="time < "+ t.str();
-//    sql->delete_table("temperature",delsql);
+    //    sprintf(str,"%ld",time(nullptr));
+    //    cout<<"time is:"<<str<<endl;
+    //    value.push_back(str);
+    //    sql->insert_table("temperature",name,value);
+    //    t<<(time(nullptr)-65);
+    //    string delsql ="time < "+ t.str();
+    //    sql->delete_table("temperature",delsql);
 
 }
 
@@ -428,32 +444,32 @@ int sharedspace::getTemp(float **temp)
         return 0;
     else
         return -1;
-//    cout<<"gettemp"<<endl;
-//    stringstream ss;
-//    string ret;
-//    time_t g_time = time(nullptr)-60;
-//    time_t l_time = time(nullptr)-65;
-//    string sqlstr = "select tempData from temperature where time < "+ common::to_string(g_time)+
-//            " and time > "+common::to_string(l_time)+" order by time DESC LIMIT 1 OFFSET 0;";
-//    ret = sql->select_table(sqlstr);
-//    if(!ret.empty()&&ret!="error")
-//    {
+    //    cout<<"gettemp"<<endl;
+    //    stringstream ss;
+    //    string ret;
+    //    time_t g_time = time(nullptr)-60;
+    //    time_t l_time = time(nullptr)-65;
+    //    string sqlstr = "select tempData from temperature where time < "+ common::to_string(g_time)+
+    //            " and time > "+common::to_string(l_time)+" order by time DESC LIMIT 1 OFFSET 0;";
+    //    ret = sql->select_table(sqlstr);
+    //    if(!ret.empty()&&ret!="error")
+    //    {
 
-//        //cout<<ret<<endl;
-//        vector <string> res = common::split(ret,",");
-//        //cout<<"res size is:"<<res.size()<<endl;
-//        for(int i = 0;i<64;++i)
-//        {
-//            for(int j = 0;j<80;++j)
-//            {
-//                temp[i][j] = atoi(res[static_cast<unsigned long>(i*80+j)].c_str());
-//            }
-//        }
+    //        //cout<<ret<<endl;
+    //        vector <string> res = common::split(ret,",");
+    //        //cout<<"res size is:"<<res.size()<<endl;
+    //        for(int i = 0;i<64;++i)
+    //        {
+    //            for(int j = 0;j<80;++j)
+    //            {
+    //                temp[i][j] = atoi(res[static_cast<unsigned long>(i*80+j)].c_str());
+    //            }
+    //        }
 
-//        return 0;
-//    }
-//    else
-//        return -1;
+    //        return 0;
+    //    }
+    //    else
+    //        return -1;
 }
 /**
  * @brief 获取红外像素在可见光中的坐标

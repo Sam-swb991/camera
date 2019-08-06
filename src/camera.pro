@@ -35,7 +35,9 @@ SOURCES += \
     udpserver.cpp \
     sqlblockchain.cpp \
     blockchaindata.cpp \
-    udpclient.cpp
+    udpclient.cpp \
+    udpclientthread.cpp \
+    issend.cpp
 
 HEADERS += \
     ./include/spi.h \
@@ -83,7 +85,9 @@ HEADERS += \
     include/udpserver.h \
     include/sqlblockchain.h \
     include/blockchaindata.h \
-    include/udpclient.h
+    include/udpclient.h \
+    include/udpclientthread.h \
+    include/issend.h
 
 INCLUDEPATH = ./include
 LIBS += -lsqlite -lpthread

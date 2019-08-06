@@ -7,6 +7,8 @@
 #include "threadPool.h"
 #include "tempmanager.h"
 #include "sqlblockchain.h"
+#include <semaphore.h>
+#include "issend.h"
 class temprule;
 class sharedspace
 {
@@ -45,8 +47,12 @@ public:
     bool haveserialmodel;
     string arduinoIp;
     bool yuntai_auto;
+    bool sdCardDevice;
     string preHash;
     std::vector<WARN> regionwarning;
+    sem_t mutex_udp;
+    ISSEND isudpsend;
+    issend * udpsend;
 private:
     //RECT *rect =nullptr;
     //RECTSET *rectset =nullptr ;

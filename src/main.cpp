@@ -23,6 +23,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include "rs485.h"
+#include "udpclientthread.h"
 #define UNUSED(var) {var++;var--;}
 using namespace Json;
 int main()
@@ -43,6 +44,8 @@ int main()
 //    cout<<"ret yuntai :"<<ret<<endl;
 //    shared->yuntai_auto = true;
 //    yuntai->control(Rs485::YUNTAI_AUTO,nullptr);
+    udpclientthread * udpct = new udpclientthread(shared);
+    udpct->start();
     serialPort *serial = new serialPort(shared);
     if(serial->getIsHave())
         serial->startRead();

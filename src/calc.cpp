@@ -87,7 +87,7 @@ void calc::get_all_temp(float **temp)
         delete sm_data;
 
     }
-
+    cout<<"temp 0 "<<temp[0][0]<<endl;
     cout<<"end temp"<<endl;
     if(fabs(temp[0][0]-DEVICEERROR)<0.000001&&fabs(temp[63][79]-DEVICEERROR)<0.000001)
     {
@@ -95,6 +95,7 @@ void calc::get_all_temp(float **temp)
     }
 
     sort_temp(temp);
+    cout<<"sort end"<<endl;
     //repaire bad value
     for(int i =0;i<64;++i)
     {
@@ -181,12 +182,13 @@ void calc::get_all_temp(float **temp)
  */
 void calc::change_sort(void *src0,void *src1,size_t len)
 {
- //   printf("********************************\n");
-    int *tmp = new int[len];
+    //printf("********************************\n");
+
+    float *tmp = new float[len];
     memcpy(tmp,src0,len*4);
-//    for(int i=0;i<80;i++)
-//        printf("%d ",tmp[i]);
-//    printf("\n\n");
+    //for(int i=0;i<80;i++)
+        //printf("%f ",tmp[i]);
+    //printf("\n\n");
     memcpy(src0,src1,len*4);
     memcpy(src1,tmp,len*4);
     delete []tmp;
@@ -198,7 +200,7 @@ void calc::change_sort(void *src0,void *src1,size_t len)
  */
 void calc::sort_temp(float **temp)
 {
-
+    cout<<"sort start"<<endl;
     for(int i =0;i<16;++i)
     {
  //       printf("i = %d\n",i);

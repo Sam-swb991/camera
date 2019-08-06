@@ -9,7 +9,7 @@ DIRS=$(VPATH)
 INC := $(INC) 
 
 
-LDFLAGS := $(LDFLAGS) -D_LINUX_OS_ 
+LDFLAGS := $(CFLAGS) -D_LINUX_OS_ 
 
 CPP_SRCS = $(foreach dir, $(DIRS), $(wildcard $(dir)/*.cpp))
 C_SRCS = $(foreach dir, $(DIRS), $(wildcard $(dir)/*.c))

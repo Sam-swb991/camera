@@ -56,6 +56,7 @@ void sqlHelper::create_table()
                   "y1 float not null,y2 float not null,prealarm integer not null,prevalue integer not null,highalarm integer not null,"\
                   "highvalue integer not null,linkagealarm integer not null,linkagevalue integer not null,"\
                   "rapidtempchangealarm integer not null,rapidtempchangevalue integer not null,"\
+                  "lowtempalarm integer not null,lowtempvalue integer not null,"\
                   "radiance float not null,distance float not null,isset integer default 0);";
     string sql2 = "create table if not exists window(ID integer primary key,x1 float not null,x2 float not null,y1 float not null,y2 float not null);";
     string sql3 = "create table if not exists common(ID integer primary key,serialtemp float not null,arduinoip varchar(20) not null default '192.168.0.101',"\
@@ -299,6 +300,7 @@ std::vector<RECTSET>  sqlHelper::getRect(int *nRow,bool isset)
         strSql = "select * from rect where isset = 1;";
     char** pResult;
     int nCol;
+    //int row;
     int res = sqlite3_get_table(db,strSql.c_str(),&pResult,nRow,&nCol,&errmsg);
     if (res != SQLITE_OK)
     {
@@ -309,7 +311,7 @@ std::vector<RECTSET>  sqlHelper::getRect(int *nRow,bool isset)
     }
 
 
-
+    cout<<"ROW is :"<<*nRow<<endl;
 
     int nIndex = nCol;
     /**
@@ -380,6 +382,14 @@ std::vector<RECTSET>  sqlHelper::getRect(int *nRow,bool isset)
             {
                 rect_set->rapidtempchangevalue = atoi(pResult[nIndex]);
             }
+            else if(strcmp(pResult[j],"lowtempalarm")==0)
+            {
+                rect_set->lowtempalarm = atoi(pResult[nIndex]);
+            }
+            else if(strcmp(pResult[j],"lowtempvalue")==0)
+            {
+                rect_set->lowtempvalue = atoi(pResult[nIndex]);
+            }
             else if(strcmp(pResult[j],"radiance")==0)
             {
                 rect_set->radiance= (float)atof(pResult[nIndex]);
@@ -400,6 +410,7 @@ std::vector<RECTSET>  sqlHelper::getRect(int *nRow,bool isset)
     }
     sqlite3_free_table(pResult);
     sqlite3_free(errmsg);
+    cout<<"end getrect"<<endl;
     return rectset;
 
 }
@@ -699,6 +710,8 @@ void sqlHelper::recovery(bool clear_window)
     tableName.push_back("linkagevalue");
     tableName.push_back("rapidtempchangealarm");
     tableName.push_back("rapidtempchangevalue");
+    tableName.push_back("lowtempalarm");
+    tableName.push_back("lowtempvalue");
     tableName.push_back("radiance");
     tableName.push_back("distance");
     tableName.push_back("isset");
@@ -714,6 +727,8 @@ void sqlHelper::recovery(bool clear_window)
     value.push_back("80");
     value.push_back("1");
     value.push_back("110");
+    value.push_back("0");
+    value.push_back("0");
     value.push_back("0");
     value.push_back("0");
     value.push_back("1");

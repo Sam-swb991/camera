@@ -40,9 +40,9 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
     float win_mid_x = win_x/2+windows.x1;
     pthread_mutex_lock(&ss->mutexSerial);
     float serial_temp = ss->getSerialTemp();
-    cout<<"serial temp"<<serial_temp<<endl;
+    cout<<"serial temp:"<<serial_temp<<endl;
     pthread_mutex_unlock(&ss->mutexSerial);
-    udpclient * udpc = new udpclient(ss);
+    //udpclient * udpc = new udpclient(ss);
     // all_temp_selector(temp,serial_temp,Ta);
     int whole_id =-1;
 //    ss->url->camera_id.clear();
@@ -88,7 +88,7 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
             num=0;
             tempc[k].lowTemp = 1000;
             tempc[k].highTemp = -100;
-
+            cout<<"prevalue: "<<rectset[k].prevalue<<endl;
             for(int i=start_y;i<end_y;++i)
             {
                 for(int j=start_x;j<end_x;++j)
@@ -106,7 +106,6 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
                     float delta_temp = temp[i][j] - serial_temp;
                     if(rectset[k].linkagealarm == 1)
                     {
-
                         if(delta_temp>rectset[k].linkagevalue)
                         {
                             alarmmode[k] |=0x04;
@@ -128,6 +127,7 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
                     {
                         if(delta_temp>rectset[k].prevalue)
                         {
+
                             alarmmode[k] |=0x01;
                         }
                         if(delta_temp>rectset[k].prevalue&&delta_temp<=rectset[k].highvalue)
@@ -192,13 +192,20 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
                     ss->url->time.clear();
                     ss->url->time.append(common::getsystimebyzone());
                     ss->url->dtime = time(nullptr);
-                    httpRequest * http = new httpRequest(ss->threadpool);
-                    http->start(ss->url);
+                    //httpRequest * http = new httpRequest(ss->threadpool);
+                    //http->start(ss->url);
                     pthread_mutex_unlock(&ss->mutexurl);
-                    tempwriter * writer = new tempwriter(tempwriter::alarm);
-                    writer->write(tempc[k],rectset[k].name,Ta,alarmmode[k]);
-                    writer->close();
-                    udpc->udpsend(ss->url,ss->preHash);
+                    if(writetemp)
+                    {
+                        tempwriter * writer = new tempwriter(tempwriter::alarm);
+                        writer->write(tempc[k],rectset[k].name,Ta,alarmmode[k]);
+                        writer->close();
+                    }
+                    ss->isudpsend.alarmmode = alarmmode[k];
+                    ss->isudpsend.time = time(nullptr);
+                    sem_post(&ss->mutex_udp);
+                    cout<<"udp send area msg"<<endl;
+                    //udpc->udpsend(ss->url,ss->preHash);
 
                 }
             }
@@ -258,7 +265,7 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
                     {
 
                         if(delta_temp>rectset[(size_t)whole_id].prevalue)
-                        string preHash;{
+                        {
                             alarmmode[whole_id] |=0x01;
                         }
                         if(delta_temp>rectset[(size_t)whole_id].prevalue&&delta_temp<=rectset[(size_t)whole_id].highvalue)
@@ -323,13 +330,20 @@ temprule::temprule(std::vector<RECTSET> rectset, int len, WINDOW windows, float 
                 ss->url->time.append(common::getsystimebyzone());
                 ss->url->dtime = time(nullptr);
                 cout<<"http ------time ------"<<ss->url->time<<endl;
-                httpRequest * http = new httpRequest(ss->threadpool);
-                http->start(ss->url);
+                //httpRequest * http = new httpRequest(ss->threadpool);
+                //http->start(ss->url);
                 pthread_mutex_unlock(&ss->mutexurl);
-                tempwriter * writer = new tempwriter(tempwriter::alarm);
-                writer->write(tempc[whole_id],rectset[(size_t)whole_id].name,Ta,alarmmode[whole_id]);
-                writer->close();
-                udpc->udpsend(ss->url,ss->preHash);
+                if(writetemp)
+                {
+                    tempwriter * writer = new tempwriter(tempwriter::alarm);
+                    writer->write(tempc[whole_id],rectset[(size_t)whole_id].name,Ta,alarmmode[whole_id]);
+                    writer->close();
+                }
+                ss->isudpsend.alarmmode = alarmmode[whole_id];
+                ss->isudpsend.time = time(nullptr);
+                sem_post(&ss->mutex_udp);
+                cout<<"udp send msg"<<endl;
+                //udpc->udpsend(ss->url,ss->preHash);
             }
         }
         else

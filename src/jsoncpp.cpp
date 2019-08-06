@@ -64,6 +64,8 @@ jsoncpp::jsoncpp(std::string json)
                     rect_set->linkagevalue = myjson["body"]["rect"][static_cast<unsigned int>(i)]["linkagevalue"].asInt();
                     rect_set->rapidtempchangealarm = myjson["body"]["rect"][static_cast<unsigned int>(i)]["rapidtempchangealarm"].asInt();
                     rect_set->rapidtempchangevalue = myjson["body"]["rect"][static_cast<unsigned int>(i)]["rapidtempchangevalue"].asInt();
+                    rect_set->lowtempalarm = myjson["body"]["rect"][static_cast<unsigned int>(i)]["lowtempalarm"].asInt();
+                    rect_set->lowtempvalue = myjson["body"]["rect"][static_cast<unsigned int>(i)]["lowtempvalue"].asInt();
                     rect_set->radiance = myjson["body"]["rect"][static_cast<unsigned int>(i)]["radiance"].asFloat();
                     rect_set->distance = myjson["body"]["rect"][static_cast<unsigned int>(i)]["distance"].asFloat();
                     rectset.push_back(*rect_set);
@@ -132,6 +134,8 @@ jsoncpp::jsoncpp(std::string json)
                     rect_set->linkagevalue = myjson["body"]["rect"][static_cast<unsigned int>(i)]["linkagevalue"].asInt();
                     rect_set->rapidtempchangealarm = myjson["body"]["rect"][static_cast<unsigned int>(i)]["rapidtempchangealarm"].asInt();
                     rect_set->rapidtempchangevalue = myjson["body"]["rect"][static_cast<unsigned int>(i)]["rapidtempchangevalue"].asInt();
+                    rect_set->lowtempalarm = myjson["body"]["rect"][static_cast<unsigned int>(i)]["lowtempalarm"].asInt();
+                    rect_set->lowtempvalue = myjson["body"]["rect"][static_cast<unsigned int>(i)]["lowtempvalue"].asInt();
                     rect_set->radiance = myjson["body"]["rect"][static_cast<unsigned int>(i)]["radiance"].asFloat();
                     rect_set->distance = myjson["body"]["rect"][static_cast<unsigned int>(i)]["distance"].asFloat();
                     rectset.push_back(*rect_set);
@@ -472,6 +476,8 @@ void jsoncpp::create_rect(std::vector<RECTSET> rectset ,int len)
         myjson["body"]["rect"][(int)i]["linkagevalue"] = rectset[i].linkagevalue;
         myjson["body"]["rect"][(int)i]["rapidtempchangealarm"] = rectset[i].rapidtempchangealarm;
         myjson["body"]["rect"][(int)i]["rapidtempchangevalue"] = rectset[i].rapidtempchangevalue;
+        myjson["body"]["rect"][(int)i]["lowtempalarm"] = rectset[i].lowtempalarm;
+        myjson["body"]["rect"][(int)i]["lowtempvalue"] = rectset[i].lowtempvalue;
         myjson["body"]["rect"][(int)i]["radiance"] = (double)rectset[i].radiance;
         myjson["body"]["rect"][(int)i]["distance"] = (double)rectset[i].distance;
         myjson["body"]["rect"][(int)i]["isset"] = rectset[i].isset;
