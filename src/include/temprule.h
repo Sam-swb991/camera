@@ -20,7 +20,7 @@ private:
     void initWhole();
     POINT_WHOLE point[5120];
     const int TEMP_DIFFER = 3;
-    const int LOWTEMPMAX = 500;
+    const int LOWTEMPMAX =1;
     list<int> linkagealarm;
     list<int> highalarm;
     list<int> prealarm;
